@@ -3,8 +3,8 @@
 
 /* tslint:disable:no-console */
 import * as PQP from "@microsoft/powerquery-parser";
-import { tryFormat, FormatSettings } from "./format";
 import { TFormatError } from "./error";
+import { FormatSettings, tryFormat } from "./format";
 import { IndentationLiteral, NewlineLiteral } from "./serializer";
 
 const text: string = `

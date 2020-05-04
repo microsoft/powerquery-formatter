@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import { compare, expectFormat as expectFormat } from "./common";
+import { compare, expectFormat } from "./common";
 
 describe(`basic serializer`, () => {
     // ------------------------------------------

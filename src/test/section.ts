@@ -182,7 +182,9 @@ Constant.Alpha = 1;
 Constant.Beta = 2;
 
 Other = 3;`;
-            const actual: string = expectFormat(`section; Other = 3; Constant.Alpha = 1; Constant.Beta = 2; Other = 3;`);
+            const actual: string = expectFormat(
+                `section; Other = 3; Constant.Alpha = 1; Constant.Beta = 2; Other = 3;`,
+            );
             compare(expected, actual);
         });
     });
