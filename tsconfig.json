@@ -15,6 +15,6 @@
         "incremental": true,
         "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
     },
-    "include": ["src/index.ts", "src/formatter/**/*.ts", "src/language-services/**/*.ts"],
+    "include": ["src/**/*.ts"],
     "exclude": ["node_modules"]
 }
