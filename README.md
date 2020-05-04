@@ -1,7 +1,27 @@
+# powerquery-language-services
 
-# Contributing
+[![Build Status](https://dev.azure.com/ms/powerquery-language-services/_apis/build/status/Microsoft.powerquery-language-services?branchName=master)](https://dev.azure.com/ms/powerquery-language-services/_build/latest?definitionId=343&branchName=master)
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
+This project contains base functionality for implementing a language service for the Power Query / M language.
+
+## Build and test
+
+Build
+
+```cmd
+npm install
+npm run build
+```
+
+Test
+
+```cmd
+npm test
+```
+
+## Contributing
+
+This project welcomes contributions and suggestions. Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
 the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
 

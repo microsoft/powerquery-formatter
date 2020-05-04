@@ -1,0 +1,51 @@
+{
+    "name": "@microsoft/powerquery-formatter",
+    "version": "0.0.1",
+    "author": "Microsoft",
+    "license": "MIT",
+    "scripts": {
+        "check": "node_modules\\.bin\\prettier --config \".prettierrc\" --list-different .\\**\\src\\**\\*.ts && .\\node_modules\\.bin\\tslint './src/**/*[^d].ts",
+        "prepublishOnly": "git clean -xdf && npm install && npm run check && npm run build && npm run test",
+        "build": ".\\node_modules\\.bin\\tsc",
+        "watch": ".\\node_modules\\.bin\\tsc -b -watch",
+        "test": "mocha --reporter mocha-multi-reporters --reporter-options configFile=src/test/mochaConfig.json -r ts-node/register src/test/**/*.ts"
+    },
+    "homepage": "https://github.com/microsoft/powerquery-formatter#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/microsoft/powerquery-formatter.git"
+    },
+    "issues": {
+        "url": "https://github.com/microsoft/powerquery-formatter/issues"
+    },
+    "description": "A source code formatter for the Power Query/M formula language.",
+    "main": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "keywords": [
+        "power query",
+        "power bi"
+    ],
+    "devDependencies": {
+        "@types/chai": "^4.2.11",
+        "@types/mocha": "^7.0.2",
+        "@types/node": "^13.11.1",
+        "chai": "^4.2.0",
+        "mocha": "^7.1.1",
+        "mocha-junit-reporter": "^1.23.3",
+        "mocha-multi-reporters": "^1.1.7",
+        "prettier": "^2.0.4",
+        "ts-loader": "^6.2.2",
+        "ts-node": "^8.4.1",
+        "tslint": "^6.1.1",
+        "tslint-config-prettier": "^1.18.0",
+        "tslint-microsoft-contrib": "^6.2.0",
+        "tslint-plugin-prettier": "^2.3.0",
+        "typescript": "^3.8.3"
+    },
+    "dependencies": {
+        "@microsoft/powerquery-parser": "0.1.48"
+    },
+    "files": [
+        "lib/**/*"
+    ]
+}
