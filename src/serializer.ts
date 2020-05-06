@@ -24,7 +24,7 @@ export const enum NewlineLiteral {
 export type TriedSerialize = PQP.Result<string, PQP.CommonError.CommonError>;
 
 export interface SerializerSettings extends PQP.CommonSettings {
-    readonly document: PQP.Language.Ast.TDocument;
+    readonly node: PQP.Language.Ast.TNode;
     readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
     readonly passthroughMaps: SerializerPassthroughMaps;
     readonly indentationLiteral: IndentationLiteral;
@@ -37,11 +37,11 @@ export interface SerializerPassthroughMaps {
 }
 
 export function trySerialize(settings: SerializerSettings): TriedSerialize {
-    return PQP.ResultUtils.ensureResult(settings.localizationTemplates, () => serialize(settings));
+    return PQP.ResultUtils.ensureResult(PQP.getLocalizationTemplates(settings.locale), () => serialize(settings));
 }
 
 interface SerializerState {
-    readonly document: PQP.Language.Ast.TDocument;
+    readonly node: PQP.Language.Ast.TNode;
     readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
     readonly passthroughMaps: SerializerPassthroughMaps;
     readonly newlineLiteral: NewlineLiteral;
@@ -54,13 +54,13 @@ interface SerializerState {
 
 function serialize(settings: SerializerSettings): string {
     const state: SerializerState = stateFromSettings(settings);
-    serializeNode(state, state.document);
+    serializeNode(state, state.node);
     return state.formatted;
 }
 
 function stateFromSettings(settings: SerializerSettings): SerializerState {
     const state: SerializerState = {
-        document: settings.document,
+        node: settings.node,
         nodeIdMapCollection: settings.nodeIdMapCollection,
         passthroughMaps: settings.passthroughMaps,
         newlineLiteral: settings.newlineLiteral,
