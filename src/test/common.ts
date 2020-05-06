@@ -8,7 +8,7 @@ import "mocha";
 import { FormatSettings, IndentationLiteral, NewlineLiteral, TriedFormat, tryFormat } from "..";
 
 const DefaultFormatSettings: FormatSettings = {
-    localizationTemplates: PQP.DefaultTemplates,
+    locale: PQP.Locale.en_US,
     parser: PQP.Parser.CombinatorialParser,
     newParserState: PQP.DefaultSettings.newParserState,
     indentationLiteral: IndentationLiteral.SpaceX4,

@@ -29,10 +29,10 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
     }
 
     const lexParseOk: PQP.Task.LexParseOk = triedLexParse.value;
-    const ast: PQP.Language.Ast.TDocument = lexParseOk.ast;
+    const ast: PQP.Language.Ast.TNode = lexParseOk.ast;
     const comments: ReadonlyArray<PQP.Language.TComment> = lexParseOk.lexerSnapshot.comments;
-    const nodeIdMapCollection: PQP.NodeIdMap.Collection = lexParseOk.nodeIdMapCollection;
-    const localizationTemplates: PQP.ILocalizationTemplates = formatSettings.localizationTemplates;
+    const nodeIdMapCollection: PQP.NodeIdMap.Collection = lexParseOk.state.contextState.nodeIdMapCollection;
+    const localizationTemplates: PQP.ILocalizationTemplates = PQP.getLocalizationTemplates(formatSettings.locale);
 
     let commentCollectionMap: CommentCollectionMap = new Map();
     if (comments.length) {
@@ -77,8 +77,8 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
         serializerParameterMap,
     };
     const serializeRequest: SerializerSettings = {
-        localizationTemplates,
-        document: lexParseOk.ast,
+        locale: formatSettings.locale,
+        node: lexParseOk.ast,
         nodeIdMapCollection,
         passthroughMaps: maps,
         indentationLiteral: formatSettings.indentationLiteral,

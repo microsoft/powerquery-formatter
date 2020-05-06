@@ -10,7 +10,7 @@ import { tryTraverse as tryTraverseSecondPass } from "./isMultilineSecondPass";
 // runs a DFS pass followed by a BFS pass.
 export function tryTraverse(
     localizationTemplates: PQP.ILocalizationTemplates,
-    ast: PQP.Language.Ast.TDocument,
+    ast: PQP.Language.Ast.TNode,
     commentCollectionMap: CommentCollectionMap,
     nodeIdMapCollection: PQP.NodeIdMap.Collection,
 ): PQP.Traverse.TriedTraverse<IsMultilineMap> {
