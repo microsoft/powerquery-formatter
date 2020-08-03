@@ -1,6 +1,36 @@
 import * as PQP from "@microsoft/powerquery-parser";
 
+export type CommentCollectionMap = Map<number, CommentCollection>;
 export type IndentationChange = -1 | 1;
+export type IsMultilineMap = Map<number, boolean>;
+export type LinearLengthMap = Map<number, number>;
+
+export interface CommentCollection {
+    readonly prefixedComments: PQP.Language.TComment[];
+    prefixedCommentsContainsNewline: boolean;
+}
+
+export interface CommentState extends PQP.Traverse.IState<CommentCollectionMap> {
+    readonly comments: ReadonlyArray<PQP.Language.TComment>;
+    commentsIndex: number;
+    maybeCurrentComment: PQP.Language.TComment | undefined;
+}
+
+export interface IsMultilineFirstPassState extends PQP.Traverse.IState<IsMultilineMap> {
+    readonly localizationTemplates: PQP.ILocalizationTemplates;
+    readonly commentCollectionMap: CommentCollectionMap;
+    readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
+    readonly linearLengthMap: LinearLengthMap;
+}
+
+export interface IsMultilineSecondPassState extends PQP.Traverse.IState<IsMultilineMap> {
+    readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
+}
+
+export interface LinearLengthState extends PQP.Traverse.IState<number> {
+    readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
+    readonly linearLengthMap: LinearLengthMap;
+}
 
 export const enum SerializerWriteKind {
     Any = "Any",
@@ -10,15 +40,20 @@ export const enum SerializerWriteKind {
     PaddedRight = "PaddedRight",
 }
 
+export interface SerializeCommentParameter {
+    readonly literal: string;
+    readonly writeKind: SerializerWriteKind;
+}
+
+export interface SerializeParameter {
+    readonly maybeIndentationChange?: IndentationChange;
+    readonly maybeWriteKind?: SerializerWriteKind;
+}
+
 export interface SerializerParameterMap {
     readonly indentationChange: Map<number, IndentationChange>;
     readonly writeKind: Map<number, SerializerWriteKind>;
     readonly comments: Map<number, ReadonlyArray<SerializeCommentParameter>>;
-}
-
-export interface SerializeCommentParameter {
-    readonly literal: string;
-    readonly writeKind: SerializerWriteKind;
 }
 
 export interface SerializeParameterState extends PQP.Traverse.IState<SerializerParameterMap> {
@@ -26,25 +61,10 @@ export interface SerializeParameterState extends PQP.Traverse.IState<SerializerP
     readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
     readonly commentCollectionMap: CommentCollectionMap;
     readonly isMultilineMap: IsMultilineMap;
-    readonly workspaceMap: Map<number, TraverseWorkspace>;
+    readonly workspaceMap: Map<number, SerializeParameter>;
 }
 
-export interface TraverseWorkspace {
-    readonly maybeIndentationChange?: IndentationChange;
-    readonly maybeWriteKind?: SerializerWriteKind;
-}
-
-export interface CommentState extends PQP.Traverse.IState<CommentCollectionMap> {
-    readonly comments: ReadonlyArray<PQP.Language.TComment>;
-    commentsIndex: number;
-    maybeCurrentComment: PQP.Language.TComment | undefined;
-}
-
-export type CommentCollectionMap = Map<number, CommentCollection>;
-
-export interface CommentCollection {
-    readonly prefixedComments: PQP.Language.TComment[];
-    prefixedCommentsContainsNewline: boolean;
-}
-
-export type IsMultilineMap = Map<number, boolean>;
+export const DefaultSerializeParameter: SerializeParameter = {
+    maybeWriteKind: SerializerWriteKind.Any,
+    maybeIndentationChange: undefined,
+};
