@@ -3,16 +3,16 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { FormatError } from ".";
-import { CommentCollectionMap, IsMultilineMap, SerializerParameterMap, tryTraverseComment } from "./passes";
+import { CommentCollectionMap, IsMultilineMap, SerializeParameterMap, tryTraverseComment } from "./passes";
 import { tryTraverseSerializeParameter } from "./passes";
 import { tryTraverseIsMultiline } from "./passes/isMultiline/isMultiline";
 import {
     IndentationLiteral,
     NewlineLiteral,
-    SerializerPassthroughMaps,
-    SerializerSettings,
+    SerializePassthroughMaps,
+    SerializeSettings,
     trySerialize,
-} from "./serializer";
+} from "./serialize";
 
 export type TriedFormat = PQP.Result<string, FormatError.TFormatError>;
 
@@ -59,23 +59,23 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
     }
     const isMultilineMap: IsMultilineMap = triedIsMultilineMap.value;
 
-    const triedSerializerParameter: PQP.Traverse.TriedTraverse<SerializerParameterMap> = tryTraverseSerializeParameter(
+    const triedSerializeParameter: PQP.Traverse.TriedTraverse<SerializeParameterMap> = tryTraverseSerializeParameter(
         localizationTemplates,
         ast,
         nodeIdMapCollection,
         commentCollectionMap,
         isMultilineMap,
     );
-    if (PQP.ResultUtils.isErr(triedSerializerParameter)) {
-        return triedSerializerParameter;
+    if (PQP.ResultUtils.isErr(triedSerializeParameter)) {
+        return triedSerializeParameter;
     }
-    const serializerParameterMap: SerializerParameterMap = triedSerializerParameter.value;
+    const serializeParameterMap: SerializeParameterMap = triedSerializeParameter.value;
 
-    const maps: SerializerPassthroughMaps = {
+    const maps: SerializePassthroughMaps = {
         commentCollectionMap,
-        serializerParameterMap,
+        serializeParameterMap,
     };
-    const serializeRequest: SerializerSettings = {
+    const serializeRequest: SerializeSettings = {
         locale: formatSettings.locale,
         node: lexParseOk.ast,
         nodeIdMapCollection,

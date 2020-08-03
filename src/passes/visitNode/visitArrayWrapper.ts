@@ -3,7 +3,7 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { expectGetIsMultiline } from "../isMultiline/common";
-import { IndentationChange, SerializeParameterState, SerializerWriteKind } from "../types";
+import { IndentationChange, SerializeParameterState, SerializeWriteKind } from "../types";
 import { isSectionMemeberSimilarScope, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 
 export function visitArrayWrapper(state: SerializeParameterState, node: PQP.Language.Ast.TArrayWrapper): void {
@@ -26,13 +26,13 @@ export function visitArrayWrapper(state: SerializeParameterState, node: PQP.Lang
 function visitArrayWrapperDefault(state: SerializeParameterState, node: PQP.Language.Ast.TArrayWrapper): void {
     const isMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, node);
 
-    let maybeWriteKind: SerializerWriteKind | undefined;
+    let maybeWriteKind: SerializeWriteKind | undefined;
     let maybeIndentationChange: IndentationChange | undefined;
     if (isMultiline) {
-        maybeWriteKind = SerializerWriteKind.Indented;
+        maybeWriteKind = SerializeWriteKind.Indented;
         maybeIndentationChange = 1;
     } else {
-        maybeWriteKind = SerializerWriteKind.Any;
+        maybeWriteKind = SerializeWriteKind.Any;
     }
 
     for (const element of node.elements) {
@@ -54,10 +54,10 @@ function visitArrayWrapperForSectionMembers(
             throw new PQP.CommonError.InvariantError(`expected sectionMember`, details);
         }
 
-        let memberWriteKind: SerializerWriteKind = SerializerWriteKind.DoubleNewline;
+        let memberWriteKind: SerializeWriteKind = SerializeWriteKind.DoubleNewline;
 
         if (maybePreviousSectionMember && isSectionMemeberSimilarScope(member, maybePreviousSectionMember)) {
-            memberWriteKind = SerializerWriteKind.Indented;
+            memberWriteKind = SerializeWriteKind.Indented;
         }
 
         setWorkspace(state, member, { maybeWriteKind: memberWriteKind });
@@ -81,7 +81,7 @@ function visitArrayWrapperForUnaryExpression(
         const operatorConstant: PQP.Language.Ast.IConstant<PQP.Language.Ast.UnaryOperatorKind> = elements[index];
 
         if (previousWasNotOperator || operatorConstant.constantKind === PQP.Language.Ast.UnaryOperatorKind.Not) {
-            setWorkspace(state, operatorConstant, { maybeWriteKind: SerializerWriteKind.PaddedLeft });
+            setWorkspace(state, operatorConstant, { maybeWriteKind: SerializeWriteKind.PaddedLeft });
         }
         previousWasNotOperator = operatorConstant.constantKind === PQP.Language.Ast.UnaryOperatorKind.Not;
     }

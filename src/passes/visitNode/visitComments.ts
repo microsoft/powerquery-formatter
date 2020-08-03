@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { CommentCollection, SerializeCommentParameter, SerializeParameterState, SerializerWriteKind } from "../types";
+import { CommentCollection, SerializeCommentParameter, SerializeParameterState, SerializeWriteKind } from "../types";
 
 // serves three purposes:
 //  * propagates the TNode's writeKind to the first comment
@@ -16,8 +16,8 @@ import { CommentCollection, SerializeCommentParameter, SerializeParameterState, 
 export function visitComments(
     state: SerializeParameterState,
     node: PQP.Language.Ast.TNode,
-    maybeWriteKind: SerializerWriteKind | undefined,
-): SerializerWriteKind | undefined {
+    maybeWriteKind: SerializeWriteKind | undefined,
+): SerializeWriteKind | undefined {
     const nodeId: number = node.id;
     const maybeComments: CommentCollection | undefined = state.commentCollectionMap.get(nodeId);
     if (!maybeComments) {
@@ -36,15 +36,15 @@ export function visitComments(
         const comment: PQP.Language.TComment = comments[index];
         const previousComment: PQP.Language.TComment | undefined = comments[index - 1];
 
-        let writeKind: SerializerWriteKind;
+        let writeKind: SerializeWriteKind;
         if (index === 0) {
-            writeKind = maybeWriteKind || SerializerWriteKind.Any;
+            writeKind = maybeWriteKind || SerializeWriteKind.Any;
         } else if (comment.containsNewline) {
-            writeKind = SerializerWriteKind.Indented;
+            writeKind = SerializeWriteKind.Indented;
         } else if (previousComment && previousComment.containsNewline) {
-            writeKind = SerializerWriteKind.Indented;
+            writeKind = SerializeWriteKind.Indented;
         } else {
-            writeKind = SerializerWriteKind.Any;
+            writeKind = SerializeWriteKind.Any;
         }
 
         commentParameters.push({
@@ -57,9 +57,9 @@ export function visitComments(
 
     const lastComment: PQP.Language.TComment = comments[comments.length - 1];
     if (lastComment.containsNewline) {
-        maybeWriteKind = SerializerWriteKind.Indented;
+        maybeWriteKind = SerializeWriteKind.Indented;
     } else {
-        maybeWriteKind = SerializerWriteKind.PaddedLeft;
+        maybeWriteKind = SerializeWriteKind.PaddedLeft;
     }
 
     return maybeWriteKind;

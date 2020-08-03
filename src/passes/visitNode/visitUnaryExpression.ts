@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { SerializeParameterState, SerializerWriteKind } from "../types";
+import { SerializeParameterState, SerializeWriteKind } from "../types";
 import { propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 
 export function visitUnaryExpression(state: SerializeParameterState, node: PQP.Language.Ast.UnaryExpression): void {
@@ -13,6 +13,6 @@ export function visitUnaryExpression(state: SerializeParameterState, node: PQP.L
     const lastOperator: PQP.Language.Ast.IConstant<PQP.Language.Ast.UnaryOperatorKind> =
         operators[operators.length - 1];
     if (lastOperator.constantKind === PQP.Language.Ast.UnaryOperatorKind.Not) {
-        setWorkspace(state, node.typeExpression, { maybeWriteKind: SerializerWriteKind.PaddedLeft });
+        setWorkspace(state, node.typeExpression, { maybeWriteKind: SerializeWriteKind.PaddedLeft });
     }
 }

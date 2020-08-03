@@ -3,7 +3,7 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { expectGetIsMultiline } from "../isMultiline/common";
-import { SerializeParameter, SerializeParameterState, SerializerWriteKind } from "../types";
+import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../types";
 import { propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 
 export function visitTableType(state: SerializeParameterState, node: PQP.Language.Ast.TableType): void {
@@ -15,11 +15,11 @@ export function visitTableType(state: SerializeParameterState, node: PQP.Languag
     if (rowTypeIsMultiline) {
         rowTypeWorkspace = {
             maybeIndentationChange: 1,
-            maybeWriteKind: SerializerWriteKind.Indented,
+            maybeWriteKind: SerializeWriteKind.Indented,
         };
     } else {
         rowTypeWorkspace = {
-            maybeWriteKind: SerializerWriteKind.PaddedLeft,
+            maybeWriteKind: SerializeWriteKind.PaddedLeft,
         };
     }
     setWorkspace(state, rowType, rowTypeWorkspace);

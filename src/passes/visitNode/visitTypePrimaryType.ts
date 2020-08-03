@@ -3,7 +3,7 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { expectGetIsMultiline } from "../isMultiline/common";
-import { SerializeParameter, SerializeParameterState, SerializerWriteKind } from "../types";
+import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../types";
 import { propagateWriteKind, setWorkspace, skipPrimaryTypeIndentation } from "./visitNodeUtils";
 
 export function visitTypePrimaryType(state: SerializeParameterState, node: PQP.Language.Ast.TypePrimaryType): void {
@@ -14,15 +14,15 @@ export function visitTypePrimaryType(state: SerializeParameterState, node: PQP.L
     let pairedWorkspace: SerializeParameter;
     if (skipPrimaryTypeIndentation(paired)) {
         pairedWorkspace = {
-            maybeWriteKind: SerializerWriteKind.PaddedLeft,
+            maybeWriteKind: SerializeWriteKind.PaddedLeft,
         };
     } else if (pairedIsMultiline) {
         pairedWorkspace = {
             maybeIndentationChange: 1,
-            maybeWriteKind: SerializerWriteKind.Indented,
+            maybeWriteKind: SerializeWriteKind.Indented,
         };
     } else {
-        pairedWorkspace = { maybeWriteKind: SerializerWriteKind.PaddedLeft };
+        pairedWorkspace = { maybeWriteKind: SerializeWriteKind.PaddedLeft };
     }
     setWorkspace(state, paired, pairedWorkspace);
 }

@@ -3,7 +3,7 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { expectGetIsMultiline } from "../isMultiline/common";
-import { IsMultilineMap, SerializeParameter, SerializeParameterState, SerializerWriteKind } from "../types";
+import { IsMultilineMap, SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../types";
 import { setWorkspace } from "./visitNodeUtils";
 import { visitTWrapped } from "./visitTWrapped";
 
@@ -20,7 +20,7 @@ export function visitItemAccessExpression(
     if (isMultiline) {
         setWorkspace(state, itemSelector, {
             maybeIndentationChange: 1,
-            maybeWriteKind: SerializerWriteKind.Indented,
+            maybeWriteKind: SerializeWriteKind.Indented,
         });
     }
 
@@ -29,15 +29,15 @@ export function visitItemAccessExpression(
         switch (itemSelector.kind) {
             case PQP.Language.Ast.NodeKind.ListExpression:
             case PQP.Language.Ast.NodeKind.RecordExpression:
-                closeWrapperConstantWorkspace = { maybeWriteKind: SerializerWriteKind.Any };
+                closeWrapperConstantWorkspace = { maybeWriteKind: SerializeWriteKind.Any };
                 break;
 
             default:
-                closeWrapperConstantWorkspace = { maybeWriteKind: SerializerWriteKind.Indented };
+                closeWrapperConstantWorkspace = { maybeWriteKind: SerializeWriteKind.Indented };
         }
     } else {
         closeWrapperConstantWorkspace = {
-            maybeWriteKind: SerializerWriteKind.Any,
+            maybeWriteKind: SerializeWriteKind.Any,
         };
     }
     setWorkspace(state, node.closeWrapperConstant, closeWrapperConstantWorkspace);

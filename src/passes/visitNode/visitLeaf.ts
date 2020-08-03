@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { SerializeParameter, SerializeParameterState, SerializerWriteKind } from "../types";
+import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../types";
 import { visitComments } from "./visitComments";
 import { getWorkspace, maybeSetIndentationChange } from "./visitNodeUtils";
 
@@ -17,7 +17,7 @@ export function visitLeaf(
     const workspace: SerializeParameter = getWorkspace(state, node);
     maybeSetIndentationChange(state, node, workspace.maybeIndentationChange);
 
-    let maybeWriteKind: SerializerWriteKind | undefined = workspace.maybeWriteKind;
+    let maybeWriteKind: SerializeWriteKind | undefined = workspace.maybeWriteKind;
     maybeWriteKind = visitComments(state, node, maybeWriteKind);
     if (!maybeWriteKind) {
         const details: {} = {

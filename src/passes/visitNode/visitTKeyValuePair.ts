@@ -3,7 +3,7 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { expectGetIsMultiline } from "../isMultiline/common";
-import { IsMultilineMap, SerializeParameter, SerializeParameterState, SerializerWriteKind } from "../types";
+import { IsMultilineMap, SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../types";
 import { propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 
 export function visitTKeyValuePair(state: SerializeParameterState, node: PQP.Language.Ast.TKeyValuePair): void {
@@ -14,9 +14,9 @@ export function visitTKeyValuePair(state: SerializeParameterState, node: PQP.Lan
 
     let equalWorkspace: SerializeParameter;
     if (equalConstantIsMultiline) {
-        equalWorkspace = { maybeWriteKind: SerializerWriteKind.Indented };
+        equalWorkspace = { maybeWriteKind: SerializeWriteKind.Indented };
     } else {
-        equalWorkspace = { maybeWriteKind: SerializerWriteKind.PaddedLeft };
+        equalWorkspace = { maybeWriteKind: SerializeWriteKind.PaddedLeft };
     }
     setWorkspace(state, node.equalConstant, equalWorkspace);
 
@@ -24,10 +24,10 @@ export function visitTKeyValuePair(state: SerializeParameterState, node: PQP.Lan
     if (valueIsMultiline) {
         valueWorkspace = {
             maybeIndentationChange: 1,
-            maybeWriteKind: SerializerWriteKind.Indented,
+            maybeWriteKind: SerializeWriteKind.Indented,
         };
     } else {
-        valueWorkspace = { maybeWriteKind: SerializerWriteKind.PaddedLeft };
+        valueWorkspace = { maybeWriteKind: SerializeWriteKind.PaddedLeft };
     }
     setWorkspace(state, node.value, valueWorkspace);
 }

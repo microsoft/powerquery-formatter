@@ -3,12 +3,12 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { expectGetIsMultiline } from "../isMultiline/common";
-import { IsMultilineMap, SerializeParameterState, SerializerWriteKind } from "../types";
+import { IsMultilineMap, SerializeParameterState, SerializeWriteKind } from "../types";
 import { propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 
 export function visitSectionMember(state: SerializeParameterState, node: PQP.Language.Ast.SectionMember): void {
     const isMultilineMap: IsMultilineMap = state.isMultilineMap;
-    let maybeSharedConstantWriteKind: SerializerWriteKind | undefined;
+    let maybeSharedConstantWriteKind: SerializeWriteKind | undefined;
     let isNameExpressionPairWorkspaceSet: boolean = false;
 
     if (node.maybeLiteralAttributes) {
@@ -16,9 +16,9 @@ export function visitSectionMember(state: SerializeParameterState, node: PQP.Lan
         propagateWriteKind(state, node, literalAttributes);
 
         if (expectGetIsMultiline(isMultilineMap, literalAttributes)) {
-            maybeSharedConstantWriteKind = SerializerWriteKind.Indented;
+            maybeSharedConstantWriteKind = SerializeWriteKind.Indented;
         } else {
-            maybeSharedConstantWriteKind = SerializerWriteKind.PaddedLeft;
+            maybeSharedConstantWriteKind = SerializeWriteKind.PaddedLeft;
         }
     } else if (node.maybeSharedConstant) {
         const sharedConstant: PQP.Language.Ast.IConstant<PQP.Language.Ast.KeywordConstantKind.Shared> =
@@ -52,11 +52,11 @@ export function visitSectionMember(state: SerializeParameterState, node: PQP.Lan
             }
         }
 
-        let writeKind: SerializerWriteKind;
+        let writeKind: SerializeWriteKind;
         if (isNameExpressionPairIndented) {
-            writeKind = SerializerWriteKind.Indented;
+            writeKind = SerializeWriteKind.Indented;
         } else {
-            writeKind = SerializerWriteKind.PaddedLeft;
+            writeKind = SerializeWriteKind.PaddedLeft;
         }
         setWorkspace(state, node.namePairedExpression, { maybeWriteKind: writeKind });
     }

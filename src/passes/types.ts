@@ -32,7 +32,7 @@ export interface LinearLengthState extends PQP.Traverse.IState<number> {
     readonly linearLengthMap: LinearLengthMap;
 }
 
-export const enum SerializerWriteKind {
+export const enum SerializeWriteKind {
     Any = "Any",
     DoubleNewline = "DoubleNewline",
     Indented = "Indented",
@@ -42,21 +42,21 @@ export const enum SerializerWriteKind {
 
 export interface SerializeCommentParameter {
     readonly literal: string;
-    readonly writeKind: SerializerWriteKind;
+    readonly writeKind: SerializeWriteKind;
 }
 
 export interface SerializeParameter {
     readonly maybeIndentationChange?: IndentationChange;
-    readonly maybeWriteKind?: SerializerWriteKind;
+    readonly maybeWriteKind?: SerializeWriteKind;
 }
 
-export interface SerializerParameterMap {
+export interface SerializeParameterMap {
     readonly indentationChange: Map<number, IndentationChange>;
-    readonly writeKind: Map<number, SerializerWriteKind>;
+    readonly writeKind: Map<number, SerializeWriteKind>;
     readonly comments: Map<number, ReadonlyArray<SerializeCommentParameter>>;
 }
 
-export interface SerializeParameterState extends PQP.Traverse.IState<SerializerParameterMap> {
+export interface SerializeParameterState extends PQP.Traverse.IState<SerializeParameterMap> {
     readonly localizationTemplates: PQP.ILocalizationTemplates;
     readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
     readonly commentCollectionMap: CommentCollectionMap;
@@ -65,6 +65,6 @@ export interface SerializeParameterState extends PQP.Traverse.IState<SerializerP
 }
 
 export const DefaultSerializeParameter: SerializeParameter = {
-    maybeWriteKind: SerializerWriteKind.Any,
+    maybeWriteKind: SerializeWriteKind.Any,
     maybeIndentationChange: undefined,
 };

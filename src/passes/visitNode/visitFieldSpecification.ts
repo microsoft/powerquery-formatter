@@ -3,7 +3,7 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { expectGetIsMultiline } from "../isMultiline/common";
-import { SerializeParameter, SerializeParameterState, SerializerWriteKind } from "../types";
+import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../types";
 import { maybePropagateWriteKind, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 
 // TPairedConstant override
@@ -16,7 +16,7 @@ export function visitFieldSpecification(
         | undefined = node.maybeOptionalConstant;
 
     if (maybePropagateWriteKind(state, node, maybeOptionalConstant)) {
-        setWorkspace(state, node.name, { maybeWriteKind: SerializerWriteKind.PaddedLeft });
+        setWorkspace(state, node.name, { maybeWriteKind: SerializeWriteKind.PaddedLeft });
     } else {
         propagateWriteKind(state, node, node.name);
     }
@@ -31,10 +31,10 @@ export function visitFieldSpecification(
         if (isMultiline) {
             typeWorkspace = {
                 maybeIndentationChange: 1,
-                maybeWriteKind: SerializerWriteKind.Indented,
+                maybeWriteKind: SerializeWriteKind.Indented,
             };
         } else {
-            typeWorkspace = { maybeWriteKind: SerializerWriteKind.PaddedLeft };
+            typeWorkspace = { maybeWriteKind: SerializeWriteKind.PaddedLeft };
         }
         setWorkspace(state, fieldTypeSpecification, typeWorkspace);
     }

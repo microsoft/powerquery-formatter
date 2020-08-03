@@ -3,7 +3,7 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { expectGetIsMultiline } from "../isMultiline/common";
-import { SerializeParameter, SerializeParameterState, SerializerWriteKind } from "../types";
+import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../types";
 import { propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 
 export function visitIfExpression(state: SerializeParameterState, node: PQP.Language.Ast.IfExpression): void {
@@ -16,38 +16,38 @@ export function visitIfExpression(state: SerializeParameterState, node: PQP.Lang
     if (conditionIsMultiline) {
         conditionWorkspace = {
             maybeIndentationChange: 1,
-            maybeWriteKind: SerializerWriteKind.Indented,
+            maybeWriteKind: SerializeWriteKind.Indented,
         };
         thenConstantWorkspace = {
-            maybeWriteKind: SerializerWriteKind.Indented,
+            maybeWriteKind: SerializeWriteKind.Indented,
         };
     } else {
         conditionWorkspace = {
-            maybeWriteKind: SerializerWriteKind.PaddedLeft,
+            maybeWriteKind: SerializeWriteKind.PaddedLeft,
         };
         thenConstantWorkspace = {
-            maybeWriteKind: SerializerWriteKind.PaddedLeft,
+            maybeWriteKind: SerializeWriteKind.PaddedLeft,
         };
     }
     setWorkspace(state, node.condition, conditionWorkspace);
     setWorkspace(state, node.thenConstant, thenConstantWorkspace);
     setWorkspace(state, node.trueExpression, {
         maybeIndentationChange: 1,
-        maybeWriteKind: SerializerWriteKind.Indented,
+        maybeWriteKind: SerializeWriteKind.Indented,
     });
 
     const falseExpression: PQP.Language.Ast.TExpression = node.falseExpression;
     let falseExpressionWorkspace: SerializeParameter;
     if (falseExpression.kind === PQP.Language.Ast.NodeKind.IfExpression) {
         falseExpressionWorkspace = {
-            maybeWriteKind: SerializerWriteKind.PaddedLeft,
+            maybeWriteKind: SerializeWriteKind.PaddedLeft,
         };
     } else {
         falseExpressionWorkspace = {
             maybeIndentationChange: 1,
-            maybeWriteKind: SerializerWriteKind.Indented,
+            maybeWriteKind: SerializeWriteKind.Indented,
         };
     }
-    setWorkspace(state, node.elseConstant, { maybeWriteKind: SerializerWriteKind.Indented });
+    setWorkspace(state, node.elseConstant, { maybeWriteKind: SerializeWriteKind.Indented });
     setWorkspace(state, falseExpression, falseExpressionWorkspace);
 }

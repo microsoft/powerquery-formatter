@@ -4,7 +4,7 @@
 import "mocha";
 import { compare, expectFormat } from "./common";
 
-describe("comment serializer", () => {
+describe("comment serialize", () => {
     // --------------------------------------
     // ---------- RecordExpression ----------
     // --------------------------------------

@@ -3,7 +3,7 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { expectGetIsMultiline } from "../isMultiline/common";
-import { SerializeParameter, SerializeParameterState, SerializerWriteKind } from "../types";
+import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../types";
 import { propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 
 export function visitFunctionExpression(
@@ -14,20 +14,20 @@ export function visitFunctionExpression(
 
     if (node.maybeFunctionReturnType) {
         const functionReturnType: PQP.Language.Ast.AsNullablePrimitiveType = node.maybeFunctionReturnType;
-        setWorkspace(state, functionReturnType, { maybeWriteKind: SerializerWriteKind.PaddedLeft });
+        setWorkspace(state, functionReturnType, { maybeWriteKind: SerializeWriteKind.PaddedLeft });
     }
 
-    setWorkspace(state, node.fatArrowConstant, { maybeWriteKind: SerializerWriteKind.PaddedLeft });
+    setWorkspace(state, node.fatArrowConstant, { maybeWriteKind: SerializeWriteKind.PaddedLeft });
 
     const expressionIsMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, node.expression);
     let expressionWorkspace: SerializeParameter;
     if (expressionIsMultiline) {
         expressionWorkspace = {
             maybeIndentationChange: 1,
-            maybeWriteKind: SerializerWriteKind.Indented,
+            maybeWriteKind: SerializeWriteKind.Indented,
         };
     } else {
-        expressionWorkspace = { maybeWriteKind: SerializerWriteKind.PaddedLeft };
+        expressionWorkspace = { maybeWriteKind: SerializeWriteKind.PaddedLeft };
     }
     setWorkspace(state, node.expression, expressionWorkspace);
 }

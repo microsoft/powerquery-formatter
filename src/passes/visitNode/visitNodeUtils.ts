@@ -7,7 +7,7 @@ import {
     IndentationChange,
     SerializeParameter,
     SerializeParameterState,
-    SerializerWriteKind,
+    SerializeWriteKind,
 } from "../types";
 
 export function getWorkspace(
@@ -42,7 +42,7 @@ export function propagateWriteKind(
     const workspace: SerializeParameter = getWorkspace(state, parent);
     maybeSetIndentationChange(state, parent, workspace.maybeIndentationChange);
 
-    const maybeWriteKind: SerializerWriteKind | undefined = workspace.maybeWriteKind;
+    const maybeWriteKind: SerializeWriteKind | undefined = workspace.maybeWriteKind;
     if (maybeWriteKind) {
         setWorkspace(state, firstChild, { maybeWriteKind });
     }

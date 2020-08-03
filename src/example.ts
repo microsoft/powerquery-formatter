@@ -5,7 +5,7 @@
 import * as PQP from "@microsoft/powerquery-parser";
 import { TFormatError } from "./error";
 import { FormatSettings, tryFormat } from "./format";
-import { IndentationLiteral, NewlineLiteral } from "./serializer";
+import { IndentationLiteral, NewlineLiteral } from "./serialize";
 
 const text: string = `
 // taken from: https://en.wikipedia.org/wiki/Exponentiation_by_squaring

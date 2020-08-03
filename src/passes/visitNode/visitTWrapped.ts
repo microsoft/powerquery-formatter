@@ -3,18 +3,18 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { expectGetIsMultiline } from "../isMultiline/common";
-import { SerializeParameter, SerializeParameterState, SerializerWriteKind } from "../types";
+import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../types";
 import { getWorkspace, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 
 export function visitTWrapped(state: SerializeParameterState, node: PQP.Language.Ast.TWrapped): void {
     const isMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, node);
-    // not const as it's conditionally overwritten if SerializerWriteKind.Indented
+    // not const as it's conditionally overwritten if SerializeWriteKind.Indented
     let workspace: SerializeParameter = getWorkspace(state, node);
 
-    if (workspace.maybeWriteKind === SerializerWriteKind.Indented) {
-        const writeKind: SerializerWriteKind = wrapperOpenWriteKind(state, node);
+    if (workspace.maybeWriteKind === SerializeWriteKind.Indented) {
+        const writeKind: SerializeWriteKind = wrapperOpenWriteKind(state, node);
 
-        if (writeKind !== SerializerWriteKind.Indented) {
+        if (writeKind !== SerializeWriteKind.Indented) {
             workspace = {
                 maybeIndentationChange: undefined,
                 maybeWriteKind: writeKind,
@@ -26,22 +26,22 @@ export function visitTWrapped(state: SerializeParameterState, node: PQP.Language
     propagateWriteKind(state, node, node.openWrapperConstant);
 
     if (isMultiline) {
-        setWorkspace(state, node.closeWrapperConstant, { maybeWriteKind: SerializerWriteKind.Indented });
+        setWorkspace(state, node.closeWrapperConstant, { maybeWriteKind: SerializeWriteKind.Indented });
     }
 }
 
-function wrapperOpenWriteKind(state: SerializeParameterState, node: PQP.Language.Ast.TWrapped): SerializerWriteKind {
+function wrapperOpenWriteKind(state: SerializeParameterState, node: PQP.Language.Ast.TWrapped): SerializeWriteKind {
     // an open constant is multiline iff it is has a multiline comment
     const openIsMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, node.openWrapperConstant);
     if (openIsMultiline) {
-        return SerializerWriteKind.Indented;
+        return SerializeWriteKind.Indented;
     }
 
     if (
         node.kind === PQP.Language.Ast.NodeKind.InvokeExpression ||
         node.kind === PQP.Language.Ast.NodeKind.ItemAccessExpression
     ) {
-        return SerializerWriteKind.Any;
+        return SerializeWriteKind.Any;
     }
 
     const nodeIdMapCollection: PQP.NodeIdMap.Collection = state.nodeIdMapCollection;
@@ -57,7 +57,7 @@ function wrapperOpenWriteKind(state: SerializeParameterState, node: PQP.Language
     }
 
     if (!maybeParent) {
-        return SerializerWriteKind.Indented;
+        return SerializeWriteKind.Indented;
     }
 
     switch (maybeParent.kind) {
@@ -68,12 +68,12 @@ function wrapperOpenWriteKind(state: SerializeParameterState, node: PQP.Language
         case PQP.Language.Ast.NodeKind.RecordType:
         case PQP.Language.Ast.NodeKind.TableType:
         case PQP.Language.Ast.NodeKind.TypePrimaryType:
-            return SerializerWriteKind.PaddedLeft;
+            return SerializeWriteKind.PaddedLeft;
 
         case PQP.Language.Ast.NodeKind.ItemAccessExpression:
-            return SerializerWriteKind.Any;
+            return SerializeWriteKind.Any;
 
         default:
-            return SerializerWriteKind.Indented;
+            return SerializeWriteKind.Indented;
     }
 }

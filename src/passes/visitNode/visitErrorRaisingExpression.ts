@@ -3,7 +3,7 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { expectGetIsMultiline } from "../isMultiline/common";
-import { SerializeParameter, SerializeParameterState, SerializerWriteKind } from "../types";
+import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../types";
 import { propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 
 // TPairedConstant override
@@ -18,7 +18,7 @@ export function visitErrorRaisingExpression(
         case PQP.Language.Ast.NodeKind.ListExpression:
         case PQP.Language.Ast.NodeKind.RecordExpression:
             pairedWorkspace = {
-                maybeWriteKind: SerializerWriteKind.PaddedLeft,
+                maybeWriteKind: SerializeWriteKind.PaddedLeft,
             };
             break;
 
@@ -27,10 +27,10 @@ export function visitErrorRaisingExpression(
             if (pairedIsMultiline) {
                 pairedWorkspace = {
                     maybeIndentationChange: 1,
-                    maybeWriteKind: SerializerWriteKind.Indented,
+                    maybeWriteKind: SerializeWriteKind.Indented,
                 };
             } else {
-                pairedWorkspace = { maybeWriteKind: SerializerWriteKind.PaddedLeft };
+                pairedWorkspace = { maybeWriteKind: SerializeWriteKind.PaddedLeft };
             }
     }
     setWorkspace(state, node.paired, pairedWorkspace);

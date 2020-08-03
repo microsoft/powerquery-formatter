@@ -3,7 +3,7 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { expectGetIsMultiline } from "../isMultiline/common";
-import { SerializeParameter, SerializeParameterState, SerializerWriteKind } from "../types";
+import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../types";
 import { propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 
 export function visitMetadataExpression(
@@ -16,11 +16,11 @@ export function visitMetadataExpression(
     let otherWorkspace: SerializeParameter;
     if (isMultiline) {
         otherWorkspace = {
-            maybeWriteKind: SerializerWriteKind.Indented,
+            maybeWriteKind: SerializeWriteKind.Indented,
         };
     } else {
         otherWorkspace = {
-            maybeWriteKind: SerializerWriteKind.PaddedLeft,
+            maybeWriteKind: SerializeWriteKind.PaddedLeft,
         };
     }
 

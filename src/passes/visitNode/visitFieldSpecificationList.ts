@@ -3,7 +3,7 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { expectGetIsMultiline } from "../isMultiline/common";
-import { SerializeParameter, SerializeParameterState, SerializerWriteKind } from "../types";
+import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../types";
 import { setWorkspace } from "./visitNodeUtils";
 import { visitTWrapped } from "./visitTWrapped";
 
@@ -25,12 +25,12 @@ export function visitFieldSpecificationList(
         if (isMultiline) {
             workspace = {
                 maybeIndentationChange: 1,
-                maybeWriteKind: SerializerWriteKind.Indented,
+                maybeWriteKind: SerializeWriteKind.Indented,
             };
         } else if (fieldsArray.elements.length) {
-            workspace = { maybeWriteKind: SerializerWriteKind.PaddedLeft };
+            workspace = { maybeWriteKind: SerializeWriteKind.PaddedLeft };
         } else {
-            workspace = { maybeWriteKind: SerializerWriteKind.Any };
+            workspace = { maybeWriteKind: SerializeWriteKind.Any };
         }
         setWorkspace(state, openRecordMarkerConstant, workspace);
     }

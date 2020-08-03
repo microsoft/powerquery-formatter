@@ -2,13 +2,13 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { CommentCollectionMap, IsMultilineMap, SerializeParameterState, SerializerParameterMap } from "./types";
+import { CommentCollectionMap, IsMultilineMap, SerializeParameterMap, SerializeParameterState } from "./types";
 import { visitNode } from "./visitNode/visitNode";
 
 // TNodes (in general) have two responsibilities:
-// * if given a Workspace, then propagate the SerializerWriteKind to their first child,
+// * if given a Workspace, then propagate the SerializeWriteKind to their first child,
 //   this is done using propagateWriteKind(state, parentNode, childNode)
-// * suggest an indentation change and SerializerWriteKind for their children,
+// * suggest an indentation change and SerializeWriteKind for their children,
 //   this is done using setWorkspace(state, childNode, workspace)
 
 export function tryTraverseSerializeParameter(
@@ -17,7 +17,7 @@ export function tryTraverseSerializeParameter(
     nodeIdMapCollection: PQP.NodeIdMap.Collection,
     commentCollectionMap: CommentCollectionMap,
     isMultilineMap: IsMultilineMap,
-): PQP.Traverse.TriedTraverse<SerializerParameterMap> {
+): PQP.Traverse.TriedTraverse<SerializeParameterMap> {
     const state: SerializeParameterState = {
         result: {
             writeKind: new Map(),
