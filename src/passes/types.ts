@@ -1,3 +1,8 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
+// Holds all types, enums, and interfaces used by tryTraverseSerializeParameter.
+
 import * as PQP from "@microsoft/powerquery-parser";
 
 export type CommentCollectionMap = Map<number, CommentCollection>;

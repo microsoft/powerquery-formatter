@@ -5,8 +5,11 @@ import * as PQP from "@microsoft/powerquery-parser";
 import { LinearLengthMap, LinearLengthState } from "../types";
 
 // Lazy evaluation of a potentially large PQP.Language.AST.
-// Returns the text length of the node if IsMultiline is set to false.
-// Nodes which can't ever have a linear length (such as IfExpressions) will evaluate to NaN.
+// Returns the length of text if the node was formatted on a single line.
+//
+// Eg. the linear length of `{1, 2, 3}` as an Ast would give 9.
+//
+// Some nodes are always multiline, such as IfExpression, and will return NaN.
 export function getLinearLength(
     localizationTemplates: PQP.ILocalizationTemplates,
     nodeIdMapCollection: PQP.NodeIdMap.Collection,

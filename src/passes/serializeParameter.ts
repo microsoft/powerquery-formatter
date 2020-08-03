@@ -7,9 +7,9 @@ import { visitNode } from "./visitNode/visitNode";
 
 // TNodes (in general) have two responsibilities:
 // * if given a Workspace, then propagate the SerializeWriteKind to their first child,
-//   this is done using propagateWriteKind(state, parentNode, childNode)
+//   done by calling propagateWriteKind(state, parentNode, childNode)
 // * suggest an indentation change and SerializeWriteKind for their children,
-//   this is done using setWorkspace(state, childNode, workspace)
+//   done by calling setWorkspace(state, childNode, workspace)
 
 export function tryTraverseSerializeParameter(
     localizationTemplates: PQP.ILocalizationTemplates,
