@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { expectGetIsMultiline } from "./../isMultiline/common";
-import { IsMultilineMap, SerializeParameter, SerializeParameterState, SerializerWriteKind } from "./../types";
+import { expectGetIsMultiline } from "../isMultiline/common";
+import { IsMultilineMap, SerializeParameter, SerializeParameterState, SerializerWriteKind } from "../types";
 import { setWorkspace } from "./visitNodeUtils";
 import { visitTWrapped } from "./visitTWrapped";
 

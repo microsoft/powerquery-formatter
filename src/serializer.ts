@@ -2,14 +2,13 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { CommentCollectionMap } from "./passes/comment";
 import {
-    getSerializerWriteKind,
+    CommentCollectionMap,
     IndentationChange,
     SerializeCommentParameter,
     SerializerParameterMap,
     SerializerWriteKind,
-} from "./passes/serializerParameter";
+} from "./passes";
 
 export const enum IndentationLiteral {
     SpaceX4 = "    ",
@@ -223,4 +222,17 @@ function expandIndentationCache(state: SerializerState, level: number): string {
     }
 
     return state.indentationCache[state.indentationCache.length - 1];
+}
+
+function getSerializerWriteKind(
+    node: PQP.Language.Ast.TNode,
+    serializerParametersMap: SerializerParameterMap,
+): SerializerWriteKind {
+    const maybeWriteKind: SerializerWriteKind | undefined = serializerParametersMap.writeKind.get(node.id);
+    if (maybeWriteKind) {
+        return maybeWriteKind;
+    } else {
+        const details: {} = { node };
+        throw new PQP.CommonError.InvariantError("expected node to be in SerializerParameterMap.writeKind", details);
+    }
 }

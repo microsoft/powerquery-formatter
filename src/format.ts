@@ -3,10 +3,9 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { FormatError } from ".";
-import { CommentCollectionMap, tryTraverseComment } from "./passes/comment";
-import { IsMultilineMap } from "./passes/isMultiline/common";
-import { tryTraverse as tryTraverseIsMultilineMap } from "./passes/isMultiline/isMultiline";
-import { SerializerParameterMap, tryTraverse as tryTraverseSerializerParameter } from "./passes/serializerParameter";
+import { CommentCollectionMap, IsMultilineMap, SerializerParameterMap, tryTraverseComment } from "./passes";
+import { tryTraverseSerializeParameter } from "./passes";
+import { tryTraverseIsMultiline } from "./passes/isMultiline/isMultiline";
 import {
     IndentationLiteral,
     NewlineLiteral,
@@ -49,7 +48,7 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
         commentCollectionMap = triedCommentPass.value;
     }
 
-    const triedIsMultilineMap: PQP.Traverse.TriedTraverse<IsMultilineMap> = tryTraverseIsMultilineMap(
+    const triedIsMultilineMap: PQP.Traverse.TriedTraverse<IsMultilineMap> = tryTraverseIsMultiline(
         localizationTemplates,
         ast,
         commentCollectionMap,
@@ -60,7 +59,7 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
     }
     const isMultilineMap: IsMultilineMap = triedIsMultilineMap.value;
 
-    const triedSerializerParameter: PQP.Traverse.TriedTraverse<SerializerParameterMap> = tryTraverseSerializerParameter(
+    const triedSerializerParameter: PQP.Traverse.TriedTraverse<SerializerParameterMap> = tryTraverseSerializeParameter(
         localizationTemplates,
         ast,
         nodeIdMapCollection,

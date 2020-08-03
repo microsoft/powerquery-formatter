@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { CommentCollection, SerializeCommentParameter, SerializeParameterState, SerializerWriteKind } from "./../types";
+import { CommentCollection, SerializeCommentParameter, SerializeParameterState, SerializerWriteKind } from "../types";
 
 // serves three purposes:
 //  * propagates the TNode's writeKind to the first comment

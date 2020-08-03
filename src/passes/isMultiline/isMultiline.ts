@@ -2,19 +2,18 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { CommentCollectionMap } from "../comment";
-import { IsMultilineMap } from "./common";
-import { tryTraverse as tryTraverseFirstPass } from "./isMultilineFirstPass";
-import { tryTraverse as tryTraverseSecondPass } from "./isMultilineSecondPass";
+import { CommentCollectionMap, IsMultilineMap } from "../types";
+import { tryTraverseIsMultilineFirstPass } from "./isMultilineFirstPass";
+import { tryTraverseIsMultilineSecondPass } from "./isMultilineSecondPass";
 
 // runs a DFS pass followed by a BFS pass.
-export function tryTraverse(
+export function tryTraverseIsMultiline(
     localizationTemplates: PQP.ILocalizationTemplates,
     ast: PQP.Language.Ast.TNode,
     commentCollectionMap: CommentCollectionMap,
     nodeIdMapCollection: PQP.NodeIdMap.Collection,
 ): PQP.Traverse.TriedTraverse<IsMultilineMap> {
-    const triedFirstPass: PQP.Traverse.TriedTraverse<IsMultilineMap> = tryTraverseFirstPass(
+    const triedFirstPass: PQP.Traverse.TriedTraverse<IsMultilineMap> = tryTraverseIsMultilineFirstPass(
         localizationTemplates,
         ast,
         commentCollectionMap,
@@ -25,5 +24,5 @@ export function tryTraverse(
     }
     const isMultilineMap: IsMultilineMap = triedFirstPass.value;
 
-    return tryTraverseSecondPass(localizationTemplates, ast, isMultilineMap, nodeIdMapCollection);
+    return tryTraverseIsMultilineSecondPass(localizationTemplates, ast, isMultilineMap, nodeIdMapCollection);
 }

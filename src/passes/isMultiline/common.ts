@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-
-export type IsMultilineMap = Map<number, boolean>;
+import { IsMultilineMap } from "../types";
 
 export function expectGetIsMultiline(isMultilineMap: IsMultilineMap, node: PQP.Language.Ast.TNode): boolean {
     const maybeIsMultiline: boolean | undefined = isMultilineMap.get(node.id);
