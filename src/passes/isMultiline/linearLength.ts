@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-
-export type LinearLengthMap = Map<number, number>;
+import { LinearLengthMap, LinearLengthState } from "../types";
 
 // Lazy evaluation of a potentially large PQP.Language.AST.
 // Returns the text length of the node if IsMultiline is set to false.
@@ -31,18 +30,13 @@ export function getLinearLength(
     }
 }
 
-interface State extends PQP.Traverse.IState<number> {
-    readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
-    readonly linearLengthMap: LinearLengthMap;
-}
-
 function calculateLinearLength(
     localizationTemplates: PQP.ILocalizationTemplates,
     node: PQP.Language.Ast.TNode,
     nodeIdMapCollection: PQP.NodeIdMap.Collection,
     linearLengthMap: LinearLengthMap,
 ): number {
-    const state: State = {
+    const state: LinearLengthState = {
         localizationTemplates,
         result: 0,
         nodeIdMapCollection,
@@ -66,7 +60,7 @@ function calculateLinearLength(
     }
 }
 
-function visitNode(state: State, node: PQP.Language.Ast.TNode): void {
+function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void {
     let linearLength: number;
 
     switch (node.kind) {
@@ -382,7 +376,7 @@ function visitNode(state: State, node: PQP.Language.Ast.TNode): void {
 }
 
 function sumLinearLengths(
-    state: State,
+    state: LinearLengthState,
     initialLength: number,
     ...maybeNodes: (PQP.Language.Ast.TNode | undefined)[]
 ): number {

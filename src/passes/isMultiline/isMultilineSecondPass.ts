@@ -2,15 +2,16 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { expectGetIsMultiline, IsMultilineMap, setIsMultiline } from "./common";
+import { IsMultilineMap, IsMultilineSecondPassState } from "../types";
+import { expectGetIsMultiline, setIsMultiline } from "./common";
 
-export function tryTraverse(
+export function tryTraverseIsMultilineSecondPass(
     localizationTemplates: PQP.ILocalizationTemplates,
     ast: PQP.Language.Ast.TNode,
     isMultilineMap: IsMultilineMap,
     nodeIdMapCollection: PQP.NodeIdMap.Collection,
 ): PQP.Traverse.TriedTraverse<IsMultilineMap> {
-    const state: State = {
+    const state: IsMultilineSecondPassState = {
         localizationTemplates,
         result: isMultilineMap,
         nodeIdMapCollection,
@@ -27,11 +28,7 @@ export function tryTraverse(
     );
 }
 
-interface State extends PQP.Traverse.IState<IsMultilineMap> {
-    readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
-}
-
-function visitNode(state: State, node: PQP.Language.Ast.TNode): void {
+function visitNode(state: IsMultilineSecondPassState, node: PQP.Language.Ast.TNode): void {
     // tslint:disable-next-line: switch-default
     switch (node.kind) {
         // TBinOpExpression

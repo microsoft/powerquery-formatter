@@ -2,14 +2,13 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { CommentCollectionMap } from "./passes/comment";
 import {
-    getSerializerWriteKind,
+    CommentCollectionMap,
     IndentationChange,
     SerializeCommentParameter,
-    SerializerParameterMap,
-    SerializerWriteKind,
-} from "./passes/serializerParameter";
+    SerializeParameterMap,
+    SerializeWriteKind,
+} from "./passes";
 
 export const enum IndentationLiteral {
     SpaceX4 = "    ",
@@ -23,27 +22,27 @@ export const enum NewlineLiteral {
 
 export type TriedSerialize = PQP.Result<string, PQP.CommonError.CommonError>;
 
-export interface SerializerSettings extends PQP.CommonSettings {
+export interface SerializeSettings extends PQP.CommonSettings {
     readonly node: PQP.Language.Ast.TNode;
     readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
-    readonly passthroughMaps: SerializerPassthroughMaps;
+    readonly passthroughMaps: SerializePassthroughMaps;
     readonly indentationLiteral: IndentationLiteral;
     readonly newlineLiteral: NewlineLiteral;
 }
 
-export interface SerializerPassthroughMaps {
+export interface SerializePassthroughMaps {
     readonly commentCollectionMap: CommentCollectionMap;
-    readonly serializerParameterMap: SerializerParameterMap;
+    readonly serializeParameterMap: SerializeParameterMap;
 }
 
-export function trySerialize(settings: SerializerSettings): TriedSerialize {
+export function trySerialize(settings: SerializeSettings): TriedSerialize {
     return PQP.ResultUtils.ensureResult(PQP.getLocalizationTemplates(settings.locale), () => serialize(settings));
 }
 
-interface SerializerState {
+interface SerializeState {
     readonly node: PQP.Language.Ast.TNode;
     readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
-    readonly passthroughMaps: SerializerPassthroughMaps;
+    readonly passthroughMaps: SerializePassthroughMaps;
     readonly newlineLiteral: NewlineLiteral;
     readonly indentationLiteral: IndentationLiteral;
     readonly indentationCache: string[];
@@ -52,14 +51,14 @@ interface SerializerState {
     currentLine: string;
 }
 
-function serialize(settings: SerializerSettings): string {
-    const state: SerializerState = stateFromSettings(settings);
+function serialize(settings: SerializeSettings): string {
+    const state: SerializeState = stateFromSettings(settings);
     serializeNode(state, state.node);
     return state.formatted;
 }
 
-function stateFromSettings(settings: SerializerSettings): SerializerState {
-    const state: SerializerState = {
+function stateFromSettings(settings: SerializeSettings): SerializeState {
+    const state: SerializeState = {
         node: settings.node,
         nodeIdMapCollection: settings.nodeIdMapCollection,
         passthroughMaps: settings.passthroughMaps,
@@ -74,11 +73,11 @@ function stateFromSettings(settings: SerializerSettings): SerializerState {
     return state;
 }
 
-function serializeNode(state: SerializerState, node: PQP.Language.Ast.TNode): void {
+function serializeNode(state: SerializeState, node: PQP.Language.Ast.TNode): void {
     const nodeId: number = node.id;
     const maybeIndentationChange:
         | IndentationChange
-        | undefined = state.passthroughMaps.serializerParameterMap.indentationChange.get(nodeId);
+        | undefined = state.passthroughMaps.serializeParameterMap.indentationChange.get(nodeId);
     if (maybeIndentationChange) {
         state.indentationLevel += 1;
     }
@@ -86,7 +85,7 @@ function serializeNode(state: SerializerState, node: PQP.Language.Ast.TNode): vo
     if (node.isLeaf) {
         const maybeComments:
             | ReadonlyArray<SerializeCommentParameter>
-            | undefined = state.passthroughMaps.serializerParameterMap.comments.get(nodeId);
+            | undefined = state.passthroughMaps.serializeParameterMap.comments.get(nodeId);
         if (maybeComments) {
             visitComments(state, maybeComments);
         }
@@ -94,9 +93,9 @@ function serializeNode(state: SerializerState, node: PQP.Language.Ast.TNode): vo
 
     switch (node.kind) {
         case PQP.Language.Ast.NodeKind.Constant: {
-            const writeKind: SerializerWriteKind = getSerializerWriteKind(
+            const writeKind: SerializeWriteKind = getSerializeWriteKind(
                 node,
-                state.passthroughMaps.serializerParameterMap,
+                state.passthroughMaps.serializeParameterMap,
             );
             serializeLiteral(state, node.constantKind, writeKind);
             break;
@@ -104,18 +103,18 @@ function serializeNode(state: SerializerState, node: PQP.Language.Ast.TNode): vo
 
         case PQP.Language.Ast.NodeKind.GeneralizedIdentifier:
         case PQP.Language.Ast.NodeKind.Identifier: {
-            const writeKind: SerializerWriteKind = getSerializerWriteKind(
+            const writeKind: SerializeWriteKind = getSerializeWriteKind(
                 node,
-                state.passthroughMaps.serializerParameterMap,
+                state.passthroughMaps.serializeParameterMap,
             );
             serializeLiteral(state, `${node.literal}`, writeKind);
             break;
         }
 
         case PQP.Language.Ast.NodeKind.LiteralExpression: {
-            const writeKind: SerializerWriteKind = getSerializerWriteKind(
+            const writeKind: SerializeWriteKind = getSerializeWriteKind(
                 node,
-                state.passthroughMaps.serializerParameterMap,
+                state.passthroughMaps.serializeParameterMap,
             );
             serializeLiteral(state, node.literal, writeKind);
             break;
@@ -140,7 +139,7 @@ function serializeNode(state: SerializerState, node: PQP.Language.Ast.TNode): vo
     }
 }
 
-function serializeWithPadding(state: SerializerState, str: string, padLeft: boolean, padRight: boolean): void {
+function serializeWithPadding(state: SerializeState, str: string, padLeft: boolean, padRight: boolean): void {
     if (padLeft && state.currentLine) {
         const lastWrittenCharacter: string | undefined = state.currentLine[state.currentLine.length - 1];
         if (lastWrittenCharacter !== " " && lastWrittenCharacter !== "\t") {
@@ -155,36 +154,36 @@ function serializeWithPadding(state: SerializerState, str: string, padLeft: bool
     }
 }
 
-function serializeLiteral(state: SerializerState, str: string, serializerWriteKind: SerializerWriteKind): void {
-    switch (serializerWriteKind) {
-        case SerializerWriteKind.Any:
+function serializeLiteral(state: SerializeState, str: string, serializeWriteKind: SerializeWriteKind): void {
+    switch (serializeWriteKind) {
+        case SerializeWriteKind.Any:
             appendToFormatted(state, str);
             break;
 
-        case SerializerWriteKind.DoubleNewline:
+        case SerializeWriteKind.DoubleNewline:
             appendToFormatted(state, state.newlineLiteral);
             appendToFormatted(state, state.newlineLiteral);
             appendToFormatted(state, str);
             break;
 
-        case SerializerWriteKind.Indented:
+        case SerializeWriteKind.Indented:
             serializeIndented(state, str);
             break;
 
-        case SerializerWriteKind.PaddedLeft:
+        case SerializeWriteKind.PaddedLeft:
             serializeWithPadding(state, str, true, false);
             break;
 
-        case SerializerWriteKind.PaddedRight:
+        case SerializeWriteKind.PaddedRight:
             serializeWithPadding(state, str, false, true);
             break;
 
         default:
-            throw PQP.isNever(serializerWriteKind);
+            throw PQP.isNever(serializeWriteKind);
     }
 }
 
-function serializeIndented(state: SerializerState, str: string): void {
+function serializeIndented(state: SerializeState, str: string): void {
     if (state.currentLine !== "") {
         appendToFormatted(state, state.newlineLiteral);
     }
@@ -192,7 +191,7 @@ function serializeIndented(state: SerializerState, str: string): void {
     appendToFormatted(state, str);
 }
 
-function appendToFormatted(state: SerializerState, str: string): void {
+function appendToFormatted(state: SerializeState, str: string): void {
     state.formatted += str;
     if (str === state.newlineLiteral) {
         state.currentLine = "";
@@ -201,13 +200,13 @@ function appendToFormatted(state: SerializerState, str: string): void {
     }
 }
 
-function visitComments(state: SerializerState, collection: ReadonlyArray<SerializeCommentParameter>): void {
+function visitComments(state: SerializeState, collection: ReadonlyArray<SerializeCommentParameter>): void {
     for (const comment of collection) {
         serializeLiteral(state, comment.literal, comment.writeKind);
     }
 }
 
-function currentIndentation(state: SerializerState): string {
+function currentIndentation(state: SerializeState): string {
     const maybeIndentationLiteral: string | undefined = state.indentationCache[state.indentationLevel];
     if (maybeIndentationLiteral === undefined) {
         return expandIndentationCache(state, state.indentationLevel);
@@ -216,11 +215,24 @@ function currentIndentation(state: SerializerState): string {
     }
 }
 
-function expandIndentationCache(state: SerializerState, level: number): string {
+function expandIndentationCache(state: SerializeState, level: number): string {
     for (let index: number = state.indentationCache.length; index <= level; index += 1) {
         const previousIndentation: string = state.indentationCache[index - 1] || "";
         state.indentationCache[index] = previousIndentation + state.indentationLiteral;
     }
 
     return state.indentationCache[state.indentationCache.length - 1];
+}
+
+function getSerializeWriteKind(
+    node: PQP.Language.Ast.TNode,
+    serializeParametersMap: SerializeParameterMap,
+): SerializeWriteKind {
+    const maybeWriteKind: SerializeWriteKind | undefined = serializeParametersMap.writeKind.get(node.id);
+    if (maybeWriteKind) {
+        return maybeWriteKind;
+    } else {
+        const details: {} = { node };
+        throw new PQP.CommonError.InvariantError("expected node to be in SerializeParameterMap.writeKind", details);
+    }
 }

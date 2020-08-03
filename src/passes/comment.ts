@@ -2,13 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-
-export type CommentCollectionMap = Map<number, CommentCollection>;
-
-export interface CommentCollection {
-    readonly prefixedComments: PQP.Language.TComment[];
-    prefixedCommentsContainsNewline: boolean;
-}
+import { CommentCollection, CommentCollectionMap, CommentState } from "./types";
 
 export function tryTraverseComment(
     localizationTemplates: PQP.ILocalizationTemplates,
@@ -16,7 +10,7 @@ export function tryTraverseComment(
     nodeIdMapCollection: PQP.NodeIdMap.Collection,
     comments: ReadonlyArray<PQP.Language.TComment>,
 ): PQP.Traverse.TriedTraverse<CommentCollectionMap> {
-    const state: State = {
+    const state: CommentState = {
         localizationTemplates,
         result: new Map(),
         comments,
@@ -24,7 +18,7 @@ export function tryTraverseComment(
         maybeCurrentComment: comments[0],
     };
 
-    return PQP.Traverse.tryTraverseAst<State, CommentCollectionMap>(
+    return PQP.Traverse.tryTraverseAst<CommentState, CommentCollectionMap>(
         state,
         nodeIdMapCollection,
         root,
@@ -35,13 +29,7 @@ export function tryTraverseComment(
     );
 }
 
-interface State extends PQP.Traverse.IState<CommentCollectionMap> {
-    readonly comments: ReadonlyArray<PQP.Language.TComment>;
-    commentsIndex: number;
-    maybeCurrentComment: PQP.Language.TComment | undefined;
-}
-
-function earlyExit(state: State, node: PQP.Language.Ast.TNode): boolean {
+function earlyExit(state: CommentState, node: PQP.Language.Ast.TNode): boolean {
     const maybeCurrentComment: PQP.Language.TComment | undefined = state.maybeCurrentComment;
     if (maybeCurrentComment === undefined) {
         return true;
@@ -52,7 +40,7 @@ function earlyExit(state: State, node: PQP.Language.Ast.TNode): boolean {
     }
 }
 
-function visitNode(state: State, node: PQP.Language.Ast.TNode): void {
+function visitNode(state: CommentState, node: PQP.Language.Ast.TNode): void {
     if (!node.isLeaf) {
         return;
     }

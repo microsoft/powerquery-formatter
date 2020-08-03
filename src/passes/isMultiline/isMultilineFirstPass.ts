@@ -2,17 +2,23 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { CommentCollection, CommentCollectionMap } from "../comment";
-import { expectGetIsMultiline, IsMultilineMap, setIsMultiline } from "./common";
-import { getLinearLength, LinearLengthMap } from "./linearLength";
+import {
+    CommentCollection,
+    CommentCollectionMap,
+    IsMultilineFirstPassState,
+    IsMultilineMap,
+    LinearLengthMap,
+} from "../types";
+import { expectGetIsMultiline, setIsMultiline } from "./common";
+import { getLinearLength } from "./linearLength";
 
-export function tryTraverse(
+export function tryTraverseIsMultilineFirstPass(
     localizationTemplates: PQP.ILocalizationTemplates,
     ast: PQP.Language.Ast.TNode,
     commentCollectionMap: CommentCollectionMap,
     nodeIdMapCollection: PQP.NodeIdMap.Collection,
 ): PQP.Traverse.TriedTraverse<IsMultilineMap> {
-    const state: State = {
+    const state: IsMultilineFirstPassState = {
         localizationTemplates,
         result: new Map(),
         commentCollectionMap,
@@ -20,7 +26,7 @@ export function tryTraverse(
         linearLengthMap: new Map(),
     };
 
-    return PQP.Traverse.tryTraverseAst<State, IsMultilineMap>(
+    return PQP.Traverse.tryTraverseAst<IsMultilineFirstPassState, IsMultilineMap>(
         state,
         nodeIdMapCollection,
         ast,
@@ -29,13 +35,6 @@ export function tryTraverse(
         PQP.Traverse.expectExpandAllAstChildren,
         undefined,
     );
-}
-
-export interface State extends PQP.Traverse.IState<IsMultilineMap> {
-    readonly localizationTemplates: PQP.ILocalizationTemplates;
-    readonly commentCollectionMap: CommentCollectionMap;
-    readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
-    readonly linearLengthMap: LinearLengthMap;
 }
 
 const InvokeExpressionIdentifierLinearLengthExclusions: ReadonlyArray<string> = [
@@ -47,7 +46,7 @@ const InvokeExpressionIdentifierLinearLengthExclusions: ReadonlyArray<string> = 
 const TBinOpExpressionLinearLengthThreshold: number = 40;
 const InvokeExpressionLinearLengthThreshold: number = 40;
 
-function visitNode(state: State, node: PQP.Language.Ast.TNode): void {
+function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNode): void {
     const isMultilineMap: IsMultilineMap = state.result;
     let isMultiline: boolean = false;
 
@@ -425,7 +424,11 @@ function isAnyMultiline(
     return false;
 }
 
-function setIsMultilineWithCommentCheck(state: State, node: PQP.Language.Ast.TNode, isMultiline: boolean): void {
+function setIsMultilineWithCommentCheck(
+    state: IsMultilineFirstPassState,
+    node: PQP.Language.Ast.TNode,
+    isMultiline: boolean,
+): void {
     if (precededByMultilineComment(state, node)) {
         isMultiline = true;
     }
@@ -433,7 +436,7 @@ function setIsMultilineWithCommentCheck(state: State, node: PQP.Language.Ast.TNo
     setIsMultiline(state.result, node, isMultiline);
 }
 
-function precededByMultilineComment(state: State, node: PQP.Language.Ast.TNode): boolean {
+function precededByMultilineComment(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNode): boolean {
     const maybeCommentCollection: CommentCollection | undefined = state.commentCollectionMap.get(node.id);
     if (maybeCommentCollection) {
         return maybeCommentCollection.prefixedCommentsContainsNewline;
