@@ -15,13 +15,7 @@ export function getWorkspace(
     node: PQP.Language.Ast.TNode,
     fallback: SerializeParameter = DefaultSerializeParameter,
 ): SerializeParameter {
-    const maybeWorkspace: SerializeParameter | undefined = state.workspaceMap.get(node.id);
-
-    if (maybeWorkspace !== undefined) {
-        return maybeWorkspace;
-    } else {
-        return fallback;
-    }
+    return state.workspaceMap.get(node.id) ?? fallback;
 }
 
 export function setWorkspace(
@@ -85,7 +79,7 @@ export function skipPrimaryTypeIndentation(node: PQP.Language.Ast.TPrimaryType):
             return false;
 
         default:
-            throw PQP.isNever(node);
+            throw PQP.Assert.isNever(node);
     }
 }
 
