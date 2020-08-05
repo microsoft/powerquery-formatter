@@ -28,7 +28,7 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
     }
 
     const lexParseOk: PQP.Task.LexParseOk = triedLexParse.value;
-    const ast: PQP.Language.Ast.TNode = lexParseOk.ast;
+    const root: PQP.Language.Ast.TNode = lexParseOk.root;
     const comments: ReadonlyArray<PQP.Language.TComment> = lexParseOk.lexerSnapshot.comments;
     const nodeIdMapCollection: PQP.NodeIdMap.Collection = lexParseOk.state.contextState.nodeIdMapCollection;
     const localizationTemplates: PQP.ILocalizationTemplates = PQP.getLocalizationTemplates(formatSettings.locale);
@@ -37,7 +37,7 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
     if (comments.length) {
         const triedCommentPass: PQP.Traverse.TriedTraverse<CommentCollectionMap> = tryTraverseComment(
             localizationTemplates,
-            ast,
+            root,
             nodeIdMapCollection,
             comments,
         );
@@ -50,7 +50,7 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
 
     const triedIsMultilineMap: PQP.Traverse.TriedTraverse<IsMultilineMap> = tryTraverseIsMultiline(
         localizationTemplates,
-        ast,
+        root,
         commentCollectionMap,
         nodeIdMapCollection,
     );
@@ -61,7 +61,7 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
 
     const triedSerializeParameter: PQP.Traverse.TriedTraverse<SerializeParameterMap> = tryTraverseSerializeParameter(
         localizationTemplates,
-        ast,
+        root,
         nodeIdMapCollection,
         commentCollectionMap,
         isMultilineMap,
@@ -77,7 +77,7 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
     };
     const serializeRequest: SerializeSettings = {
         locale: formatSettings.locale,
-        node: lexParseOk.ast,
+        root: lexParseOk.root,
         nodeIdMapCollection,
         passthroughMaps: maps,
         indentationLiteral: formatSettings.indentationLiteral,

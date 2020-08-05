@@ -371,7 +371,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
             break;
 
         default:
-            throw PQP.isNever(node);
+            throw PQP.Assert.isNever(node);
     }
 
     state.linearLengthMap.set(node.id, linearLength);

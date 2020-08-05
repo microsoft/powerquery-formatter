@@ -210,6 +210,6 @@ export function visitNode(state: SerializeParameterState, node: PQP.Language.Ast
             break;
 
         default:
-            throw PQP.isNever(node);
+            throw PQP.Assert.isNever(node);
     }
 }

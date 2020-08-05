@@ -390,7 +390,7 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
             break;
 
         default:
-            throw PQP.isNever(node);
+            throw PQP.Assert.isNever(node);
     }
 
     setIsMultilineWithCommentCheck(state, node, isMultiline);
