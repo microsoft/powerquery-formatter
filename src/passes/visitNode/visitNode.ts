@@ -57,6 +57,7 @@ export function visitNode(state: SerializeParameterState, node: PQP.Language.Ast
         case PQP.Language.Ast.NodeKind.EqualityExpression:
         case PQP.Language.Ast.NodeKind.IsExpression:
         case PQP.Language.Ast.NodeKind.LogicalExpression:
+        case PQP.Language.Ast.NodeKind.NullCoalescingExpression:
         case PQP.Language.Ast.NodeKind.RelationalExpression:
             visitTBinOpExpression(state, node);
             break;
