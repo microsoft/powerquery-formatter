@@ -86,8 +86,15 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
         case PQP.Language.Ast.NodeKind.EqualityExpression:
         case PQP.Language.Ast.NodeKind.IsExpression:
         case PQP.Language.Ast.NodeKind.LogicalExpression:
+        case PQP.Language.Ast.NodeKind.NullCoalescingExpression:
         case PQP.Language.Ast.NodeKind.RelationalExpression: {
-            linearLength = sumLinearLengths(state, 2, node.left, node.operatorConstant, node.right);
+            linearLength = sumLinearLengths(
+                state,
+                node.operatorConstant.constantKind.length,
+                node.left,
+                node.operatorConstant,
+                node.right,
+            );
             break;
         }
 
