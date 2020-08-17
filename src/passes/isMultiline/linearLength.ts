@@ -81,8 +81,8 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
             break;
 
         // TBinOpExpression
-        case PQP.Language.Ast.NodeKind.AsExpression:
         case PQP.Language.Ast.NodeKind.ArithmeticExpression:
+        case PQP.Language.Ast.NodeKind.AsExpression:
         case PQP.Language.Ast.NodeKind.EqualityExpression:
         case PQP.Language.Ast.NodeKind.IsExpression:
         case PQP.Language.Ast.NodeKind.LogicalExpression:
