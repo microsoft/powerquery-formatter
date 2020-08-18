@@ -65,8 +65,8 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
             break;
 
         // TBinOpExpression
-        case PQP.Language.Ast.NodeKind.AsExpression:
         case PQP.Language.Ast.NodeKind.ArithmeticExpression:
+        case PQP.Language.Ast.NodeKind.AsExpression:
         case PQP.Language.Ast.NodeKind.EqualityExpression:
         case PQP.Language.Ast.NodeKind.IsExpression:
         case PQP.Language.Ast.NodeKind.LogicalExpression:
