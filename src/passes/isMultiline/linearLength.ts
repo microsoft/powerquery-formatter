@@ -52,7 +52,7 @@ function calculateLinearLength(
         node,
         PQP.Traverse.VisitNodeStrategy.DepthFirst,
         visitNode,
-        PQP.Traverse.expectExpandAllAstChildren,
+        PQP.Traverse.assertExpandAllAstChildren,
         undefined,
     );
 

@@ -32,7 +32,7 @@ export function tryTraverseIsMultilineFirstPass(
         ast,
         PQP.Traverse.VisitNodeStrategy.DepthFirst,
         visitNode,
-        PQP.Traverse.expectExpandAllAstChildren,
+        PQP.Traverse.assertExpandAllAstChildren,
         undefined,
     );
 }
@@ -221,7 +221,7 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
                     node,
                 );
 
-                const maybeArrayWrapper: PQP.Language.Ast.TNode | undefined = PQP.NodeIdMapUtils.maybeParentAstNode(
+                const maybeArrayWrapper: PQP.Language.Ast.TNode | undefined = PQP.NodeIdMapUtils.maybeParentAst(
                     nodeIdMapCollection,
                     node.id,
                 );
@@ -235,7 +235,7 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
 
                 const maybeRecursivePrimaryExpression:
                     | PQP.Language.Ast.TNode
-                    | undefined = PQP.NodeIdMapUtils.maybeParentAstNode(nodeIdMapCollection, arrayWrapper.id);
+                    | undefined = PQP.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, arrayWrapper.id);
                 if (
                     maybeRecursivePrimaryExpression === undefined ||
                     maybeRecursivePrimaryExpression.kind !== PQP.Language.Ast.NodeKind.RecursivePrimaryExpression

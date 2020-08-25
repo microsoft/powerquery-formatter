@@ -23,7 +23,7 @@ export function tryTraverseIsMultilineSecondPass(
         ast,
         PQP.Traverse.VisitNodeStrategy.BreadthFirst,
         visitNode,
-        PQP.Traverse.expectExpandAllAstChildren,
+        PQP.Traverse.assertExpandAllAstChildren,
         undefined,
     );
 }
@@ -39,7 +39,7 @@ function visitNode(state: IsMultilineSecondPassState, node: PQP.Language.Ast.TNo
         case PQP.Language.Ast.NodeKind.LogicalExpression:
         case PQP.Language.Ast.NodeKind.RelationalExpression: {
             const isMultilineMap: IsMultilineMap = state.result;
-            const maybeParent: PQP.Language.Ast.TNode | undefined = PQP.NodeIdMapUtils.maybeParentAstNode(
+            const maybeParent: PQP.Language.Ast.TNode | undefined = PQP.NodeIdMapUtils.maybeParentAst(
                 state.nodeIdMapCollection,
                 node.id,
             );
@@ -62,7 +62,7 @@ function visitNode(state: IsMultilineSecondPassState, node: PQP.Language.Ast.TNo
             if (node.content.elements.length) {
                 const nodeIdMapCollection: PQP.NodeIdMap.Collection = state.nodeIdMapCollection;
 
-                let maybeParent: PQP.Language.Ast.TNode | undefined = PQP.NodeIdMapUtils.maybeParentAstNode(
+                let maybeParent: PQP.Language.Ast.TNode | undefined = PQP.NodeIdMapUtils.maybeParentAst(
                     nodeIdMapCollection,
                     node.id,
                 );
@@ -70,11 +70,11 @@ function visitNode(state: IsMultilineSecondPassState, node: PQP.Language.Ast.TNo
                 let maybeArrayWrapper: PQP.Language.Ast.TArrayWrapper | undefined;
                 if (maybeParent && maybeParent.kind === PQP.Language.Ast.NodeKind.Csv) {
                     maybeCsv = maybeParent;
-                    maybeParent = PQP.NodeIdMapUtils.maybeParentAstNode(nodeIdMapCollection, maybeParent.id);
+                    maybeParent = PQP.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
                 }
                 if (maybeParent && maybeParent.kind === PQP.Language.Ast.NodeKind.ArrayWrapper) {
                     maybeArrayWrapper = maybeParent;
-                    maybeParent = PQP.NodeIdMapUtils.maybeParentAstNode(nodeIdMapCollection, maybeParent.id);
+                    maybeParent = PQP.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
                 }
 
                 if (maybeParent) {

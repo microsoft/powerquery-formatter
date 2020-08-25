@@ -123,7 +123,7 @@ function serializeNode(state: SerializeState, node: PQP.Language.Ast.TNode): voi
         default:
             const maybeChildren:
                 | ReadonlyArray<PQP.Language.Ast.TNode>
-                | undefined = PQP.NodeIdMapIterator.maybeAstChildren(state.nodeIdMapCollection, node.id);
+                | undefined = PQP.NodeIdMapIterator.maybeIterChildrenAst(state.nodeIdMapCollection, node.id);
             if (maybeChildren === undefined) {
                 break;
             }

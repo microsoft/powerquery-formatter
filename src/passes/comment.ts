@@ -26,7 +26,7 @@ export function tryTraverseComment(
         root,
         PQP.Traverse.VisitNodeStrategy.DepthFirst,
         visitNode,
-        PQP.Traverse.expectExpandAllAstChildren,
+        PQP.Traverse.assertExpandAllAstChildren,
         earlyExit,
     );
 }

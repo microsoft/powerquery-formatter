@@ -45,15 +45,15 @@ function wrapperOpenWriteKind(state: SerializeParameterState, node: PQP.Language
     }
 
     const nodeIdMapCollection: PQP.NodeIdMap.Collection = state.nodeIdMapCollection;
-    let maybeParent: PQP.Language.Ast.TNode | undefined = PQP.NodeIdMapUtils.maybeParentAstNode(
+    let maybeParent: PQP.Language.Ast.TNode | undefined = PQP.NodeIdMapUtils.maybeParentAst(
         nodeIdMapCollection,
         node.id,
     );
     if (maybeParent && maybeParent.kind === PQP.Language.Ast.NodeKind.Csv) {
-        maybeParent = PQP.NodeIdMapUtils.maybeParentAstNode(nodeIdMapCollection, maybeParent.id);
+        maybeParent = PQP.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
     }
     if (maybeParent && maybeParent.kind === PQP.Language.Ast.NodeKind.ArrayWrapper) {
-        maybeParent = PQP.NodeIdMapUtils.maybeParentAstNode(nodeIdMapCollection, maybeParent.id);
+        maybeParent = PQP.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
     }
 
     if (!maybeParent) {
