@@ -36,7 +36,7 @@ export function tryTraverseSerializeParameter(
         ast,
         PQP.Traverse.VisitNodeStrategy.BreadthFirst,
         visitNode,
-        PQP.Traverse.expectExpandAllAstChildren,
+        PQP.Traverse.assertExpandAllAstChildren,
         undefined,
     );
 }
