@@ -52,7 +52,7 @@ function calculateLinearLength(
         node,
         PQP.Traverse.VisitNodeStrategy.DepthFirst,
         visitNode,
-        PQP.Traverse.assertExpandAllAstChildren,
+        PQP.Traverse.assertGetAllAstChildren,
         undefined,
     );
 
@@ -297,12 +297,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
             break;
 
         case PQP.Language.Ast.NodeKind.PrimitiveType:
-            linearLength = getLinearLength(
-                state.localizationTemplates,
-                state.nodeIdMapCollection,
-                state.linearLengthMap,
-                node.primitiveType,
-            );
+            linearLength = node.primitiveTypeKind.length;
             break;
 
         case PQP.Language.Ast.NodeKind.RangeExpression:

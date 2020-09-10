@@ -32,7 +32,7 @@ export function tryTraverseIsMultilineFirstPass(
         ast,
         PQP.Traverse.VisitNodeStrategy.DepthFirst,
         visitNode,
-        PQP.Traverse.assertExpandAllAstChildren,
+        PQP.Traverse.assertGetAllAstChildren,
         undefined,
     );
 }
@@ -304,7 +304,7 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
             break;
 
         case PQP.Language.Ast.NodeKind.LiteralExpression:
-            if (node.literalKind === PQP.Language.Ast.LiteralKind.Text && containsNewline(node.literal)) {
+            if (node.literalKind === PQP.Language.Constant.LiteralKind.Text && containsNewline(node.literal)) {
                 isMultiline = true;
             }
             break;
@@ -329,10 +329,6 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
                 node.content,
                 node.closeWrapperConstant,
             );
-            break;
-
-        case PQP.Language.Ast.NodeKind.PrimitiveType:
-            isMultiline = expectGetIsMultiline(isMultilineMap, node.primitiveType);
             break;
 
         case PQP.Language.Ast.NodeKind.RangeExpression:
@@ -388,6 +384,7 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
         case PQP.Language.Ast.NodeKind.NotImplementedExpression:
         case PQP.Language.Ast.NodeKind.Parameter:
         case PQP.Language.Ast.NodeKind.ParameterList:
+        case PQP.Language.Ast.NodeKind.PrimitiveType:
             break;
 
         default:

@@ -92,6 +92,17 @@ function serializeNode(state: SerializeState, node: PQP.Language.Ast.TNode): voi
     }
 
     switch (node.kind) {
+        case PQP.Language.Ast.NodeKind.GeneralizedIdentifier:
+        case PQP.Language.Ast.NodeKind.Identifier:
+        case PQP.Language.Ast.NodeKind.LiteralExpression: {
+            const writeKind: SerializeWriteKind = getSerializeWriteKind(
+                node,
+                state.passthroughMaps.serializeParameterMap,
+            );
+            serializeLiteral(state, node.literal, writeKind);
+            break;
+        }
+
         case PQP.Language.Ast.NodeKind.Constant: {
             const writeKind: SerializeWriteKind = getSerializeWriteKind(
                 node,
@@ -101,22 +112,12 @@ function serializeNode(state: SerializeState, node: PQP.Language.Ast.TNode): voi
             break;
         }
 
-        case PQP.Language.Ast.NodeKind.GeneralizedIdentifier:
-        case PQP.Language.Ast.NodeKind.Identifier: {
+        case PQP.Language.Ast.NodeKind.PrimitiveType: {
             const writeKind: SerializeWriteKind = getSerializeWriteKind(
                 node,
                 state.passthroughMaps.serializeParameterMap,
             );
-            serializeLiteral(state, `${node.literal}`, writeKind);
-            break;
-        }
-
-        case PQP.Language.Ast.NodeKind.LiteralExpression: {
-            const writeKind: SerializeWriteKind = getSerializeWriteKind(
-                node,
-                state.passthroughMaps.serializeParameterMap,
-            );
-            serializeLiteral(state, node.literal, writeKind);
+            serializeLiteral(state, node.primitiveTypeKind, writeKind);
             break;
         }
 

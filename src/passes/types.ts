@@ -11,14 +11,14 @@ export type IsMultilineMap = Map<number, boolean>;
 export type LinearLengthMap = Map<number, number>;
 
 export interface CommentCollection {
-    readonly prefixedComments: PQP.Language.TComment[];
+    readonly prefixedComments: PQP.Language.Comment.TComment[];
     prefixedCommentsContainsNewline: boolean;
 }
 
 export interface CommentState extends PQP.Traverse.IState<CommentCollectionMap> {
-    readonly comments: ReadonlyArray<PQP.Language.TComment>;
+    readonly comments: ReadonlyArray<PQP.Language.Comment.TComment>;
     commentsIndex: number;
-    maybeCurrentComment: PQP.Language.TComment | undefined;
+    maybeCurrentComment: PQP.Language.Comment.TComment | undefined;
 }
 
 export interface IsMultilineFirstPassState extends PQP.Traverse.IState<IsMultilineMap> {

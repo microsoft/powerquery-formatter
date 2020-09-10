@@ -18,7 +18,7 @@ export function visitFieldSpecificationList(
     visitTWrapped(state, node);
 
     if (node.maybeOpenRecordMarkerConstant) {
-        const openRecordMarkerConstant: PQP.Language.Ast.IConstant<PQP.Language.Ast.MiscConstantKind.Ellipsis> =
+        const openRecordMarkerConstant: PQP.Language.Ast.IConstant<PQP.Language.Constant.MiscConstantKind.Ellipsis> =
             node.maybeOpenRecordMarkerConstant;
         let workspace: SerializeParameter;
 

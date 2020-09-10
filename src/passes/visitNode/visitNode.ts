@@ -160,10 +160,6 @@ export function visitNode(state: SerializeParameterState, node: PQP.Language.Ast
             visitParenthesizedExpression(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.PrimitiveType:
-            propagateWriteKind(state, node, node.primitiveType);
-            break;
-
         case PQP.Language.Ast.NodeKind.RangeExpression:
             visitRangeExpression(state, node);
             break;
@@ -207,6 +203,7 @@ export function visitNode(state: SerializeParameterState, node: PQP.Language.Ast
         case PQP.Language.Ast.NodeKind.GeneralizedIdentifier:
         case PQP.Language.Ast.NodeKind.Identifier:
         case PQP.Language.Ast.NodeKind.LiteralExpression:
+        case PQP.Language.Ast.NodeKind.PrimitiveType:
             visitLeaf(state, node);
             break;
 

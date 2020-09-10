@@ -12,7 +12,8 @@ export function visitLeaf(
         | PQP.Language.Ast.TConstant
         | PQP.Language.Ast.GeneralizedIdentifier
         | PQP.Language.Ast.Identifier
-        | PQP.Language.Ast.LiteralExpression,
+        | PQP.Language.Ast.LiteralExpression
+        | PQP.Language.Ast.PrimitiveType,
 ): void {
     const workspace: SerializeParameter = getWorkspace(state, node);
     maybeSetIndentationChange(state, node, workspace.maybeIndentationChange);

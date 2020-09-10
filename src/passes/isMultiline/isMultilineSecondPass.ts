@@ -23,7 +23,7 @@ export function tryTraverseIsMultilineSecondPass(
         ast,
         PQP.Traverse.VisitNodeStrategy.BreadthFirst,
         visitNode,
-        PQP.Traverse.assertExpandAllAstChildren,
+        PQP.Traverse.assertGetAllAstChildren,
         undefined,
     );
 }

@@ -22,14 +22,18 @@ export interface FormatSettings extends PQP.Settings {
 }
 
 export function tryFormat(formatSettings: FormatSettings, text: string): TriedFormat {
-    const triedLexParse: PQP.Task.TriedLexParse = PQP.Task.tryLexParse(formatSettings, text);
+    const triedLexParse: PQP.Task.TriedLexParse = PQP.Task.tryLexParse(
+        formatSettings,
+        text,
+        PQP.IParserStateUtils.stateFactory,
+    );
     if (PQP.ResultUtils.isErr(triedLexParse)) {
         return triedLexParse;
     }
 
     const lexParseOk: PQP.Task.LexParseOk = triedLexParse.value;
     const root: PQP.Language.Ast.TNode = lexParseOk.root;
-    const comments: ReadonlyArray<PQP.Language.TComment> = lexParseOk.lexerSnapshot.comments;
+    const comments: ReadonlyArray<PQP.Language.Comment.TComment> = lexParseOk.lexerSnapshot.comments;
     const nodeIdMapCollection: PQP.NodeIdMap.Collection = lexParseOk.state.contextState.nodeIdMapCollection;
     const localizationTemplates: PQP.ILocalizationTemplates = PQP.getLocalizationTemplates(formatSettings.locale);
 
@@ -82,6 +86,7 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
         passthroughMaps: maps,
         indentationLiteral: formatSettings.indentationLiteral,
         newlineLiteral: formatSettings.newlineLiteral,
+        maybeCancellationToken: undefined,
     };
 
     return trySerialize(serializeRequest);
