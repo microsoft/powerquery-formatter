@@ -25,7 +25,7 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
     const triedLexParse: PQP.Task.TriedLexParse = PQP.Task.tryLexParse(
         formatSettings,
         text,
-        PQP.IParserStateUtils.stateFactory,
+        PQP.Parser.IParserStateUtils.stateFactory,
     );
     if (PQP.ResultUtils.isErr(triedLexParse)) {
         return triedLexParse;
@@ -34,7 +34,7 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
     const lexParseOk: PQP.Task.LexParseOk = triedLexParse.value;
     const root: PQP.Language.Ast.TNode = lexParseOk.root;
     const comments: ReadonlyArray<PQP.Language.Comment.TComment> = lexParseOk.lexerSnapshot.comments;
-    const nodeIdMapCollection: PQP.NodeIdMap.Collection = lexParseOk.state.contextState.nodeIdMapCollection;
+    const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = lexParseOk.state.contextState.nodeIdMapCollection;
     const localizationTemplates: PQP.ILocalizationTemplates = PQP.getLocalizationTemplates(formatSettings.locale);
 
     let commentCollectionMap: CommentCollectionMap = new Map();

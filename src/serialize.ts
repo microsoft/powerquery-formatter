@@ -24,7 +24,7 @@ export type TriedSerialize = PQP.Result<string, PQP.CommonError.CommonError>;
 
 export interface SerializeSettings extends PQP.CommonSettings {
     readonly root: PQP.Language.Ast.TNode;
-    readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
+    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly passthroughMaps: SerializePassthroughMaps;
     readonly indentationLiteral: IndentationLiteral;
     readonly newlineLiteral: NewlineLiteral;
@@ -41,7 +41,7 @@ export function trySerialize(settings: SerializeSettings): TriedSerialize {
 
 interface SerializeState {
     readonly node: PQP.Language.Ast.TNode;
-    readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
+    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly passthroughMaps: SerializePassthroughMaps;
     readonly newlineLiteral: NewlineLiteral;
     readonly indentationLiteral: IndentationLiteral;
@@ -124,7 +124,7 @@ function serializeNode(state: SerializeState, node: PQP.Language.Ast.TNode): voi
         default:
             const maybeChildren:
                 | ReadonlyArray<PQP.Language.Ast.TNode>
-                | undefined = PQP.NodeIdMapIterator.maybeIterChildrenAst(state.nodeIdMapCollection, node.id);
+                | undefined = PQP.Parser.NodeIdMapIterator.maybeIterChildrenAst(state.nodeIdMapCollection, node.id);
             if (maybeChildren === undefined) {
                 break;
             }

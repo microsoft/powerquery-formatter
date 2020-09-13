@@ -7,7 +7,7 @@ import { IndentationChange, SerializeParameterState, SerializeWriteKind } from "
 import { isSectionMemeberSimilarScope, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 
 export function visitArrayWrapper(state: SerializeParameterState, node: PQP.Language.Ast.TArrayWrapper): void {
-    const parent: PQP.Language.Ast.TNode = PQP.NodeIdMapUtils.assertGetParentAst(state.nodeIdMapCollection, node.id);
+    const parent: PQP.Language.Ast.TNode = PQP.Parser.NodeIdMapUtils.assertGetParentAst(state.nodeIdMapCollection, node.id);
 
     switch (parent.kind) {
         case PQP.Language.Ast.NodeKind.Section:

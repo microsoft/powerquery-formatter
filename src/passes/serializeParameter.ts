@@ -14,7 +14,7 @@ import { visitNode } from "./visitNode/visitNode";
 export function tryTraverseSerializeParameter(
     localizationTemplates: PQP.ILocalizationTemplates,
     ast: PQP.Language.Ast.TNode,
-    nodeIdMapCollection: PQP.NodeIdMap.Collection,
+    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     commentCollectionMap: CommentCollectionMap,
     isMultilineMap: IsMultilineMap,
 ): PQP.Traverse.TriedTraverse<SerializeParameterMap> {

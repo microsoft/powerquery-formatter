@@ -9,7 +9,7 @@ import { CommentCollection, CommentCollectionMap, CommentState } from "./types";
 export function tryTraverseComment(
     localizationTemplates: PQP.ILocalizationTemplates,
     root: PQP.Language.Ast.TNode,
-    nodeIdMapCollection: PQP.NodeIdMap.Collection,
+    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     comments: ReadonlyArray<PQP.Language.Comment.TComment>,
 ): PQP.Traverse.TriedTraverse<CommentCollectionMap> {
     const state: CommentState = {

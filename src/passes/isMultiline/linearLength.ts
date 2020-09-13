@@ -12,7 +12,7 @@ import { LinearLengthMap, LinearLengthState } from "../types";
 // Some nodes are always multiline, such as IfExpression, and will return NaN.
 export function getLinearLength(
     localizationTemplates: PQP.ILocalizationTemplates,
-    nodeIdMapCollection: PQP.NodeIdMap.Collection,
+    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     linearLengthMap: LinearLengthMap,
     node: PQP.Language.Ast.TNode,
 ): number {
@@ -36,7 +36,7 @@ export function getLinearLength(
 function calculateLinearLength(
     localizationTemplates: PQP.ILocalizationTemplates,
     node: PQP.Language.Ast.TNode,
-    nodeIdMapCollection: PQP.NodeIdMap.Collection,
+    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     linearLengthMap: LinearLengthMap,
 ): number {
     const state: LinearLengthState = {
