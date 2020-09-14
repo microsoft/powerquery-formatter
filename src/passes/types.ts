@@ -11,29 +11,29 @@ export type IsMultilineMap = Map<number, boolean>;
 export type LinearLengthMap = Map<number, number>;
 
 export interface CommentCollection {
-    readonly prefixedComments: PQP.Language.TComment[];
+    readonly prefixedComments: PQP.Language.Comment.TComment[];
     prefixedCommentsContainsNewline: boolean;
 }
 
 export interface CommentState extends PQP.Traverse.IState<CommentCollectionMap> {
-    readonly comments: ReadonlyArray<PQP.Language.TComment>;
+    readonly comments: ReadonlyArray<PQP.Language.Comment.TComment>;
     commentsIndex: number;
-    maybeCurrentComment: PQP.Language.TComment | undefined;
+    maybeCurrentComment: PQP.Language.Comment.TComment | undefined;
 }
 
 export interface IsMultilineFirstPassState extends PQP.Traverse.IState<IsMultilineMap> {
     readonly localizationTemplates: PQP.ILocalizationTemplates;
     readonly commentCollectionMap: CommentCollectionMap;
-    readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
+    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly linearLengthMap: LinearLengthMap;
 }
 
 export interface IsMultilineSecondPassState extends PQP.Traverse.IState<IsMultilineMap> {
-    readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
+    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
 }
 
 export interface LinearLengthState extends PQP.Traverse.IState<number> {
-    readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
+    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly linearLengthMap: LinearLengthMap;
 }
 
@@ -63,7 +63,7 @@ export interface SerializeParameterMap {
 
 export interface SerializeParameterState extends PQP.Traverse.IState<SerializeParameterMap> {
     readonly localizationTemplates: PQP.ILocalizationTemplates;
-    readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
+    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly commentCollectionMap: CommentCollectionMap;
     readonly isMultilineMap: IsMultilineMap;
     readonly workspaceMap: Map<number, SerializeParameter>;

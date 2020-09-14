@@ -25,7 +25,7 @@ export function visitComments(
     }
 
     const commentParameters: SerializeCommentParameter[] = [];
-    const comments: ReadonlyArray<PQP.Language.TComment> = maybeComments.prefixedComments;
+    const comments: ReadonlyArray<PQP.Language.Comment.TComment> = maybeComments.prefixedComments;
 
     const numComments: number = comments.length;
     if (!numComments) {
@@ -33,8 +33,8 @@ export function visitComments(
     }
 
     for (let index: number = 0; index < numComments; index += 1) {
-        const comment: PQP.Language.TComment = comments[index];
-        const previousComment: PQP.Language.TComment | undefined = comments[index - 1];
+        const comment: PQP.Language.Comment.TComment = comments[index];
+        const previousComment: PQP.Language.Comment.TComment | undefined = comments[index - 1];
 
         let writeKind: SerializeWriteKind;
         if (index === 0) {
@@ -55,7 +55,7 @@ export function visitComments(
 
     state.result.comments.set(nodeId, commentParameters);
 
-    const lastComment: PQP.Language.TComment = comments[comments.length - 1];
+    const lastComment: PQP.Language.Comment.TComment = comments[comments.length - 1];
     if (lastComment.containsNewline) {
         maybeWriteKind = SerializeWriteKind.Indented;
     } else {

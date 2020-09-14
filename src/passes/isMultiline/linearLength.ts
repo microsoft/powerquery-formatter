@@ -12,7 +12,7 @@ import { LinearLengthMap, LinearLengthState } from "../types";
 // Some nodes are always multiline, such as IfExpression, and will return NaN.
 export function getLinearLength(
     localizationTemplates: PQP.ILocalizationTemplates,
-    nodeIdMapCollection: PQP.NodeIdMap.Collection,
+    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     linearLengthMap: LinearLengthMap,
     node: PQP.Language.Ast.TNode,
 ): number {
@@ -36,7 +36,7 @@ export function getLinearLength(
 function calculateLinearLength(
     localizationTemplates: PQP.ILocalizationTemplates,
     node: PQP.Language.Ast.TNode,
-    nodeIdMapCollection: PQP.NodeIdMap.Collection,
+    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     linearLengthMap: LinearLengthMap,
 ): number {
     const state: LinearLengthState = {
@@ -52,7 +52,7 @@ function calculateLinearLength(
         node,
         PQP.Traverse.VisitNodeStrategy.DepthFirst,
         visitNode,
-        PQP.Traverse.assertExpandAllAstChildren,
+        PQP.Traverse.assertGetAllAstChildren,
         undefined,
     );
 
@@ -297,12 +297,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
             break;
 
         case PQP.Language.Ast.NodeKind.PrimitiveType:
-            linearLength = getLinearLength(
-                state.localizationTemplates,
-                state.nodeIdMapCollection,
-                state.linearLengthMap,
-                node.primitiveType,
-            );
+            linearLength = node.primitiveTypeKind.length;
             break;
 
         case PQP.Language.Ast.NodeKind.RangeExpression:

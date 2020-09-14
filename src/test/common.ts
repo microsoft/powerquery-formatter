@@ -10,9 +10,9 @@ import { FormatSettings, IndentationLiteral, NewlineLiteral, TriedFormat, tryFor
 const DefaultFormatSettings: FormatSettings = {
     locale: PQP.Locale.en_US,
     parser: PQP.Parser.CombinatorialParser,
-    newParserState: PQP.DefaultSettings.newParserState,
     indentationLiteral: IndentationLiteral.SpaceX4,
     newlineLiteral: NewlineLiteral.Unix,
+    maybeCancellationToken: undefined,
 };
 
 export function compare(expected: string, actual: string, newlineLiteral: NewlineLiteral = NewlineLiteral.Unix): void {

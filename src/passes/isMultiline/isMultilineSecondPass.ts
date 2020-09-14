@@ -9,7 +9,7 @@ export function tryTraverseIsMultilineSecondPass(
     localizationTemplates: PQP.ILocalizationTemplates,
     ast: PQP.Language.Ast.TNode,
     isMultilineMap: IsMultilineMap,
-    nodeIdMapCollection: PQP.NodeIdMap.Collection,
+    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
 ): PQP.Traverse.TriedTraverse<IsMultilineMap> {
     const state: IsMultilineSecondPassState = {
         localizationTemplates,
@@ -23,7 +23,7 @@ export function tryTraverseIsMultilineSecondPass(
         ast,
         PQP.Traverse.VisitNodeStrategy.BreadthFirst,
         visitNode,
-        PQP.Traverse.assertExpandAllAstChildren,
+        PQP.Traverse.assertGetAllAstChildren,
         undefined,
     );
 }
@@ -39,7 +39,7 @@ function visitNode(state: IsMultilineSecondPassState, node: PQP.Language.Ast.TNo
         case PQP.Language.Ast.NodeKind.LogicalExpression:
         case PQP.Language.Ast.NodeKind.RelationalExpression: {
             const isMultilineMap: IsMultilineMap = state.result;
-            const maybeParent: PQP.Language.Ast.TNode | undefined = PQP.NodeIdMapUtils.maybeParentAst(
+            const maybeParent: PQP.Language.Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(
                 state.nodeIdMapCollection,
                 node.id,
             );
@@ -60,9 +60,9 @@ function visitNode(state: IsMultilineSecondPassState, node: PQP.Language.Ast.TNo
         case PQP.Language.Ast.NodeKind.RecordExpression:
         case PQP.Language.Ast.NodeKind.RecordLiteral:
             if (node.content.elements.length) {
-                const nodeIdMapCollection: PQP.NodeIdMap.Collection = state.nodeIdMapCollection;
+                const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = state.nodeIdMapCollection;
 
-                let maybeParent: PQP.Language.Ast.TNode | undefined = PQP.NodeIdMapUtils.maybeParentAst(
+                let maybeParent: PQP.Language.Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(
                     nodeIdMapCollection,
                     node.id,
                 );
@@ -70,11 +70,11 @@ function visitNode(state: IsMultilineSecondPassState, node: PQP.Language.Ast.TNo
                 let maybeArrayWrapper: PQP.Language.Ast.TArrayWrapper | undefined;
                 if (maybeParent && maybeParent.kind === PQP.Language.Ast.NodeKind.Csv) {
                     maybeCsv = maybeParent;
-                    maybeParent = PQP.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
+                    maybeParent = PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
                 }
                 if (maybeParent && maybeParent.kind === PQP.Language.Ast.NodeKind.ArrayWrapper) {
                     maybeArrayWrapper = maybeParent;
-                    maybeParent = PQP.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
+                    maybeParent = PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
                 }
 
                 if (maybeParent) {

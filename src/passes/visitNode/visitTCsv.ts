@@ -11,7 +11,7 @@ export function visitTCsv(state: SerializeParameterState, node: PQP.Language.Ast
     propagateWriteKind(state, node, node.node);
 
     if (node.maybeCommaConstant && maybeWriteKind !== SerializeWriteKind.Indented) {
-        const commaConstant: PQP.Language.Ast.IConstant<PQP.Language.Ast.MiscConstantKind.Comma> =
+        const commaConstant: PQP.Language.Ast.IConstant<PQP.Language.Constant.MiscConstantKind.Comma> =
             node.maybeCommaConstant;
         setWorkspace(state, commaConstant, { maybeWriteKind: SerializeWriteKind.PaddedRight });
     }

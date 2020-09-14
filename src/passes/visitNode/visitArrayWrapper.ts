@@ -7,7 +7,10 @@ import { IndentationChange, SerializeParameterState, SerializeWriteKind } from "
 import { isSectionMemeberSimilarScope, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 
 export function visitArrayWrapper(state: SerializeParameterState, node: PQP.Language.Ast.TArrayWrapper): void {
-    const parent: PQP.Language.Ast.TNode = PQP.NodeIdMapUtils.assertParentAst(state.nodeIdMapCollection, node.id);
+    const parent: PQP.Language.Ast.TNode = PQP.Parser.NodeIdMapUtils.assertGetParentAst(
+        state.nodeIdMapCollection,
+        node.id,
+    );
 
     switch (parent.kind) {
         case PQP.Language.Ast.NodeKind.Section:
@@ -68,21 +71,21 @@ function visitArrayWrapperForSectionMembers(
 
 function visitArrayWrapperForUnaryExpression(
     state: SerializeParameterState,
-    node: PQP.Language.Ast.IArrayWrapper<PQP.Language.Ast.IConstant<PQP.Language.Ast.UnaryOperatorKind>>,
+    node: PQP.Language.Ast.IArrayWrapper<PQP.Language.Ast.IConstant<PQP.Language.Constant.UnaryOperatorKind>>,
 ): void {
     // `not` is an unary operator which needs to be padded.
     // The default Any write kind is fine for the other operators (`+` and `-`).
-    const elements: ReadonlyArray<PQP.Language.Ast.IConstant<PQP.Language.Ast.UnaryOperatorKind>> = node.elements;
+    const elements: ReadonlyArray<PQP.Language.Ast.IConstant<PQP.Language.Constant.UnaryOperatorKind>> = node.elements;
     const numElements: number = node.elements.length;
 
     propagateWriteKind(state, node, elements[0]);
-    let previousWasNotOperator: boolean = elements[0].constantKind === PQP.Language.Ast.UnaryOperatorKind.Not;
+    let previousWasNotOperator: boolean = elements[0].constantKind === PQP.Language.Constant.UnaryOperatorKind.Not;
     for (let index: number = 1; index < numElements; index += 1) {
-        const operatorConstant: PQP.Language.Ast.IConstant<PQP.Language.Ast.UnaryOperatorKind> = elements[index];
+        const operatorConstant: PQP.Language.Ast.IConstant<PQP.Language.Constant.UnaryOperatorKind> = elements[index];
 
-        if (previousWasNotOperator || operatorConstant.constantKind === PQP.Language.Ast.UnaryOperatorKind.Not) {
+        if (previousWasNotOperator || operatorConstant.constantKind === PQP.Language.Constant.UnaryOperatorKind.Not) {
             setWorkspace(state, operatorConstant, { maybeWriteKind: SerializeWriteKind.PaddedLeft });
         }
-        previousWasNotOperator = operatorConstant.constantKind === PQP.Language.Ast.UnaryOperatorKind.Not;
+        previousWasNotOperator = operatorConstant.constantKind === PQP.Language.Constant.UnaryOperatorKind.Not;
     }
 }

@@ -16,7 +16,7 @@ export function tryTraverseIsMultilineFirstPass(
     localizationTemplates: PQP.ILocalizationTemplates,
     ast: PQP.Language.Ast.TNode,
     commentCollectionMap: CommentCollectionMap,
-    nodeIdMapCollection: PQP.NodeIdMap.Collection,
+    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
 ): PQP.Traverse.TriedTraverse<IsMultilineMap> {
     const state: IsMultilineFirstPassState = {
         localizationTemplates,
@@ -32,7 +32,7 @@ export function tryTraverseIsMultilineFirstPass(
         ast,
         PQP.Traverse.VisitNodeStrategy.DepthFirst,
         visitNode,
-        PQP.Traverse.assertExpandAllAstChildren,
+        PQP.Traverse.assertGetAllAstChildren,
         undefined,
     );
 }
@@ -209,7 +209,7 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
             break;
 
         case PQP.Language.Ast.NodeKind.InvokeExpression: {
-            const nodeIdMapCollection: PQP.NodeIdMap.Collection = state.nodeIdMapCollection;
+            const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = state.nodeIdMapCollection;
             const args: ReadonlyArray<PQP.Language.Ast.ICsv<PQP.Language.Ast.TExpression>> = node.content.elements;
 
             if (args.length > 1) {
@@ -221,7 +221,7 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
                     node,
                 );
 
-                const maybeArrayWrapper: PQP.Language.Ast.TNode | undefined = PQP.NodeIdMapUtils.maybeParentAst(
+                const maybeArrayWrapper: PQP.Language.Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(
                     nodeIdMapCollection,
                     node.id,
                 );
@@ -235,7 +235,7 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
 
                 const maybeRecursivePrimaryExpression:
                     | PQP.Language.Ast.TNode
-                    | undefined = PQP.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, arrayWrapper.id);
+                    | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, arrayWrapper.id);
                 if (
                     maybeRecursivePrimaryExpression === undefined ||
                     maybeRecursivePrimaryExpression.kind !== PQP.Language.Ast.NodeKind.RecursivePrimaryExpression
@@ -257,7 +257,7 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
                 // if it's beyond the threshold check if it's a long literal
                 // ex. `#datetimezone(2013,02,26, 09,15,00, 09,00)`
                 if (compositeLinearLength > InvokeExpressionLinearLengthThreshold) {
-                    const maybeName: string | undefined = PQP.NodeIdMapUtils.maybeInvokeExpressionName(
+                    const maybeName: string | undefined = PQP.Parser.NodeIdMapUtils.maybeInvokeExpressionName(
                         nodeIdMapCollection,
                         node.id,
                     );
@@ -304,7 +304,7 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
             break;
 
         case PQP.Language.Ast.NodeKind.LiteralExpression:
-            if (node.literalKind === PQP.Language.Ast.LiteralKind.Text && containsNewline(node.literal)) {
+            if (node.literalKind === PQP.Language.Constant.LiteralKind.Text && containsNewline(node.literal)) {
                 isMultiline = true;
             }
             break;
@@ -329,10 +329,6 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
                 node.content,
                 node.closeWrapperConstant,
             );
-            break;
-
-        case PQP.Language.Ast.NodeKind.PrimitiveType:
-            isMultiline = expectGetIsMultiline(isMultilineMap, node.primitiveType);
             break;
 
         case PQP.Language.Ast.NodeKind.RangeExpression:
@@ -388,6 +384,7 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
         case PQP.Language.Ast.NodeKind.NotImplementedExpression:
         case PQP.Language.Ast.NodeKind.Parameter:
         case PQP.Language.Ast.NodeKind.ParameterList:
+        case PQP.Language.Ast.NodeKind.PrimitiveType:
             break;
 
         default:

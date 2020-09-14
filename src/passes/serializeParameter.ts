@@ -14,7 +14,7 @@ import { visitNode } from "./visitNode/visitNode";
 export function tryTraverseSerializeParameter(
     localizationTemplates: PQP.ILocalizationTemplates,
     ast: PQP.Language.Ast.TNode,
-    nodeIdMapCollection: PQP.NodeIdMap.Collection,
+    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     commentCollectionMap: CommentCollectionMap,
     isMultilineMap: IsMultilineMap,
 ): PQP.Traverse.TriedTraverse<SerializeParameterMap> {
@@ -36,7 +36,7 @@ export function tryTraverseSerializeParameter(
         ast,
         PQP.Traverse.VisitNodeStrategy.BreadthFirst,
         visitNode,
-        PQP.Traverse.assertExpandAllAstChildren,
+        PQP.Traverse.assertGetAllAstChildren,
         undefined,
     );
 }

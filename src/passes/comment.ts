@@ -9,8 +9,8 @@ import { CommentCollection, CommentCollectionMap, CommentState } from "./types";
 export function tryTraverseComment(
     localizationTemplates: PQP.ILocalizationTemplates,
     root: PQP.Language.Ast.TNode,
-    nodeIdMapCollection: PQP.NodeIdMap.Collection,
-    comments: ReadonlyArray<PQP.Language.TComment>,
+    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
+    comments: ReadonlyArray<PQP.Language.Comment.TComment>,
 ): PQP.Traverse.TriedTraverse<CommentCollectionMap> {
     const state: CommentState = {
         localizationTemplates,
@@ -26,13 +26,13 @@ export function tryTraverseComment(
         root,
         PQP.Traverse.VisitNodeStrategy.DepthFirst,
         visitNode,
-        PQP.Traverse.assertExpandAllAstChildren,
+        PQP.Traverse.assertGetAllAstChildren,
         earlyExit,
     );
 }
 
 function earlyExit(state: CommentState, node: PQP.Language.Ast.TNode): boolean {
-    const maybeCurrentComment: PQP.Language.TComment | undefined = state.maybeCurrentComment;
+    const maybeCurrentComment: PQP.Language.Comment.TComment | undefined = state.maybeCurrentComment;
     if (maybeCurrentComment === undefined) {
         return true;
     } else if (node.tokenRange.positionEnd.codeUnit < maybeCurrentComment.positionStart.codeUnit) {
@@ -47,9 +47,9 @@ function visitNode(state: CommentState, node: PQP.Language.Ast.TNode): void {
         return;
     }
 
-    let maybeCurrentComment: PQP.Language.TComment | undefined = state.maybeCurrentComment;
+    let maybeCurrentComment: PQP.Language.Comment.TComment | undefined = state.maybeCurrentComment;
     while (maybeCurrentComment && maybeCurrentComment.positionStart.codeUnit < node.tokenRange.positionStart.codeUnit) {
-        const currentComment: PQP.Language.TComment = maybeCurrentComment;
+        const currentComment: PQP.Language.Comment.TComment = maybeCurrentComment;
         const commentMap: CommentCollectionMap = state.result;
         const nodeId: number = node.id;
         const maybeCommentCollection: CommentCollection | undefined = commentMap.get(nodeId);

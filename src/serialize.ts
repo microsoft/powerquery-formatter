@@ -24,7 +24,7 @@ export type TriedSerialize = PQP.Result<string, PQP.CommonError.CommonError>;
 
 export interface SerializeSettings extends PQP.CommonSettings {
     readonly root: PQP.Language.Ast.TNode;
-    readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
+    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly passthroughMaps: SerializePassthroughMaps;
     readonly indentationLiteral: IndentationLiteral;
     readonly newlineLiteral: NewlineLiteral;
@@ -41,7 +41,7 @@ export function trySerialize(settings: SerializeSettings): TriedSerialize {
 
 interface SerializeState {
     readonly node: PQP.Language.Ast.TNode;
-    readonly nodeIdMapCollection: PQP.NodeIdMap.Collection;
+    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly passthroughMaps: SerializePassthroughMaps;
     readonly newlineLiteral: NewlineLiteral;
     readonly indentationLiteral: IndentationLiteral;
@@ -92,25 +92,8 @@ function serializeNode(state: SerializeState, node: PQP.Language.Ast.TNode): voi
     }
 
     switch (node.kind) {
-        case PQP.Language.Ast.NodeKind.Constant: {
-            const writeKind: SerializeWriteKind = getSerializeWriteKind(
-                node,
-                state.passthroughMaps.serializeParameterMap,
-            );
-            serializeLiteral(state, node.constantKind, writeKind);
-            break;
-        }
-
         case PQP.Language.Ast.NodeKind.GeneralizedIdentifier:
-        case PQP.Language.Ast.NodeKind.Identifier: {
-            const writeKind: SerializeWriteKind = getSerializeWriteKind(
-                node,
-                state.passthroughMaps.serializeParameterMap,
-            );
-            serializeLiteral(state, `${node.literal}`, writeKind);
-            break;
-        }
-
+        case PQP.Language.Ast.NodeKind.Identifier:
         case PQP.Language.Ast.NodeKind.LiteralExpression: {
             const writeKind: SerializeWriteKind = getSerializeWriteKind(
                 node,
@@ -120,10 +103,28 @@ function serializeNode(state: SerializeState, node: PQP.Language.Ast.TNode): voi
             break;
         }
 
+        case PQP.Language.Ast.NodeKind.Constant: {
+            const writeKind: SerializeWriteKind = getSerializeWriteKind(
+                node,
+                state.passthroughMaps.serializeParameterMap,
+            );
+            serializeLiteral(state, node.constantKind, writeKind);
+            break;
+        }
+
+        case PQP.Language.Ast.NodeKind.PrimitiveType: {
+            const writeKind: SerializeWriteKind = getSerializeWriteKind(
+                node,
+                state.passthroughMaps.serializeParameterMap,
+            );
+            serializeLiteral(state, node.primitiveTypeKind, writeKind);
+            break;
+        }
+
         default:
             const maybeChildren:
                 | ReadonlyArray<PQP.Language.Ast.TNode>
-                | undefined = PQP.NodeIdMapIterator.maybeIterChildrenAst(state.nodeIdMapCollection, node.id);
+                | undefined = PQP.Parser.NodeIdMapIterator.maybeIterChildrenAst(state.nodeIdMapCollection, node.id);
             if (maybeChildren === undefined) {
                 break;
             }
