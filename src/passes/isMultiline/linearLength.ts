@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { LinearLengthMap, LinearLengthState } from "../types";
+import { LinearLengthMap, LinearLengthState } from "../commonTypes";
 
 // Lazy evaluation of a potentially large PQP.Language.AST.
 // Returns the length of text if the node was formatted on a single line.
@@ -11,7 +11,7 @@ import { LinearLengthMap, LinearLengthState } from "../types";
 //
 // Some nodes are always multiline, such as IfExpression, and will return NaN.
 export function getLinearLength(
-    localizationTemplates: PQP.ILocalizationTemplates,
+    localizationTemplates: PQP.Templates.ILocalizationTemplates,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     linearLengthMap: LinearLengthMap,
     node: PQP.Language.Ast.TNode,
@@ -34,7 +34,7 @@ export function getLinearLength(
 }
 
 function calculateLinearLength(
-    localizationTemplates: PQP.ILocalizationTemplates,
+    localizationTemplates: PQP.Templates.ILocalizationTemplates,
     node: PQP.Language.Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     linearLengthMap: LinearLengthMap,

@@ -8,7 +8,7 @@ import {
     SerializeParameter,
     SerializeParameterState,
     SerializeWriteKind,
-} from "../types";
+} from "../commonTypes";
 
 export function getWorkspace(
     state: SerializeParameterState,

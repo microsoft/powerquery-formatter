@@ -8,12 +8,12 @@ import {
     IsMultilineFirstPassState,
     IsMultilineMap,
     LinearLengthMap,
-} from "../types";
+} from "../commonTypes";
 import { expectGetIsMultiline, setIsMultiline } from "./common";
 import { getLinearLength } from "./linearLength";
 
 export function tryTraverseIsMultilineFirstPass(
-    localizationTemplates: PQP.ILocalizationTemplates,
+    localizationTemplates: PQP.Templates.ILocalizationTemplates,
     ast: PQP.Language.Ast.TNode,
     commentCollectionMap: CommentCollectionMap,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
