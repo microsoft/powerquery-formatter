@@ -14,20 +14,32 @@ import {
     trySerialize,
 } from "./serialize";
 
-export type TriedFormat = PQP.Result<string, FormatError.TFormatError>;
+export type TriedFormat<S extends PQP.Parser.IParserState = PQP.Parser.IParserState> = PQP.Result<
+    string,
+    FormatError.TFormatError<S>
+>;
 
-export interface FormatSettings extends PQP.Settings {
+export interface FormatSettings<S extends PQP.Parser.IParserState = PQP.Parser.IParserState> extends PQP.Settings<S> {
     readonly indentationLiteral: IndentationLiteral;
     readonly newlineLiteral: NewlineLiteral;
 }
 
-export function tryFormat(formatSettings: FormatSettings, text: string): TriedFormat {
-    const triedLexParse: PQP.Task.TriedLexParse = PQP.Task.tryLexParse(formatSettings, text);
+export const DefaultSettings: FormatSettings<PQP.Parser.IParserState> = {
+    ...PQP.DefaultSettings,
+    indentationLiteral: IndentationLiteral.SpaceX4,
+    newlineLiteral: NewlineLiteral.Windows,
+};
+
+export function tryFormat<S extends PQP.Parser.IParserState = PQP.Parser.IParserState>(
+    formatSettings: FormatSettings<S>,
+    text: string,
+): TriedFormat<S> {
+    const triedLexParse: PQP.Task.TriedLexParse<S> = PQP.Task.tryLexParse(formatSettings, text);
     if (PQP.ResultUtils.isErr(triedLexParse)) {
         return triedLexParse;
     }
 
-    const lexParseOk: PQP.Task.LexParseOk = triedLexParse.value;
+    const lexParseOk: PQP.Task.LexParseOk<S> = triedLexParse.value;
     const root: PQP.Language.Ast.TNode = lexParseOk.root;
     const comments: ReadonlyArray<PQP.Language.Comment.TComment> = lexParseOk.lexerSnapshot.comments;
     const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = lexParseOk.state.contextState.nodeIdMapCollection;
