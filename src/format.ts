@@ -22,11 +22,7 @@ export interface FormatSettings extends PQP.Settings {
 }
 
 export function tryFormat(formatSettings: FormatSettings, text: string): TriedFormat {
-    const triedLexParse: PQP.Task.TriedLexParse = PQP.Task.tryLexParse(
-        formatSettings,
-        text,
-        PQP.Parser.IParserStateUtils.stateFactory,
-    );
+    const triedLexParse: PQP.Task.TriedLexParse = PQP.Task.tryLexParse(formatSettings, text);
     if (PQP.ResultUtils.isErr(triedLexParse)) {
         return triedLexParse;
     }
@@ -35,7 +31,9 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
     const root: PQP.Language.Ast.TNode = lexParseOk.root;
     const comments: ReadonlyArray<PQP.Language.Comment.TComment> = lexParseOk.lexerSnapshot.comments;
     const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = lexParseOk.state.contextState.nodeIdMapCollection;
-    const localizationTemplates: PQP.ILocalizationTemplates = PQP.getLocalizationTemplates(formatSettings.locale);
+    const localizationTemplates: PQP.Templates.ILocalizationTemplates = PQP.LocalizationUtils.getLocalizationTemplates(
+        formatSettings.locale,
+    );
 
     let commentCollectionMap: CommentCollectionMap = new Map();
     if (comments.length) {
@@ -75,7 +73,7 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
     }
     const serializeParameterMap: SerializeParameterMap = triedSerializeParameter.value;
 
-    const maps: SerializePassthroughMaps = {
+    const passthroughMaps: SerializePassthroughMaps = {
         commentCollectionMap,
         serializeParameterMap,
     };
@@ -83,7 +81,7 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
         locale: formatSettings.locale,
         root: lexParseOk.root,
         nodeIdMapCollection,
-        passthroughMaps: maps,
+        passthroughMaps,
         indentationLiteral: formatSettings.indentationLiteral,
         newlineLiteral: formatSettings.newlineLiteral,
         maybeCancellationToken: undefined,
