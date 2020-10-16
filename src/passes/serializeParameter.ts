@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { CommentCollectionMap, IsMultilineMap, SerializeParameterMap, SerializeParameterState } from "./types";
+import { CommentCollectionMap, IsMultilineMap, SerializeParameterMap, SerializeParameterState } from "./commonTypes";
 import { visitNode } from "./visitNode/visitNode";
 
 // TNodes (in general) have two responsibilities:
@@ -12,7 +12,7 @@ import { visitNode } from "./visitNode/visitNode";
 //   done by calling setWorkspace(state, childNode, workspace)
 
 export function tryTraverseSerializeParameter(
-    localizationTemplates: PQP.ILocalizationTemplates,
+    localizationTemplates: PQP.Templates.ILocalizationTemplates,
     ast: PQP.Language.Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     commentCollectionMap: CommentCollectionMap,

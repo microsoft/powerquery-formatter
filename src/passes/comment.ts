@@ -2,12 +2,12 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { CommentCollection, CommentCollectionMap, CommentState } from "./types";
+import { CommentCollection, CommentCollectionMap, CommentState } from "./commonTypes";
 
 // TODO pass in leafNodeIds instead for a big speed boost.
 // Returns a Map<a leaf node's id number, an array of comments attached to the node id>.
 export function tryTraverseComment(
-    localizationTemplates: PQP.ILocalizationTemplates,
+    localizationTemplates: PQP.Templates.ILocalizationTemplates,
     root: PQP.Language.Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     comments: ReadonlyArray<PQP.Language.Comment.TComment>,

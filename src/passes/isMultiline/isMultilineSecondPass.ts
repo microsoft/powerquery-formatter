@@ -2,11 +2,11 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { IsMultilineMap, IsMultilineSecondPassState } from "../types";
+import { IsMultilineMap, IsMultilineSecondPassState } from "../commonTypes";
 import { expectGetIsMultiline, setIsMultiline } from "./common";
 
 export function tryTraverseIsMultilineSecondPass(
-    localizationTemplates: PQP.ILocalizationTemplates,
+    localizationTemplates: PQP.Templates.ILocalizationTemplates,
     ast: PQP.Language.Ast.TNode,
     isMultilineMap: IsMultilineMap,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
