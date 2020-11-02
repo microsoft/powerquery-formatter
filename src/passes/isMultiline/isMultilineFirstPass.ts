@@ -304,7 +304,7 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
             break;
 
         case PQP.Language.Ast.NodeKind.LiteralExpression:
-            if (node.literalKind === PQP.Language.Constant.LiteralKind.Text && containsNewline(node.literal)) {
+            if (node.literalKind === PQP.Language.Ast.LiteralKind.Text && containsNewline(node.literal)) {
                 isMultiline = true;
             }
             break;

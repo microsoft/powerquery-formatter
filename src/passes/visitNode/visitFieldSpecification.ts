@@ -12,7 +12,7 @@ export function visitFieldSpecification(
     node: PQP.Language.Ast.FieldSpecification,
 ): void {
     const maybeOptionalConstant:
-        | PQP.Language.Ast.IConstant<PQP.Language.Constant.IdentifierConstantKind.Optional>
+        | PQP.Language.Ast.IConstant<PQP.Language.Constant.LanguageConstantKind.Optional>
         | undefined = node.maybeOptionalConstant;
 
     if (maybePropagateWriteKind(state, node, maybeOptionalConstant)) {
