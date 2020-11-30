@@ -7,13 +7,13 @@ import { CommentCollection, CommentCollectionMap, CommentState } from "./commonT
 // TODO pass in leafNodeIds instead for a big speed boost.
 // Returns a Map<a leaf node's id number, an array of comments attached to the node id>.
 export function tryTraverseComment(
-    localizationTemplates: PQP.Templates.ILocalizationTemplates,
+    locale: string,
     root: PQP.Language.Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     comments: ReadonlyArray<PQP.Language.Comment.TComment>,
 ): PQP.Traverse.TriedTraverse<CommentCollectionMap> {
     const state: CommentState = {
-        localizationTemplates,
+        locale,
         result: new Map(),
         comments,
         commentsIndex: 0,

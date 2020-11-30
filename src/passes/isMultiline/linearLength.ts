@@ -11,7 +11,7 @@ import { LinearLengthMap, LinearLengthState } from "../commonTypes";
 //
 // Some nodes are always multiline, such as IfExpression, and will return NaN.
 export function getLinearLength(
-    localizationTemplates: PQP.Templates.ILocalizationTemplates,
+    locale: string,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     linearLengthMap: LinearLengthMap,
     node: PQP.Language.Ast.TNode,
@@ -20,12 +20,7 @@ export function getLinearLength(
     const maybeLinearLength: number | undefined = linearLengthMap.get(nodeId);
 
     if (maybeLinearLength === undefined) {
-        const linearLength: number = calculateLinearLength(
-            localizationTemplates,
-            node,
-            nodeIdMapCollection,
-            linearLengthMap,
-        );
+        const linearLength: number = calculateLinearLength(locale, node, nodeIdMapCollection, linearLengthMap);
         linearLengthMap.set(nodeId, linearLength);
         return linearLength;
     } else {
@@ -34,13 +29,13 @@ export function getLinearLength(
 }
 
 function calculateLinearLength(
-    localizationTemplates: PQP.Templates.ILocalizationTemplates,
+    locale: string,
     node: PQP.Language.Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     linearLengthMap: LinearLengthMap,
 ): number {
     const state: LinearLengthState = {
-        localizationTemplates,
+        locale,
         result: 0,
         nodeIdMapCollection,
         linearLengthMap,
@@ -389,7 +384,7 @@ function sumLinearLengths(
     for (const maybeNode of maybeNodes) {
         if (maybeNode) {
             const nodeLinearLength: number = getLinearLength(
-                state.localizationTemplates,
+                state.locale,
                 state.nodeIdMapCollection,
                 state.linearLengthMap,
                 maybeNode,

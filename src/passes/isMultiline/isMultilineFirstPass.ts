@@ -13,13 +13,13 @@ import { expectGetIsMultiline, setIsMultiline } from "./common";
 import { getLinearLength } from "./linearLength";
 
 export function tryTraverseIsMultilineFirstPass(
-    localizationTemplates: PQP.Templates.ILocalizationTemplates,
+    locale: string,
     ast: PQP.Language.Ast.TNode,
     commentCollectionMap: CommentCollectionMap,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
 ): PQP.Traverse.TriedTraverse<IsMultilineMap> {
     const state: IsMultilineFirstPassState = {
-        localizationTemplates,
+        locale,
         result: new Map(),
         commentCollectionMap,
         nodeIdMapCollection,
@@ -82,7 +82,7 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
                 isMultiline = true;
             }
             const linearLength: number = getLinearLength(
-                state.localizationTemplates,
+                state.locale,
                 state.nodeIdMapCollection,
                 state.linearLengthMap,
                 node,
@@ -214,12 +214,7 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
 
             if (args.length > 1) {
                 const linearLengthMap: LinearLengthMap = state.linearLengthMap;
-                const linearLength: number = getLinearLength(
-                    state.localizationTemplates,
-                    nodeIdMapCollection,
-                    linearLengthMap,
-                    node,
-                );
+                const linearLength: number = getLinearLength(state.locale, nodeIdMapCollection, linearLengthMap, node);
 
                 const maybeArrayWrapper: PQP.Language.Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(
                     nodeIdMapCollection,
@@ -247,7 +242,7 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
                 const recursivePrimaryExpression: PQP.Language.Ast.RecursivePrimaryExpression = maybeRecursivePrimaryExpression;
 
                 const headLinearLength: number = getLinearLength(
-                    state.localizationTemplates,
+                    state.locale,
                     nodeIdMapCollection,
                     linearLengthMap,
                     recursivePrimaryExpression.head,
