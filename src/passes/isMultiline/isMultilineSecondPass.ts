@@ -6,13 +6,13 @@ import { IsMultilineMap, IsMultilineSecondPassState } from "../commonTypes";
 import { expectGetIsMultiline, setIsMultiline } from "./common";
 
 export function tryTraverseIsMultilineSecondPass(
-    localizationTemplates: PQP.Templates.ILocalizationTemplates,
+    locale: string,
     ast: PQP.Language.Ast.TNode,
     isMultilineMap: IsMultilineMap,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
 ): PQP.Traverse.TriedTraverse<IsMultilineMap> {
     const state: IsMultilineSecondPassState = {
-        localizationTemplates,
+        locale,
         result: isMultilineMap,
         nodeIdMapCollection,
     };

@@ -22,7 +22,6 @@ export interface CommentState extends PQP.Traverse.IState<CommentCollectionMap> 
 }
 
 export interface IsMultilineFirstPassState extends PQP.Traverse.IState<IsMultilineMap> {
-    readonly localizationTemplates: PQP.Templates.ILocalizationTemplates;
     readonly commentCollectionMap: CommentCollectionMap;
     readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly linearLengthMap: LinearLengthMap;
@@ -62,7 +61,6 @@ export interface SerializeParameterMap {
 }
 
 export interface SerializeParameterState extends PQP.Traverse.IState<SerializeParameterMap> {
-    readonly localizationTemplates: PQP.Templates.ILocalizationTemplates;
     readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly commentCollectionMap: CommentCollectionMap;
     readonly isMultilineMap: IsMultilineMap;

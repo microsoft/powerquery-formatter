@@ -12,7 +12,7 @@ import { visitNode } from "./visitNode/visitNode";
 //   done by calling setWorkspace(state, childNode, workspace)
 
 export function tryTraverseSerializeParameter(
-    localizationTemplates: PQP.Templates.ILocalizationTemplates,
+    locale: string,
     ast: PQP.Language.Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     commentCollectionMap: CommentCollectionMap,
@@ -24,7 +24,7 @@ export function tryTraverseSerializeParameter(
             indentationChange: new Map(),
             comments: new Map(),
         },
-        localizationTemplates,
+        locale,
         nodeIdMapCollection,
         commentCollectionMap,
         isMultilineMap,

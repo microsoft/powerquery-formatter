@@ -8,13 +8,13 @@ import { tryTraverseIsMultilineSecondPass } from "./isMultilineSecondPass";
 
 // runs a DFS pass followed by a BFS pass.
 export function tryTraverseIsMultiline(
-    localizationTemplates: PQP.Templates.ILocalizationTemplates,
+    locale: string,
     ast: PQP.Language.Ast.TNode,
     commentCollectionMap: CommentCollectionMap,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
 ): PQP.Traverse.TriedTraverse<IsMultilineMap> {
     const triedFirstPass: PQP.Traverse.TriedTraverse<IsMultilineMap> = tryTraverseIsMultilineFirstPass(
-        localizationTemplates,
+        locale,
         ast,
         commentCollectionMap,
         nodeIdMapCollection,
@@ -24,5 +24,5 @@ export function tryTraverseIsMultiline(
     }
     const isMultilineMap: IsMultilineMap = triedFirstPass.value;
 
-    return tryTraverseIsMultilineSecondPass(localizationTemplates, ast, isMultilineMap, nodeIdMapCollection);
+    return tryTraverseIsMultilineSecondPass(locale, ast, isMultilineMap, nodeIdMapCollection);
 }

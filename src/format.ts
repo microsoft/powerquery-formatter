@@ -14,23 +14,23 @@ import {
     trySerialize,
 } from "./serialize";
 
-export type TriedFormat<S extends PQP.Parser.IParserState = PQP.Parser.IParserState> = PQP.Result<
+export type TriedFormat<S extends PQP.Parser.IParseState = PQP.Parser.IParseState> = PQP.Result<
     string,
     FormatError.TFormatError<S>
 >;
 
-export interface FormatSettings<S extends PQP.Parser.IParserState = PQP.Parser.IParserState> extends PQP.Settings<S> {
+export interface FormatSettings<S extends PQP.Parser.IParseState = PQP.Parser.IParseState> extends PQP.Settings<S> {
     readonly indentationLiteral: IndentationLiteral;
     readonly newlineLiteral: NewlineLiteral;
 }
 
-export const DefaultSettings: FormatSettings<PQP.Parser.IParserState> = {
+export const DefaultSettings: FormatSettings<PQP.Parser.IParseState> = {
     ...PQP.DefaultSettings,
     indentationLiteral: IndentationLiteral.SpaceX4,
     newlineLiteral: NewlineLiteral.Windows,
 };
 
-export function tryFormat<S extends PQP.Parser.IParserState = PQP.Parser.IParserState>(
+export function tryFormat<S extends PQP.Parser.IParseState = PQP.Parser.IParseState>(
     formatSettings: FormatSettings<S>,
     text: string,
 ): TriedFormat<S> {
@@ -43,14 +43,12 @@ export function tryFormat<S extends PQP.Parser.IParserState = PQP.Parser.IParser
     const root: PQP.Language.Ast.TNode = lexParseOk.root;
     const comments: ReadonlyArray<PQP.Language.Comment.TComment> = lexParseOk.lexerSnapshot.comments;
     const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = lexParseOk.state.contextState.nodeIdMapCollection;
-    const localizationTemplates: PQP.Templates.ILocalizationTemplates = PQP.LocalizationUtils.getLocalizationTemplates(
-        formatSettings.locale,
-    );
+    const locale: string = formatSettings.locale;
 
     let commentCollectionMap: CommentCollectionMap = new Map();
     if (comments.length) {
         const triedCommentPass: PQP.Traverse.TriedTraverse<CommentCollectionMap> = tryTraverseComment(
-            localizationTemplates,
+            locale,
             root,
             nodeIdMapCollection,
             comments,
@@ -63,7 +61,7 @@ export function tryFormat<S extends PQP.Parser.IParserState = PQP.Parser.IParser
     }
 
     const triedIsMultilineMap: PQP.Traverse.TriedTraverse<IsMultilineMap> = tryTraverseIsMultiline(
-        localizationTemplates,
+        locale,
         root,
         commentCollectionMap,
         nodeIdMapCollection,
@@ -74,7 +72,7 @@ export function tryFormat<S extends PQP.Parser.IParserState = PQP.Parser.IParser
     const isMultilineMap: IsMultilineMap = triedIsMultilineMap.value;
 
     const triedSerializeParameter: PQP.Traverse.TriedTraverse<SerializeParameterMap> = tryTraverseSerializeParameter(
-        localizationTemplates,
+        locale,
         root,
         nodeIdMapCollection,
         commentCollectionMap,
@@ -90,7 +88,7 @@ export function tryFormat<S extends PQP.Parser.IParserState = PQP.Parser.IParser
         serializeParameterMap,
     };
     const serializeRequest: SerializeSettings = {
-        locale: formatSettings.locale,
+        locale,
         root: lexParseOk.root,
         nodeIdMapCollection,
         passthroughMaps,
