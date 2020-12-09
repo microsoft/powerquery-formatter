@@ -14,7 +14,9 @@ const settings: FormatSettings = {
 
 const triedFormat: PQP.Result<string, FormatError.TFormatError> = tryFormat(settings, text);
 if (PQP.ResultUtils.isOk(triedFormat)) {
+    console.log("Your input was formatted as the following:")
     console.log(triedFormat.value);
 } else {
+    console.log("An error occured during the format. Please review the error.")
     console.log(JSON.stringify(triedFormat.error, undefined, 4));
 }
