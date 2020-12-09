@@ -48,6 +48,6 @@
         "@microsoft/powerquery-parser": "0.2.12"
     },
     "files": [
-        "lib/**/*"
+        "lib/src/**/*"
     ]
 }

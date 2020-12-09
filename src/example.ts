@@ -3,9 +3,7 @@
 
 /* tslint:disable:no-console */
 import * as PQP from "@microsoft/powerquery-parser";
-import { TFormatError } from "./error";
-import { FormatSettings, tryFormat } from "./format";
-import { IndentationLiteral, NewlineLiteral } from "./serialize";
+import { FormatError, FormatSettings, tryFormat, IndentationLiteral, NewlineLiteral } from ".";
 
 const text: string = `1 as number`;
 const settings: FormatSettings = {
@@ -14,9 +12,11 @@ const settings: FormatSettings = {
     newlineLiteral: NewlineLiteral.Unix,
 };
 
-const triedFormat: PQP.Result<string, TFormatError> = tryFormat(settings, text);
+const triedFormat: PQP.Result<string, FormatError.TFormatError> = tryFormat(settings, text);
 if (PQP.ResultUtils.isOk(triedFormat)) {
+    console.log("Your input was formatted as the following:")
     console.log(triedFormat.value);
 } else {
+    console.log("An error occured during the format. Please review the error.")
     console.log(JSON.stringify(triedFormat.error, undefined, 4));
 }
