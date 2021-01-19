@@ -1,6 +1,6 @@
 {
     "name": "@microsoft/powerquery-formatter",
-    "version": "0.0.18",
+    "version": "0.0.21",
     "author": "Microsoft",
     "license": "MIT",
     "scripts": {
@@ -21,8 +21,8 @@
         "url": "https://github.com/microsoft/powerquery-formatter/issues"
     },
     "description": "A source code formatter for the Power Query/M formula language.",
-    "main": "lib/index.js",
-    "types": "lib/index.d.ts",
+    "main": "lib/powerquery-formatter/index.js",
+    "types": "lib/powerquery-formatter/index.d.ts",
     "keywords": [
         "power query",
         "power bi"
@@ -45,9 +45,9 @@
         "typescript": "^3.9.5"
     },
     "dependencies": {
-        "@microsoft/powerquery-parser": "0.2.12"
+        "@microsoft/powerquery-parser": "0.2.16"
     },
     "files": [
-        "lib/src/**/*"
+        "lib/powerquery-formatter/**/*"
     ]
 }
