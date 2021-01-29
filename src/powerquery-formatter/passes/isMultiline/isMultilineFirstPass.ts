@@ -252,12 +252,14 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
                 // if it's beyond the threshold check if it's a long literal
                 // ex. `#datetimezone(2013,02,26, 09,15,00, 09,00)`
                 if (compositeLinearLength > InvokeExpressionLinearLengthThreshold) {
-                    const maybeName: string | undefined = PQP.Parser.NodeIdMapUtils.maybeInvokeExpressionName(
+                    const maybeIdentifierLiteral:
+                        | string
+                        | undefined = PQP.Parser.NodeIdMapUtils.maybeInvokeExpressionIdentifierLiteral(
                         nodeIdMapCollection,
                         node.id,
                     );
-                    if (maybeName) {
-                        const name: string = maybeName;
+                    if (maybeIdentifierLiteral) {
+                        const name: string = maybeIdentifierLiteral;
                         isMultiline = InvokeExpressionIdentifierLinearLengthExclusions.indexOf(name) === -1;
                     }
 
