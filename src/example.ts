@@ -3,7 +3,7 @@
 
 /* tslint:disable:no-console */
 import * as PQP from "@microsoft/powerquery-parser";
-import { FormatError, FormatSettings, IndentationLiteral, NewlineLiteral, tryFormat } from ".";
+import { FormatSettings, IndentationLiteral, NewlineLiteral, TFormatError, tryFormat } from ".";
 
 const text: string = `1 as number`;
 const settings: FormatSettings = {
@@ -12,7 +12,7 @@ const settings: FormatSettings = {
     newlineLiteral: NewlineLiteral.Unix,
 };
 
-const triedFormat: PQP.Result<string, FormatError> = tryFormat(settings, text);
+const triedFormat: PQP.Result<string, TFormatError> = tryFormat(settings, text);
 if (PQP.ResultUtils.isOk(triedFormat)) {
     console.log("Your input was formatted as the following:");
     console.log(triedFormat.value);
