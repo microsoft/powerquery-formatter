@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { FormatError } from ".";
 import { CommentCollectionMap, IsMultilineMap, SerializeParameterMap, tryTraverseComment } from "./passes";
 import { tryTraverseSerializeParameter } from "./passes";
 import { tryTraverseIsMultiline } from "./passes/isMultiline/isMultiline";
@@ -13,10 +12,12 @@ import {
     SerializeSettings,
     trySerialize,
 } from "./serialize";
+import { ResultUtils } from "@microsoft/powerquery-parser";
+import { FormatError } from ".";
 
 export type TriedFormat<S extends PQP.Parser.IParseState = PQP.Parser.IParseState> = PQP.Result<
     string,
-    FormatError.TFormatError<S>
+    FormatError.FormatError<S>
 >;
 
 export interface FormatSettings<S extends PQP.Parser.IParseState = PQP.Parser.IParseState> extends PQP.Settings<S> {
@@ -34,22 +35,21 @@ export function tryFormat<S extends PQP.Parser.IParseState = PQP.Parser.IParseSt
     formatSettings: FormatSettings<S>,
     text: string,
 ): TriedFormat<S> {
-    const triedLexParse: PQP.Task.TriedLexParse<S> = PQP.Task.tryLexParse(formatSettings, text);
-    if (PQP.ResultUtils.isErr(triedLexParse)) {
-        return triedLexParse;
+    const triedLexParse: PQP.Task.TriedLexParseTask<S> = PQP.TaskUtils.tryLexParse(formatSettings, text);
+    if (PQP.TaskUtils.isError(triedLexParse)) {
+        return ResultUtils.errFactory(triedLexParse.error);
     }
 
-    const lexParseOk: PQP.Task.LexParseOk<S> = triedLexParse.value;
-    const root: PQP.Language.Ast.TNode = lexParseOk.root;
-    const comments: ReadonlyArray<PQP.Language.Comment.TComment> = lexParseOk.lexerSnapshot.comments;
-    const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = lexParseOk.state.contextState.nodeIdMapCollection;
+    const ast: PQP.Language.Ast.TNode = triedLexParse.ast;
+    const comments: ReadonlyArray<PQP.Language.Comment.TComment> = triedLexParse.lexerSnapshot.comments;
+    const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = triedLexParse.nodeIdMapCollection;
     const locale: string = formatSettings.locale;
 
     let commentCollectionMap: CommentCollectionMap = new Map();
     if (comments.length) {
         const triedCommentPass: PQP.Traverse.TriedTraverse<CommentCollectionMap> = tryTraverseComment(
             locale,
-            root,
+            ast,
             nodeIdMapCollection,
             comments,
         );
@@ -62,7 +62,7 @@ export function tryFormat<S extends PQP.Parser.IParseState = PQP.Parser.IParseSt
 
     const triedIsMultilineMap: PQP.Traverse.TriedTraverse<IsMultilineMap> = tryTraverseIsMultiline(
         locale,
-        root,
+        ast,
         commentCollectionMap,
         nodeIdMapCollection,
     );
@@ -73,7 +73,7 @@ export function tryFormat<S extends PQP.Parser.IParseState = PQP.Parser.IParseSt
 
     const triedSerializeParameter: PQP.Traverse.TriedTraverse<SerializeParameterMap> = tryTraverseSerializeParameter(
         locale,
-        root,
+        ast,
         nodeIdMapCollection,
         commentCollectionMap,
         isMultilineMap,
@@ -89,7 +89,7 @@ export function tryFormat<S extends PQP.Parser.IParseState = PQP.Parser.IParseSt
     };
     const serializeRequest: SerializeSettings = {
         locale,
-        root: lexParseOk.root,
+        ast,
         nodeIdMapCollection,
         passthroughMaps,
         indentationLiteral: formatSettings.indentationLiteral,

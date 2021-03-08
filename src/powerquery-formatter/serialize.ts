@@ -23,7 +23,7 @@ export const enum NewlineLiteral {
 export type TriedSerialize = PQP.Result<string, PQP.CommonError.CommonError>;
 
 export interface SerializeSettings extends PQP.CommonSettings {
-    readonly root: PQP.Language.Ast.TNode;
+    readonly ast: PQP.Language.Ast.TNode;
     readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly passthroughMaps: SerializePassthroughMaps;
     readonly indentationLiteral: IndentationLiteral;
@@ -59,7 +59,7 @@ function serialize(settings: SerializeSettings): string {
 
 function stateFromSettings(settings: SerializeSettings): SerializeState {
     const state: SerializeState = {
-        node: settings.root,
+        node: settings.ast,
         nodeIdMapCollection: settings.nodeIdMapCollection,
         passthroughMaps: settings.passthroughMaps,
         newlineLiteral: settings.newlineLiteral,
