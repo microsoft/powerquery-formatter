@@ -13,12 +13,16 @@ import {
     trySerialize,
 } from "./serialize";
 import { ResultUtils } from "@microsoft/powerquery-parser";
-import { FormatError } from ".";
 
 export type TriedFormat<S extends PQP.Parser.IParseState = PQP.Parser.IParseState> = PQP.Result<
     string,
-    FormatError.FormatError<S>
+    TFormatError<S>
 >;
+
+export type TFormatError<S extends PQP.Parser.IParseState = PQP.Parser.IParseState> =
+    | PQP.CommonError.CommonError
+    | PQP.Lexer.LexError.TLexError
+    | PQP.Parser.ParseError.TParseError<S>;
 
 export interface FormatSettings<S extends PQP.Parser.IParseState = PQP.Parser.IParseState> extends PQP.Settings<S> {
     readonly indentationLiteral: IndentationLiteral;

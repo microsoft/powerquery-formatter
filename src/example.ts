@@ -12,7 +12,7 @@ const settings: FormatSettings = {
     newlineLiteral: NewlineLiteral.Unix,
 };
 
-const triedFormat: PQP.Result<string, FormatError.TFormatError> = tryFormat(settings, text);
+const triedFormat: PQP.Result<string, FormatError> = tryFormat(settings, text);
 if (PQP.ResultUtils.isOk(triedFormat)) {
     console.log("Your input was formatted as the following:");
     console.log(triedFormat.value);
