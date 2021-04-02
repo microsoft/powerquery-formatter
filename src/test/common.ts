@@ -42,13 +42,13 @@ export function compare(expected: string, actual: string, newlineLiteral: Newlin
 export function expectFormat(text: string, formatSettings: FormatSettings = DefaultFormatSettings): string {
     text = text.trim();
     const firstTriedFormat: TriedFormat = tryFormat(formatSettings, text);
-    if (PQP.ResultUtils.isErr(firstTriedFormat)) {
+    if (PQP.ResultUtils.isError(firstTriedFormat)) {
         throw firstTriedFormat.error;
     }
     const firstOk: string = firstTriedFormat.value;
 
     const secondTriedFormat: TriedFormat = tryFormat(formatSettings, firstOk);
-    if (PQP.ResultUtils.isErr(secondTriedFormat)) {
+    if (PQP.ResultUtils.isError(secondTriedFormat)) {
         throw secondTriedFormat.error;
     }
     const secondOk: string = secondTriedFormat.value;
