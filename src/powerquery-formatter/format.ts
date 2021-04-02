@@ -2,8 +2,13 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { CommentCollectionMap, IsMultilineMap, SerializeParameterMap, tryTraverseComment } from "./passes";
-import { tryTraverseSerializeParameter } from "./passes";
+import {
+    CommentCollectionMap,
+    IsMultilineMap,
+    SerializeParameterMap,
+    tryTraverseComment,
+    tryTraverseSerializeParameter,
+} from "./passes";
 import { tryTraverseIsMultiline } from "./passes/isMultiline/isMultiline";
 import {
     IndentationLiteral,
@@ -12,7 +17,6 @@ import {
     SerializeSettings,
     trySerialize,
 } from "./serialize";
-import { ResultUtils } from "@microsoft/powerquery-parser";
 
 export type TriedFormat<S extends PQP.Parser.IParseState = PQP.Parser.IParseState> = PQP.Result<
     string,
@@ -41,7 +45,7 @@ export function tryFormat<S extends PQP.Parser.IParseState = PQP.Parser.IParseSt
 ): TriedFormat<S> {
     const triedLexParse: PQP.Task.TriedLexParseTask<S> = PQP.TaskUtils.tryLexParse(formatSettings, text);
     if (PQP.TaskUtils.isError(triedLexParse)) {
-        return ResultUtils.errFactory(triedLexParse.error);
+        return PQP.ResultUtils.createError(triedLexParse.error);
     }
 
     const ast: PQP.Language.Ast.TNode = triedLexParse.ast;
@@ -58,7 +62,7 @@ export function tryFormat<S extends PQP.Parser.IParseState = PQP.Parser.IParseSt
             comments,
         );
 
-        if (PQP.ResultUtils.isErr(triedCommentPass)) {
+        if (PQP.ResultUtils.isError(triedCommentPass)) {
             return triedCommentPass;
         }
         commentCollectionMap = triedCommentPass.value;
@@ -70,7 +74,7 @@ export function tryFormat<S extends PQP.Parser.IParseState = PQP.Parser.IParseSt
         commentCollectionMap,
         nodeIdMapCollection,
     );
-    if (PQP.ResultUtils.isErr(triedIsMultilineMap)) {
+    if (PQP.ResultUtils.isError(triedIsMultilineMap)) {
         return triedIsMultilineMap;
     }
     const isMultilineMap: IsMultilineMap = triedIsMultilineMap.value;
@@ -82,7 +86,7 @@ export function tryFormat<S extends PQP.Parser.IParseState = PQP.Parser.IParseSt
         commentCollectionMap,
         isMultilineMap,
     );
-    if (PQP.ResultUtils.isErr(triedSerializeParameter)) {
+    if (PQP.ResultUtils.isError(triedSerializeParameter)) {
         return triedSerializeParameter;
     }
     const serializeParameterMap: SerializeParameterMap = triedSerializeParameter.value;

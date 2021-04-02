@@ -19,7 +19,7 @@ export function tryTraverseIsMultiline(
         commentCollectionMap,
         nodeIdMapCollection,
     );
-    if (PQP.ResultUtils.isErr(triedFirstPass)) {
+    if (PQP.ResultUtils.isError(triedFirstPass)) {
         return triedFirstPass;
     }
     const isMultilineMap: IsMultilineMap = triedFirstPass.value;

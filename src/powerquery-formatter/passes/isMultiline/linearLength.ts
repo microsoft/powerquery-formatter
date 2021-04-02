@@ -51,7 +51,7 @@ function calculateLinearLength(
         undefined,
     );
 
-    if (PQP.ResultUtils.isErr(triedTraverse)) {
+    if (PQP.ResultUtils.isError(triedTraverse)) {
         throw triedTraverse.error;
     } else {
         return triedTraverse.value;
