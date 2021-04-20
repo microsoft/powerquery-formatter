@@ -4,8 +4,8 @@
 import * as PQP from "@microsoft/powerquery-parser";
 import { CommentCollection, CommentCollectionMap, CommentState } from "./commonTypes";
 
-// TODO pass in leafNodeIds instead for a big speed boost.
-// Returns a Map<a leaf node's id number, an array of comments attached to the node id>.
+// TODO pass in leafIds instead for a big speed boost.
+// Returns a Map<leafId, an array of comments attached to the leafId>.
 export function tryTraverseComment(
     locale: string,
     root: PQP.Language.Ast.TNode,
