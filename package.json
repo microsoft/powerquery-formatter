@@ -45,7 +45,7 @@
         "typescript": "^3.9.5"
     },
     "dependencies": {
-        "@microsoft/powerquery-parser": "0.4.4"
+        "@microsoft/powerquery-parser": "0.4.5"
     },
     "files": [
         "lib/powerquery-formatter/**/*"
