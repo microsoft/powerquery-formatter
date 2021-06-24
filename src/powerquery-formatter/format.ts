@@ -18,32 +18,26 @@ import {
     trySerialize,
 } from "./serialize";
 
-export type TriedFormat<S extends PQP.Parser.IParseState = PQP.Parser.IParseState> = PQP.Result<
-    string,
-    TFormatError<S>
->;
+export type TriedFormat = PQP.Result<string, TFormatError>;
 
-export type TFormatError<S extends PQP.Parser.IParseState = PQP.Parser.IParseState> =
+export type TFormatError =
     | PQP.CommonError.CommonError
     | PQP.Lexer.LexError.TLexError
-    | PQP.Parser.ParseError.TParseError<S>;
+    | PQP.Parser.ParseError.TParseError;
 
-export interface FormatSettings<S extends PQP.Parser.IParseState = PQP.Parser.IParseState> extends PQP.Settings<S> {
+export interface FormatSettings extends PQP.Settings {
     readonly indentationLiteral: IndentationLiteral;
     readonly newlineLiteral: NewlineLiteral;
 }
 
-export const DefaultSettings: FormatSettings<PQP.Parser.IParseState> = {
+export const DefaultSettings: FormatSettings = {
     ...PQP.DefaultSettings,
     indentationLiteral: IndentationLiteral.SpaceX4,
     newlineLiteral: NewlineLiteral.Windows,
 };
 
-export function tryFormat<S extends PQP.Parser.IParseState = PQP.Parser.IParseState>(
-    formatSettings: FormatSettings<S>,
-    text: string,
-): TriedFormat<S> {
-    const triedLexParse: PQP.Task.TriedLexParseTask<S> = PQP.TaskUtils.tryLexParse(formatSettings, text);
+export function tryFormat(formatSettings: FormatSettings, text: string): TriedFormat {
+    const triedLexParse: PQP.Task.TriedLexParseTask = PQP.TaskUtils.tryLexParse(formatSettings, text);
     if (PQP.TaskUtils.isError(triedLexParse)) {
         return PQP.ResultUtils.createError(triedLexParse.error);
     }
