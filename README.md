@@ -4,6 +4,12 @@
 
 This project contains a source code formatter for the Power Query / M language.
 
+## Related projects
+
+- [powerquery-parser](https://github.com/microsoft/powerquery-parser): A lexer + parser for Power Query. Also contains features such as type validation.
+- [powerquery-language-services](https://github.com/microsoft/powerquery-language-services): A high level library that wraps the parser for external projects, such as the VSCode extension. Includes features such as Intellisense.
+- [vscode-powerquery](https://github.com/microsoft/vscode-powerquery): The VSCode extension for Power Query.
+
 ## Build and test
 
 Build
