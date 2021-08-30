@@ -39,7 +39,7 @@ export const DefaultSettings: FormatSettings = {
 export function tryFormat(formatSettings: FormatSettings, text: string): TriedFormat {
     const triedLexParse: PQP.Task.TriedLexParseTask = PQP.TaskUtils.tryLexParse(formatSettings, text);
     if (PQP.TaskUtils.isError(triedLexParse)) {
-        return PQP.ResultUtils.createError(triedLexParse.error);
+        return PQP.ResultUtils.boxError(triedLexParse.error);
     }
 
     const ast: PQP.Language.Ast.TNode = triedLexParse.ast;
