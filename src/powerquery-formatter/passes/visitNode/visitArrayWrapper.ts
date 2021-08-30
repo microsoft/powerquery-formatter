@@ -7,7 +7,7 @@ import { expectGetIsMultiline } from "../isMultiline/common";
 import { isSectionMemeberSimilarScope, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 
 export function visitArrayWrapper(state: SerializeParameterState, node: PQP.Language.Ast.TArrayWrapper): void {
-    const parent: PQP.Language.Ast.TNode = PQP.Parser.NodeIdMapUtils.assertGetParentAst(
+    const parent: PQP.Language.Ast.TNode = PQP.Parser.NodeIdMapUtils.assertUnboxParentAst(
         state.nodeIdMapCollection,
         node.id,
     );
