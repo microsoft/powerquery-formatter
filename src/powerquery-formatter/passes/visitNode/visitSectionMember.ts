@@ -21,7 +21,7 @@ export function visitSectionMember(state: SerializeParameterState, node: PQP.Lan
             maybeSharedConstantWriteKind = SerializeWriteKind.PaddedLeft;
         }
     } else if (node.maybeSharedConstant) {
-        const sharedConstant: PQP.Language.Ast.IConstant<PQP.Language.Constant.KeywordConstantKind.Shared> =
+        const sharedConstant: PQP.Language.Ast.IConstant<PQP.Language.Constant.KeywordConstant.Shared> =
             node.maybeSharedConstant;
         propagateWriteKind(state, node, sharedConstant);
     } else {
@@ -30,7 +30,7 @@ export function visitSectionMember(state: SerializeParameterState, node: PQP.Lan
     }
 
     if (node.maybeSharedConstant && maybeSharedConstantWriteKind) {
-        const sharedConstant: PQP.Language.Ast.IConstant<PQP.Language.Constant.KeywordConstantKind.Shared> =
+        const sharedConstant: PQP.Language.Ast.IConstant<PQP.Language.Constant.KeywordConstant.Shared> =
             node.maybeSharedConstant;
         setWorkspace(state, sharedConstant, { maybeWriteKind: maybeSharedConstantWriteKind });
     }
@@ -38,7 +38,7 @@ export function visitSectionMember(state: SerializeParameterState, node: PQP.Lan
     if (!isNameExpressionPairWorkspaceSet) {
         let isNameExpressionPairIndented: boolean = false;
         if (node.maybeSharedConstant) {
-            const sharedConstant: PQP.Language.Ast.IConstant<PQP.Language.Constant.KeywordConstantKind.Shared> =
+            const sharedConstant: PQP.Language.Ast.IConstant<PQP.Language.Constant.KeywordConstant.Shared> =
                 node.maybeSharedConstant;
 
             if (expectGetIsMultiline(isMultilineMap, sharedConstant)) {

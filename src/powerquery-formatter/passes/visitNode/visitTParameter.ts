@@ -7,7 +7,7 @@ import { setWorkspace } from "./visitNodeUtils";
 
 export function visitTParameter(state: SerializeParameterState, node: PQP.Language.Ast.TParameter): void {
     if (node.maybeOptionalConstant) {
-        const optionalConstant: PQP.Language.Ast.IConstant<PQP.Language.Constant.LanguageConstantKind.Optional> =
+        const optionalConstant: PQP.Language.Ast.IConstant<PQP.Language.Constant.LanguageConstant.Optional> =
             node.maybeOptionalConstant;
         setWorkspace(state, optionalConstant, { maybeWriteKind: SerializeWriteKind.PaddedRight });
     }
