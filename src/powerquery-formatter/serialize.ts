@@ -75,17 +75,15 @@ function stateFromSettings(settings: SerializeSettings): SerializeState {
 
 function serializeNode(state: SerializeState, node: PQP.Language.Ast.TNode): void {
     const nodeId: number = node.id;
-    const maybeIndentationChange:
-        | IndentationChange
-        | undefined = state.passthroughMaps.serializeParameterMap.indentationChange.get(nodeId);
+    const maybeIndentationChange: IndentationChange | undefined =
+        state.passthroughMaps.serializeParameterMap.indentationChange.get(nodeId);
     if (maybeIndentationChange) {
         state.indentationLevel += 1;
     }
 
     if (node.isLeaf) {
-        const maybeComments:
-            | ReadonlyArray<SerializeCommentParameter>
-            | undefined = state.passthroughMaps.serializeParameterMap.comments.get(nodeId);
+        const maybeComments: ReadonlyArray<SerializeCommentParameter> | undefined =
+            state.passthroughMaps.serializeParameterMap.comments.get(nodeId);
         if (maybeComments) {
             visitComments(state, maybeComments);
         }
@@ -121,10 +119,9 @@ function serializeNode(state: SerializeState, node: PQP.Language.Ast.TNode): voi
             break;
         }
 
-        default:
-            const maybeChildren:
-                | ReadonlyArray<PQP.Language.Ast.TNode>
-                | undefined = PQP.Parser.NodeIdMapIterator.maybeIterChildrenAst(state.nodeIdMapCollection, node.id);
+        default: {
+            const maybeChildren: ReadonlyArray<PQP.Language.Ast.TNode> | undefined =
+                PQP.Parser.NodeIdMapIterator.maybeIterChildrenAst(state.nodeIdMapCollection, node.id);
             if (maybeChildren === undefined) {
                 break;
             }
@@ -133,6 +130,7 @@ function serializeNode(state: SerializeState, node: PQP.Language.Ast.TNode): voi
             for (const child of children) {
                 serializeNode(state, child);
             }
+        }
     }
 
     if (maybeIndentationChange) {
@@ -233,7 +231,6 @@ function getSerializeWriteKind(
     if (maybeWriteKind) {
         return maybeWriteKind;
     } else {
-        const details: {} = { node };
-        throw new PQP.CommonError.InvariantError("expected node to be in SerializeParameterMap.writeKind", details);
+        throw new PQP.CommonError.InvariantError("expected node to be in SerializeParameterMap.writeKind", { node });
     }
 }

@@ -1003,9 +1003,7 @@ in
 
         it(`true and true and (if true then true else false)`, () => {
             const expected: string = `
-true
-and true
-and (
+true and true and (
     if true then
         true
     else
@@ -1017,14 +1015,12 @@ and (
 
         it(`true and (if true then true else false) and true`, () => {
             const expected: string = `
-true
-and (
+true and (
     if true then
         true
     else
         false
-)
-and true`;
+) and true`;
             const actual: string = expectFormat(`true and (if true then true else false) and true`);
             compare(expected, actual);
         });
@@ -1036,8 +1032,7 @@ and true`;
         true
     else
         false
-)
-and true`;
+) and true`;
             const actual: string = expectFormat(`(if true then true else false) and true`);
             compare(expected, actual);
         });

@@ -24,12 +24,20 @@ export function compare(expected: string, actual: string, newlineLiteral: Newlin
         const expectedLine: string = expectedLines[lineNumber];
 
         if (expectedLine !== actualLine) {
-            const details: {} = {
-                lineNumber,
+            expect(actualLine).to.equal(
                 expectedLine,
-                actualLine,
-            };
-            expect(actualLine).to.equal(expectedLine, JSON.stringify(details, undefined, 4));
+                JSON.stringify(
+                    {
+                        lineNumber,
+                        expectedLine,
+                        actualLine,
+                        expected,
+                        actual,
+                    },
+                    undefined,
+                    4,
+                ),
+            );
         }
     }
 

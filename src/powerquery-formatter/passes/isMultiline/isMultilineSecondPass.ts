@@ -29,7 +29,7 @@ export function tryTraverseIsMultilineSecondPass(
 }
 
 function visitNode(state: IsMultilineSecondPassState, node: PQP.Language.Ast.TNode): void {
-    // tslint:disable-next-line: switch-default
+    // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
     switch (node.kind) {
         // TBinOpExpression
         case PQP.Language.Ast.NodeKind.ArithmeticExpression:

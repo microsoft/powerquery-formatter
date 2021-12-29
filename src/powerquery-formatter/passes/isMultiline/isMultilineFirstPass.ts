@@ -228,9 +228,8 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
                 }
                 const arrayWrapper: PQP.Language.Ast.IArrayWrapper<PQP.Language.Ast.TNode> = maybeArrayWrapper;
 
-                const maybeRecursivePrimaryExpression:
-                    | PQP.Language.Ast.TNode
-                    | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, arrayWrapper.id);
+                const maybeRecursivePrimaryExpression: PQP.Language.Ast.TNode | undefined =
+                    PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, arrayWrapper.id);
                 if (
                     maybeRecursivePrimaryExpression === undefined ||
                     maybeRecursivePrimaryExpression.kind !== PQP.Language.Ast.NodeKind.RecursivePrimaryExpression
@@ -239,7 +238,8 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
                         "ArrayWrapper must have RecursivePrimaryExpression as a parent",
                     );
                 }
-                const recursivePrimaryExpression: PQP.Language.Ast.RecursivePrimaryExpression = maybeRecursivePrimaryExpression;
+                const recursivePrimaryExpression: PQP.Language.Ast.RecursivePrimaryExpression =
+                    maybeRecursivePrimaryExpression;
 
                 const headLinearLength: number = getLinearLength(
                     state.locale,
@@ -252,12 +252,8 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
                 // if it's beyond the threshold check if it's a long literal
                 // ex. `#datetimezone(2013,02,26, 09,15,00, 09,00)`
                 if (compositeLinearLength > InvokeExpressionLinearLengthThreshold) {
-                    const maybeIdentifierLiteral:
-                        | string
-                        | undefined = PQP.Parser.NodeIdMapUtils.maybeInvokeExpressionIdentifierLiteral(
-                        nodeIdMapCollection,
-                        node.id,
-                    );
+                    const maybeIdentifierLiteral: string | undefined =
+                        PQP.Parser.NodeIdMapUtils.maybeInvokeExpressionIdentifierLiteral(nodeIdMapCollection, node.id);
                     if (maybeIdentifierLiteral) {
                         const name: string = maybeIdentifierLiteral;
                         isMultiline = InvokeExpressionIdentifierLinearLengthExclusions.indexOf(name) === -1;
@@ -393,7 +389,7 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
 
 function isAnyListOrRecord(nodes: ReadonlyArray<PQP.Language.Ast.TNode>): boolean {
     for (const node of nodes) {
-        // tslint:disable-next-line: switch-default
+        // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
         switch (node.kind) {
             case PQP.Language.Ast.NodeKind.ListExpression:
             case PQP.Language.Ast.NodeKind.ListLiteral:
