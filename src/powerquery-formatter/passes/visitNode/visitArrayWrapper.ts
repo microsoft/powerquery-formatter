@@ -53,8 +53,7 @@ function visitArrayWrapperForSectionMembers(
     let maybePreviousSectionMember: PQP.Language.Ast.SectionMember | undefined;
     for (const member of node.elements) {
         if (member.kind !== PQP.Language.Ast.NodeKind.SectionMember) {
-            const details: {} = { nodeKind: member.kind };
-            throw new PQP.CommonError.InvariantError(`expected sectionMember`, details);
+            throw new PQP.CommonError.InvariantError(`expected sectionMember`, { nodeKind: member.kind });
         }
 
         let memberWriteKind: SerializeWriteKind = SerializeWriteKind.DoubleNewline;

@@ -22,7 +22,7 @@ export function visitErrorRaisingExpression(
             };
             break;
 
-        default:
+        default: {
             const pairedIsMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, node.paired);
             if (pairedIsMultiline) {
                 pairedWorkspace = {
@@ -32,6 +32,7 @@ export function visitErrorRaisingExpression(
             } else {
                 pairedWorkspace = { maybeWriteKind: SerializeWriteKind.PaddedLeft };
             }
+        }
     }
     setWorkspace(state, node.paired, pairedWorkspace);
 }
