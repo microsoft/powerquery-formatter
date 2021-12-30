@@ -23,17 +23,20 @@ export interface CommentState extends PQP.Traverse.ITraversalState<CommentCollec
 
 export interface IsMultilineFirstPassState extends PQP.Traverse.ITraversalState<IsMultilineMap> {
     readonly commentCollectionMap: CommentCollectionMap;
-    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly linearLengthMap: LinearLengthMap;
+    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
+    readonly traceManager: PQP.Trace.TraceManager;
 }
 
 export interface IsMultilineSecondPassState extends PQP.Traverse.ITraversalState<IsMultilineMap> {
     readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
+    readonly traceManager: PQP.Trace.TraceManager;
 }
 
 export interface LinearLengthState extends PQP.Traverse.ITraversalState<number> {
-    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly linearLengthMap: LinearLengthMap;
+    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
+    readonly traceManager: PQP.Trace.TraceManager;
 }
 
 export const enum SerializeWriteKind {
@@ -61,9 +64,10 @@ export interface SerializeParameterMap {
 }
 
 export interface SerializeParameterState extends PQP.Traverse.ITraversalState<SerializeParameterMap> {
-    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly commentCollectionMap: CommentCollectionMap;
     readonly isMultilineMap: IsMultilineMap;
+    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
+    readonly traceManager: PQP.Trace.TraceManager;
     readonly workspaceMap: Map<number, SerializeParameter>;
 }
 

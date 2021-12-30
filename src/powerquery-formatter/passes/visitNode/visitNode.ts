@@ -33,8 +33,14 @@ import { visitTParameter } from "./visitTParameter";
 import { visitTWrapped } from "./visitTWrapped";
 import { visitTypePrimaryType } from "./visitTypePrimaryType";
 import { visitUnaryExpression } from "./visitUnaryExpression";
+import { FormatTraceConstant } from "../../trace";
 
 export function visitNode(state: SerializeParameterState, node: PQP.Language.Ast.TNode): void {
+    const trace: PQP.Trace.Trace = state.traceManager.entry(FormatTraceConstant.SerializeParameter, visitNode.name, {
+        nodeId: node.id,
+        nodeKind: node.kind,
+    });
+
     switch (node.kind) {
         case PQP.Language.Ast.NodeKind.ArrayWrapper:
             visitArrayWrapper(state, node);
@@ -210,4 +216,6 @@ export function visitNode(state: SerializeParameterState, node: PQP.Language.Ast
         default:
             throw PQP.Assert.isNever(node);
     }
+
+    trace.exit();
 }

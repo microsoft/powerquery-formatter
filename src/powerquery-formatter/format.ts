@@ -67,6 +67,7 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
         ast,
         commentCollectionMap,
         nodeIdMapCollection,
+        formatSettings.traceManager,
     );
     if (PQP.ResultUtils.isError(triedIsMultilineMap)) {
         return triedIsMultilineMap;
@@ -79,6 +80,7 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
         nodeIdMapCollection,
         commentCollectionMap,
         isMultilineMap,
+        formatSettings.traceManager,
     );
     if (PQP.ResultUtils.isError(triedSerializeParameter)) {
         return triedSerializeParameter;
@@ -95,6 +97,7 @@ export function tryFormat(formatSettings: FormatSettings, text: string): TriedFo
         nodeIdMapCollection,
         passthroughMaps,
         indentationLiteral: formatSettings.indentationLiteral,
+        traceManager: formatSettings.traceManager,
         newlineLiteral: formatSettings.newlineLiteral,
         maybeCancellationToken: undefined,
     };

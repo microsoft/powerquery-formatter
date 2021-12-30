@@ -17,17 +17,19 @@ export function tryTraverseSerializeParameter(
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     commentCollectionMap: CommentCollectionMap,
     isMultilineMap: IsMultilineMap,
+    traceManager: PQP.Trace.TraceManager,
 ): PQP.Traverse.TriedTraverse<SerializeParameterMap> {
     const state: SerializeParameterState = {
+        commentCollectionMap,
+        isMultilineMap,
+        locale,
+        nodeIdMapCollection,
         result: {
             writeKind: new Map(),
             indentationChange: new Map(),
             comments: new Map(),
         },
-        locale,
-        nodeIdMapCollection,
-        commentCollectionMap,
-        isMultilineMap,
+        traceManager,
         workspaceMap: new Map(),
     };
     return PQP.Traverse.tryTraverseAst(
