@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+import { FormatTraceConstant } from "../../trace";
 import { IsMultilineMap, IsMultilineSecondPassState } from "../commonTypes";
 import { expectGetIsMultiline, setIsMultiline } from "./common";
 
@@ -10,11 +11,13 @@ export function tryTraverseIsMultilineSecondPass(
     ast: PQP.Language.Ast.TNode,
     isMultilineMap: IsMultilineMap,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
+    traceManager: PQP.Trace.TraceManager,
 ): PQP.Traverse.TriedTraverse<IsMultilineMap> {
     const state: IsMultilineSecondPassState = {
         locale,
-        result: isMultilineMap,
         nodeIdMapCollection,
+        result: isMultilineMap,
+        traceManager,
     };
 
     return PQP.Traverse.tryTraverseAst(
@@ -29,6 +32,11 @@ export function tryTraverseIsMultilineSecondPass(
 }
 
 function visitNode(state: IsMultilineSecondPassState, node: PQP.Language.Ast.TNode): void {
+    const trace: PQP.Trace.Trace = state.traceManager.entry(FormatTraceConstant.IsMultilinePhase2, visitNode.name, {
+        nodeId: node.id,
+        nodeKind: node.kind,
+    });
+
     // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
     switch (node.kind) {
         // TBinOpExpression
@@ -48,6 +56,8 @@ function visitNode(state: IsMultilineSecondPassState, node: PQP.Language.Ast.TNo
                 PQP.Language.AstUtils.isTBinOpExpression(maybeParent) &&
                 expectGetIsMultiline(isMultilineMap, maybeParent)
             ) {
+                trace.trace("Updating isMultiline for nested BinOp");
+
                 setIsMultiline(isMultilineMap, node, true);
             }
             break;
@@ -60,6 +70,8 @@ function visitNode(state: IsMultilineSecondPassState, node: PQP.Language.Ast.TNo
         case PQP.Language.Ast.NodeKind.RecordExpression:
         case PQP.Language.Ast.NodeKind.RecordLiteral:
             if (node.content.elements.length) {
+                trace.trace("Updating isMultiline for collection");
+
                 const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = state.nodeIdMapCollection;
 
                 let maybeParent: PQP.Language.Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(
@@ -103,4 +115,6 @@ function visitNode(state: IsMultilineSecondPassState, node: PQP.Language.Ast.TNo
                 }
             }
     }
+
+    trace.exit();
 }

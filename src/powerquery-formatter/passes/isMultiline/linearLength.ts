@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+import { FormatTraceConstant } from "../../trace";
 import { LinearLengthMap, LinearLengthState } from "../commonTypes";
 
 // Lazy evaluation of a potentially large PQP.Language.AST.
@@ -15,13 +16,21 @@ export function getLinearLength(
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     linearLengthMap: LinearLengthMap,
     node: PQP.Language.Ast.TNode,
+    traceManager: PQP.Trace.TraceManager,
 ): number {
     const nodeId: number = node.id;
     const maybeLinearLength: number | undefined = linearLengthMap.get(nodeId);
 
     if (maybeLinearLength === undefined) {
-        const linearLength: number = calculateLinearLength(locale, node, nodeIdMapCollection, linearLengthMap);
+        const linearLength: number = calculateLinearLength(
+            locale,
+            node,
+            nodeIdMapCollection,
+            linearLengthMap,
+            traceManager,
+        );
         linearLengthMap.set(nodeId, linearLength);
+
         return linearLength;
     } else {
         return maybeLinearLength;
@@ -33,12 +42,14 @@ function calculateLinearLength(
     node: PQP.Language.Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     linearLengthMap: LinearLengthMap,
+    traceManager: PQP.Trace.TraceManager,
 ): number {
     const state: LinearLengthState = {
-        locale,
-        result: 0,
-        nodeIdMapCollection,
         linearLengthMap,
+        locale,
+        nodeIdMapCollection,
+        result: 0,
+        traceManager,
     };
 
     const triedTraverse: PQP.Traverse.TriedTraverse<number> = PQP.Traverse.tryTraverseAst(
@@ -59,6 +70,10 @@ function calculateLinearLength(
 }
 
 function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void {
+    const trace: PQP.Trace.Trace = state.traceManager.entry(FormatTraceConstant.LinearLength, visitNode.name, {
+        nodeId: node.id,
+        nodeKind: node.kind,
+    });
     let linearLength: number;
 
     switch (node.kind) {
@@ -373,6 +388,8 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
 
     state.linearLengthMap.set(node.id, linearLength);
     state.result = linearLength;
+
+    trace.exit({ linearLength });
 }
 
 function sumLinearLengths(
@@ -388,6 +405,7 @@ function sumLinearLengths(
                 state.nodeIdMapCollection,
                 state.linearLengthMap,
                 maybeNode,
+                state.traceManager,
             );
             summedLinearLength += nodeLinearLength;
         }
