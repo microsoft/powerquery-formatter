@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+
 import { DefaultSerializeParameter, SerializeParameterState } from "../commonTypes";
 import { maybePropagateWriteKind, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 

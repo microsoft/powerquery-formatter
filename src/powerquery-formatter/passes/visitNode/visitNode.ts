@@ -2,9 +2,10 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { SerializeParameter, SerializeParameterState } from "../commonTypes";
-import { getWorkspace, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 
+import { getWorkspace, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
+import { SerializeParameter, SerializeParameterState } from "../commonTypes";
+import { FormatTraceConstant } from "../../trace";
 import { visitArrayWrapper } from "./visitArrayWrapper";
 import { visitErrorHandlingExpression } from "./visitErrorHandlingExpression";
 import { visitErrorRaisingExpression } from "./visitErrorRaisingExpression";
@@ -33,7 +34,6 @@ import { visitTParameter } from "./visitTParameter";
 import { visitTWrapped } from "./visitTWrapped";
 import { visitTypePrimaryType } from "./visitTypePrimaryType";
 import { visitUnaryExpression } from "./visitUnaryExpression";
-import { FormatTraceConstant } from "../../trace";
 
 export function visitNode(state: SerializeParameterState, node: PQP.Language.Ast.TNode): void {
     const trace: PQP.Trace.Trace = state.traceManager.entry(FormatTraceConstant.SerializeParameter, visitNode.name, {

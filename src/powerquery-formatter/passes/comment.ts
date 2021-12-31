@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+
 import { CommentCollection, CommentCollectionMap, CommentState } from "./commonTypes";
 
 // TODO pass in leafIds instead for a big speed boost.

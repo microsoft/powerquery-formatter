@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+
 import {
     CommentCollectionMap,
     IsMultilineMap,
@@ -9,7 +10,6 @@ import {
     tryTraverseComment,
     tryTraverseSerializeParameter,
 } from "./passes";
-import { tryTraverseIsMultiline } from "./passes/isMultiline/isMultiline";
 import {
     IndentationLiteral,
     NewlineLiteral,
@@ -17,6 +17,7 @@ import {
     SerializeSettings,
     trySerialize,
 } from "./serialize";
+import { tryTraverseIsMultiline } from "./passes/isMultiline/isMultiline";
 
 export type TriedFormat = PQP.Result<string, TFormatError>;
 

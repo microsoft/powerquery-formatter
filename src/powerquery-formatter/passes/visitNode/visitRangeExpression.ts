@@ -2,8 +2,9 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../commonTypes";
+
 import { getWorkspace, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
+import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 
 export function visitRangeExpression(state: SerializeParameterState, node: PQP.Language.Ast.RangeExpression): void {
     const workspace: SerializeParameter = getWorkspace(state, node);

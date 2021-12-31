@@ -2,8 +2,9 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { SerializeParameterState, SerializeWriteKind } from "../commonTypes";
+
 import { propagateWriteKind, setWorkspace } from "./visitNodeUtils";
+import { SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 
 export function visitLetExpression(state: SerializeParameterState, node: PQP.Language.Ast.LetExpression): void {
     propagateWriteKind(state, node, node.letConstant);

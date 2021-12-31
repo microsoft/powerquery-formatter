@@ -2,9 +2,10 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+
+import { maybePropagateWriteKind, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 import { expectGetIsMultiline } from "../isMultiline/common";
-import { maybePropagateWriteKind, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 
 // TPairedConstant override
 export function visitFieldSpecification(

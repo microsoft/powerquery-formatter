@@ -2,8 +2,9 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { FormatTraceConstant } from "../../trace";
+
 import { LinearLengthMap, LinearLengthState } from "../commonTypes";
+import { FormatTraceConstant } from "../../trace";
 
 // Lazy evaluation of a potentially large PQP.Language.AST.
 // Returns the length of text if the node was formatted on a single line.

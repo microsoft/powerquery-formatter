@@ -2,9 +2,10 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { FormatTraceConstant } from "../../trace";
-import { IsMultilineMap, IsMultilineSecondPassState } from "../commonTypes";
+
 import { expectGetIsMultiline, setIsMultiline } from "./common";
+import { IsMultilineMap, IsMultilineSecondPassState } from "../commonTypes";
+import { FormatTraceConstant } from "../../trace";
 
 export function tryTraverseIsMultilineSecondPass(
     locale: string,
