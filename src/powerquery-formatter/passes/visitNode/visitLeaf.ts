@@ -2,9 +2,10 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+
+import { getWorkspace, maybeSetIndentationChange } from "./visitNodeUtils";
 import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 import { visitComments } from "./visitComments";
-import { getWorkspace, maybeSetIndentationChange } from "./visitNodeUtils";
 
 export function visitLeaf(
     state: SerializeParameterState,

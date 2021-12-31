@@ -2,8 +2,9 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { FormatTraceConstant } from "../../trace";
+
 import { CommentCollectionMap, IsMultilineMap } from "../commonTypes";
+import { FormatTraceConstant } from "../../trace";
 import { tryTraverseIsMultilineFirstPass } from "./isMultilineFirstPass";
 import { tryTraverseIsMultilineSecondPass } from "./isMultilineSecondPass";
 

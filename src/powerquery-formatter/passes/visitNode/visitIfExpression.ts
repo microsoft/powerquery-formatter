@@ -2,9 +2,10 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+
+import { propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 import { expectGetIsMultiline } from "../isMultiline/common";
-import { propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 
 export function visitIfExpression(state: SerializeParameterState, node: PQP.Language.Ast.IfExpression): void {
     propagateWriteKind(state, node, node.ifConstant);

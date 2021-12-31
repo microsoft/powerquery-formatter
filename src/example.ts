@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-/* tslint:disable:no-console */
 import * as PQP from "@microsoft/powerquery-parser";
+
 import { FormatSettings, IndentationLiteral, NewlineLiteral, TFormatError, tryFormat } from ".";
 
 const text: string = `1 as number`;
@@ -13,6 +13,7 @@ const settings: FormatSettings = {
 };
 
 const triedFormat: PQP.Result<string, TFormatError> = tryFormat(settings, text);
+/* tslint:disable:no-console */
 if (PQP.ResultUtils.isOk(triedFormat)) {
     console.log("Your input was formatted as the following:");
     console.log(triedFormat.value);

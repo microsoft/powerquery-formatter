@@ -2,9 +2,10 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+
+import { propagateWriteKind, setWorkspace, skipPrimaryTypeIndentation } from "./visitNodeUtils";
 import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 import { expectGetIsMultiline } from "../isMultiline/common";
-import { propagateWriteKind, setWorkspace, skipPrimaryTypeIndentation } from "./visitNodeUtils";
 
 export function visitTypePrimaryType(state: SerializeParameterState, node: PQP.Language.Ast.TypePrimaryType): void {
     propagateWriteKind(state, node, node.constant);

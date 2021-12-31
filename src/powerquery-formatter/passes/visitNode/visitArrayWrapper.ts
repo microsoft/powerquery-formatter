@@ -2,9 +2,10 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+
 import { IndentationChange, SerializeParameterState, SerializeWriteKind } from "../commonTypes";
-import { expectGetIsMultiline } from "../isMultiline/common";
 import { isSectionMemeberSimilarScope, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
+import { expectGetIsMultiline } from "../isMultiline/common";
 
 export function visitArrayWrapper(state: SerializeParameterState, node: PQP.Language.Ast.TArrayWrapper): void {
     const parent: PQP.Language.Ast.TNode = PQP.Parser.NodeIdMapUtils.assertUnboxParentAst(

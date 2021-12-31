@@ -2,8 +2,9 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { SerializeParameterState, SerializeWriteKind } from "../commonTypes";
+
 import { propagateWriteKind, setWorkspace } from "./visitNodeUtils";
+import { SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 
 export function visitUnaryExpression(state: SerializeParameterState, node: PQP.Language.Ast.UnaryExpression): void {
     propagateWriteKind(state, node, node.operators);

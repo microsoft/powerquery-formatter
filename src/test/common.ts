@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import "mocha";
 import * as PQP from "@microsoft/powerquery-parser";
 import { expect } from "chai";
-import "mocha";
 
 import { FormatSettings, IndentationLiteral, NewlineLiteral, TriedFormat, tryFormat } from "..";
 

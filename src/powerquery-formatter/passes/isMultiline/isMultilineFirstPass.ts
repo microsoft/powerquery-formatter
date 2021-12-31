@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { FormatTraceConstant } from "../../trace";
+
 import {
     CommentCollection,
     CommentCollectionMap,
@@ -11,6 +11,7 @@ import {
     LinearLengthMap,
 } from "../commonTypes";
 import { expectGetIsMultiline, setIsMultiline } from "./common";
+import { FormatTraceConstant } from "../../trace";
 import { getLinearLength } from "./linearLength";
 
 export function tryTraverseIsMultilineFirstPass(
