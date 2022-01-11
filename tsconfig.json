@@ -1,22 +1,22 @@
 {
     "compilerOptions": {
-        "target": "es5",
-        "module": "commonjs",
-        "sourceMap": true,
-        "outDir": "lib",
-        "strict": true,
+        "declaration": true,
         "downlevelIteration": true,
-        "noFallthroughCasesInSwitch": true,
+        "incremental": true,
+        "module": "commonjs",
         "noEmitOnError": true,
+        "noFallthroughCasesInSwitch": true,
         "noImplicitReturns": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "declaration": true,
+        "outDir": "lib",
+        "resolveJsonModule": true,
         "rootDir": "src",
-        "incremental": true,
+        "sourceMap": true,
+        "strict": true,
+        "target": "es5",
         "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
-        "resolveJsonModule": true
     },
+    "exclude": ["node_modules"],
     "include": ["src/**/*.ts"],
-    "exclude": ["node_modules"]
 }
