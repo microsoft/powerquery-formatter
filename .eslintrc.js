@@ -10,6 +10,7 @@ module.exports = {
         "plugin:security/recommended",
     ],
     rules: {
+        "@typescript-eslint/no-floating-promises": "error",
         "@typescript-eslint/no-inferrable-types": "off",
         "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
         "@typescript-eslint/space-infix-ops": "error",
