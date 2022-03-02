@@ -3,18 +3,16 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
+
 import { maybePropagateWriteKind, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 import { expectGetIsMultiline } from "../isMultiline/common";
 
 // TPairedConstant override
-export function visitFieldSpecification(
-    state: SerializeParameterState,
-    node: PQP.Language.Ast.FieldSpecification,
-): void {
-    const maybeOptionalConstant:
-        | PQP.Language.Ast.IConstant<PQP.Language.Constant.LanguageConstant.Optional>
-        | undefined = node.maybeOptionalConstant;
+export function visitFieldSpecification(state: SerializeParameterState, node: Ast.FieldSpecification): void {
+    const maybeOptionalConstant: Ast.IConstant<PQP.Language.Constant.LanguageConstant.Optional> | undefined =
+        node.maybeOptionalConstant;
 
     if (maybePropagateWriteKind(state, node, maybeOptionalConstant)) {
         setWorkspace(state, node.name, { maybeWriteKind: SerializeWriteKind.PaddedLeft });
@@ -22,10 +20,10 @@ export function visitFieldSpecification(
         propagateWriteKind(state, node, node.name);
     }
 
-    const maybeFieldTypeSpecification: PQP.Language.Ast.FieldTypeSpecification | undefined =
-        node.maybeFieldTypeSpecification;
+    const maybeFieldTypeSpecification: Ast.FieldTypeSpecification | undefined = node.maybeFieldTypeSpecification;
+
     if (maybeFieldTypeSpecification) {
-        const fieldTypeSpecification: PQP.Language.Ast.FieldTypeSpecification = maybeFieldTypeSpecification;
+        const fieldTypeSpecification: Ast.FieldTypeSpecification = maybeFieldTypeSpecification;
         const isMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, fieldTypeSpecification);
         let typeWorkspace: SerializeParameter;
 
@@ -37,6 +35,7 @@ export function visitFieldSpecification(
         } else {
             typeWorkspace = { maybeWriteKind: SerializeWriteKind.PaddedLeft };
         }
+
         setWorkspace(state, fieldTypeSpecification, typeWorkspace);
     }
 }

@@ -1,18 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import { propagateWriteKind, setWorkspace, skipPrimaryTypeIndentation } from "./visitNodeUtils";
 import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 import { expectGetIsMultiline } from "../isMultiline/common";
 
-export function visitTypePrimaryType(state: SerializeParameterState, node: PQP.Language.Ast.TypePrimaryType): void {
+export function visitTypePrimaryType(state: SerializeParameterState, node: Ast.TypePrimaryType): void {
     propagateWriteKind(state, node, node.constant);
 
-    const paired: PQP.Language.Ast.TPrimaryType = node.paired;
+    const paired: Ast.TPrimaryType = node.paired;
     const pairedIsMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, paired);
     let pairedWorkspace: SerializeParameter;
+
     if (skipPrimaryTypeIndentation(paired)) {
         pairedWorkspace = {
             maybeWriteKind: SerializeWriteKind.PaddedLeft,
@@ -25,5 +26,6 @@ export function visitTypePrimaryType(state: SerializeParameterState, node: PQP.L
     } else {
         pairedWorkspace = { maybeWriteKind: SerializeWriteKind.PaddedLeft };
     }
+
     setWorkspace(state, paired, pairedWorkspace);
 }

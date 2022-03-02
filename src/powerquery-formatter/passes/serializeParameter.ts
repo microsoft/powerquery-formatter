@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
+
 import { CommentCollectionMap, IsMultilineMap, SerializeParameterMap, SerializeParameterState } from "./commonTypes";
 import { visitNode } from "./visitNode/visitNode";
 
@@ -13,25 +15,28 @@ import { visitNode } from "./visitNode/visitNode";
 
 export function tryTraverseSerializeParameter(
     locale: string,
-    ast: PQP.Language.Ast.TNode,
+    traceManager: PQP.Trace.TraceManager,
+    maybeCancellationToken: PQP.ICancellationToken | undefined,
+    ast: Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     commentCollectionMap: CommentCollectionMap,
     isMultilineMap: IsMultilineMap,
-    traceManager: PQP.Trace.TraceManager,
-): PQP.Traverse.TriedTraverse<SerializeParameterMap> {
+): Promise<PQP.Traverse.TriedTraverse<SerializeParameterMap>> {
     const state: SerializeParameterState = {
+        locale,
+        traceManager,
+        maybeCancellationToken,
         commentCollectionMap,
         isMultilineMap,
-        locale,
         nodeIdMapCollection,
         result: {
             writeKind: new Map(),
             indentationChange: new Map(),
             comments: new Map(),
         },
-        traceManager,
         workspaceMap: new Map(),
     };
+
     return PQP.Traverse.tryTraverseAst(
         state,
         nodeIdMapCollection,

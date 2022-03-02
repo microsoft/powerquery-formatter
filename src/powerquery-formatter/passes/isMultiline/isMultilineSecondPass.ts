@@ -2,6 +2,8 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+import { Ast, AstUtils } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
+import { Trace } from "@microsoft/powerquery-parser";
 
 import { expectGetIsMultiline, setIsMultiline } from "./common";
 import { IsMultilineMap, IsMultilineSecondPassState } from "../commonTypes";
@@ -9,16 +11,18 @@ import { FormatTraceConstant } from "../../trace";
 
 export function tryTraverseIsMultilineSecondPass(
     locale: string,
-    ast: PQP.Language.Ast.TNode,
+    traceManager: Trace.TraceManager,
+    maybeCancellationToken: PQP.ICancellationToken | undefined,
+    ast: Ast.TNode,
     isMultilineMap: IsMultilineMap,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
-    traceManager: PQP.Trace.TraceManager,
-): PQP.Traverse.TriedTraverse<IsMultilineMap> {
+): Promise<PQP.Traverse.TriedTraverse<IsMultilineMap>> {
     const state: IsMultilineSecondPassState = {
         locale,
+        traceManager,
+        maybeCancellationToken,
         nodeIdMapCollection,
         result: isMultilineMap,
-        traceManager,
     };
 
     return PQP.Traverse.tryTraverseAst(
@@ -32,8 +36,9 @@ export function tryTraverseIsMultilineSecondPass(
     );
 }
 
-function visitNode(state: IsMultilineSecondPassState, node: PQP.Language.Ast.TNode): void {
-    const trace: PQP.Trace.Trace = state.traceManager.entry(FormatTraceConstant.IsMultilinePhase2, visitNode.name, {
+// eslint-disable-next-line require-await
+async function visitNode(state: IsMultilineSecondPassState, node: Ast.TNode): Promise<void> {
+    const trace: Trace.Trace = state.traceManager.entry(FormatTraceConstant.IsMultilinePhase2, visitNode.name, {
         nodeId: node.id,
         nodeKind: node.kind,
     });
@@ -41,81 +46,94 @@ function visitNode(state: IsMultilineSecondPassState, node: PQP.Language.Ast.TNo
     // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
     switch (node.kind) {
         // TBinOpExpression
-        case PQP.Language.Ast.NodeKind.ArithmeticExpression:
-        case PQP.Language.Ast.NodeKind.AsExpression:
-        case PQP.Language.Ast.NodeKind.EqualityExpression:
-        case PQP.Language.Ast.NodeKind.IsExpression:
-        case PQP.Language.Ast.NodeKind.LogicalExpression:
-        case PQP.Language.Ast.NodeKind.RelationalExpression: {
-            const isMultilineMap: IsMultilineMap = state.result;
-            const maybeParent: PQP.Language.Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(
-                state.nodeIdMapCollection,
-                node.id,
-            );
-            if (
-                maybeParent &&
-                PQP.Language.AstUtils.isTBinOpExpression(maybeParent) &&
-                expectGetIsMultiline(isMultilineMap, maybeParent)
-            ) {
-                trace.trace("Updating isMultiline for nested BinOp");
-
-                setIsMultiline(isMultilineMap, node, true);
-            }
+        case Ast.NodeKind.ArithmeticExpression:
+        case Ast.NodeKind.AsExpression:
+        case Ast.NodeKind.EqualityExpression:
+        case Ast.NodeKind.IsExpression:
+        case Ast.NodeKind.LogicalExpression:
+        case Ast.NodeKind.RelationalExpression:
+            visitBinOpExpression(state, node, trace);
             break;
-        }
 
         // If a list or record is a child node,
         // Then by default it should be considered multiline if it has one or more values
-        case PQP.Language.Ast.NodeKind.ListExpression:
-        case PQP.Language.Ast.NodeKind.ListLiteral:
-        case PQP.Language.Ast.NodeKind.RecordExpression:
-        case PQP.Language.Ast.NodeKind.RecordLiteral:
-            if (node.content.elements.length) {
-                trace.trace("Updating isMultiline for collection");
-
-                const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = state.nodeIdMapCollection;
-
-                let maybeParent: PQP.Language.Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(
-                    nodeIdMapCollection,
-                    node.id,
-                );
-                let maybeCsv: PQP.Language.Ast.TCsv | undefined;
-                let maybeArrayWrapper: PQP.Language.Ast.TArrayWrapper | undefined;
-                if (maybeParent && maybeParent.kind === PQP.Language.Ast.NodeKind.Csv) {
-                    maybeCsv = maybeParent;
-                    maybeParent = PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
-                }
-                if (maybeParent && maybeParent.kind === PQP.Language.Ast.NodeKind.ArrayWrapper) {
-                    maybeArrayWrapper = maybeParent;
-                    maybeParent = PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
-                }
-
-                if (maybeParent) {
-                    const parent: PQP.Language.Ast.TNode = maybeParent;
-                    switch (parent.kind) {
-                        case PQP.Language.Ast.NodeKind.ItemAccessExpression:
-                        case PQP.Language.Ast.NodeKind.InvokeExpression:
-                        case PQP.Language.Ast.NodeKind.FunctionExpression:
-                        case PQP.Language.Ast.NodeKind.Section:
-                        case PQP.Language.Ast.NodeKind.SectionMember:
-                            break;
-
-                        default: {
-                            const isMultilineMap: IsMultilineMap = state.result;
-                            setIsMultiline(isMultilineMap, parent, true);
-                            if (maybeCsv) {
-                                setIsMultiline(isMultilineMap, maybeCsv, true);
-                            }
-                            if (maybeArrayWrapper) {
-                                setIsMultiline(isMultilineMap, maybeArrayWrapper, true);
-                            }
-                            setIsMultiline(isMultilineMap, node, true);
-                            setIsMultiline(isMultilineMap, node.content, true);
-                        }
-                    }
-                }
-            }
+        case Ast.NodeKind.ListExpression:
+        case Ast.NodeKind.ListLiteral:
+        case Ast.NodeKind.RecordExpression:
+        case Ast.NodeKind.RecordLiteral:
+            visitListOrRecord(state, node, trace);
     }
 
     trace.exit();
+}
+
+function visitBinOpExpression(state: IsMultilineSecondPassState, node: Ast.TNode, trace: Trace.Trace): void {
+    const isMultilineMap: IsMultilineMap = state.result;
+
+    const maybeParent: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(
+        state.nodeIdMapCollection,
+        node.id,
+    );
+
+    if (maybeParent && AstUtils.isTBinOpExpression(maybeParent) && expectGetIsMultiline(isMultilineMap, maybeParent)) {
+        trace.trace("Updating isMultiline for nested BinOp");
+
+        setIsMultiline(isMultilineMap, node, true);
+    }
+}
+
+function visitListOrRecord(
+    state: IsMultilineSecondPassState,
+    node: Ast.ListExpression | Ast.ListLiteral | Ast.RecordExpression | Ast.RecordLiteral,
+    trace: Trace.Trace,
+): void {
+    if (node.content.elements.length) {
+        trace.trace("Updating isMultiline for collection");
+
+        const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = state.nodeIdMapCollection;
+
+        let maybeParent: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, node.id);
+
+        let maybeCsv: Ast.TCsv | undefined;
+        let maybeArrayWrapper: Ast.TArrayWrapper | undefined;
+
+        if (maybeParent && maybeParent.kind === Ast.NodeKind.Csv) {
+            maybeCsv = maybeParent;
+            maybeParent = PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
+        }
+
+        if (maybeParent && maybeParent.kind === Ast.NodeKind.ArrayWrapper) {
+            maybeArrayWrapper = maybeParent;
+            maybeParent = PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
+        }
+
+        if (maybeParent) {
+            const parent: Ast.TNode = maybeParent;
+
+            switch (parent.kind) {
+                case Ast.NodeKind.ItemAccessExpression:
+                case Ast.NodeKind.InvokeExpression:
+                case Ast.NodeKind.FunctionExpression:
+                case Ast.NodeKind.Section:
+                case Ast.NodeKind.SectionMember:
+                    break;
+
+                default: {
+                    const isMultilineMap: IsMultilineMap = state.result;
+                    setIsMultiline(isMultilineMap, parent, true);
+
+                    if (maybeCsv) {
+                        setIsMultiline(isMultilineMap, maybeCsv, true);
+                    }
+
+                    if (maybeArrayWrapper) {
+                        setIsMultiline(isMultilineMap, maybeArrayWrapper, true);
+                    }
+
+                    setIsMultiline(isMultilineMap, node, true);
+                    setIsMultiline(isMultilineMap, node.content, true);
+                }
+            }
+        }
+    }
 }

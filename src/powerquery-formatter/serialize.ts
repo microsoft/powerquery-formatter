@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import {
     CommentCollectionMap,
@@ -24,7 +25,7 @@ export const enum NewlineLiteral {
 export type TriedSerialize = PQP.Result<string, PQP.CommonError.CommonError>;
 
 export interface SerializeSettings extends PQP.CommonSettings {
-    readonly ast: PQP.Language.Ast.TNode;
+    readonly ast: Ast.TNode;
     readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly passthroughMaps: SerializePassthroughMaps;
     readonly indentationLiteral: IndentationLiteral;
@@ -41,7 +42,7 @@ export function trySerialize(settings: SerializeSettings): TriedSerialize {
 }
 
 interface SerializeState {
-    readonly node: PQP.Language.Ast.TNode;
+    readonly node: Ast.TNode;
     readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly passthroughMaps: SerializePassthroughMaps;
     readonly newlineLiteral: NewlineLiteral;
@@ -55,6 +56,7 @@ interface SerializeState {
 function serialize(settings: SerializeSettings): string {
     const state: SerializeState = stateFromSettings(settings);
     serializeNode(state, state.node);
+
     return state.formatted;
 }
 
@@ -70,14 +72,18 @@ function stateFromSettings(settings: SerializeSettings): SerializeState {
         formatted: "",
         currentLine: "",
     };
+
     expandIndentationCache(state, 10);
+
     return state;
 }
 
-function serializeNode(state: SerializeState, node: PQP.Language.Ast.TNode): void {
+function serializeNode(state: SerializeState, node: Ast.TNode): void {
     const nodeId: number = node.id;
+
     const maybeIndentationChange: IndentationChange | undefined =
         state.passthroughMaps.serializeParameterMap.indentationChange.get(nodeId);
+
     if (maybeIndentationChange) {
         state.indentationLevel += 1;
     }
@@ -85,48 +91,48 @@ function serializeNode(state: SerializeState, node: PQP.Language.Ast.TNode): voi
     if (node.isLeaf) {
         const maybeComments: ReadonlyArray<SerializeCommentParameter> | undefined =
             state.passthroughMaps.serializeParameterMap.comments.get(nodeId);
+
         if (maybeComments) {
             visitComments(state, maybeComments);
         }
     }
 
     switch (node.kind) {
-        case PQP.Language.Ast.NodeKind.GeneralizedIdentifier:
-        case PQP.Language.Ast.NodeKind.Identifier:
-        case PQP.Language.Ast.NodeKind.LiteralExpression: {
-            const writeKind: SerializeWriteKind = getSerializeWriteKind(
-                node,
-                state.passthroughMaps.serializeParameterMap,
-            );
-            serializeLiteral(state, node.literal, writeKind);
+        case Ast.NodeKind.GeneralizedIdentifier:
+        case Ast.NodeKind.Identifier:
+        case Ast.NodeKind.LiteralExpression:
+            visitIdentifierOrLiteral(state, node);
             break;
-        }
 
-        case PQP.Language.Ast.NodeKind.Constant: {
+        case Ast.NodeKind.Constant: {
             const writeKind: SerializeWriteKind = getSerializeWriteKind(
                 node,
                 state.passthroughMaps.serializeParameterMap,
             );
+
             serializeLiteral(state, node.constantKind, writeKind);
             break;
         }
 
-        case PQP.Language.Ast.NodeKind.PrimitiveType: {
+        case Ast.NodeKind.PrimitiveType: {
             const writeKind: SerializeWriteKind = getSerializeWriteKind(
                 node,
                 state.passthroughMaps.serializeParameterMap,
             );
+
             serializeLiteral(state, node.primitiveTypeKind, writeKind);
             break;
         }
 
         default: {
-            const maybeChildren: ReadonlyArray<PQP.Language.Ast.TNode> | undefined =
+            const maybeChildren: ReadonlyArray<Ast.TNode> | undefined =
                 PQP.Parser.NodeIdMapIterator.maybeIterChildrenAst(state.nodeIdMapCollection, node.id);
+
             if (maybeChildren === undefined) {
                 break;
             }
-            const children: ReadonlyArray<PQP.Language.Ast.TNode> = maybeChildren;
+
+            const children: ReadonlyArray<Ast.TNode> = maybeChildren;
 
             for (const child of children) {
                 serializeNode(state, child);
@@ -139,9 +145,19 @@ function serializeNode(state: SerializeState, node: PQP.Language.Ast.TNode): voi
     }
 }
 
+function visitIdentifierOrLiteral(
+    state: SerializeState,
+    node: Ast.GeneralizedIdentifier | Ast.Identifier | Ast.LiteralExpression,
+): void {
+    const writeKind: SerializeWriteKind = getSerializeWriteKind(node, state.passthroughMaps.serializeParameterMap);
+
+    serializeLiteral(state, node.literal, writeKind);
+}
+
 function serializeWithPadding(state: SerializeState, str: string, padLeft: boolean, padRight: boolean): void {
     if (padLeft && state.currentLine) {
         const lastWrittenCharacter: string | undefined = state.currentLine[state.currentLine.length - 1];
+
         if (lastWrittenCharacter !== " " && lastWrittenCharacter !== "\t") {
             appendToFormatted(state, " ");
         }
@@ -187,12 +203,14 @@ function serializeIndented(state: SerializeState, str: string): void {
     if (state.currentLine !== "") {
         appendToFormatted(state, state.newlineLiteral);
     }
+
     appendToFormatted(state, currentIndentation(state));
     appendToFormatted(state, str);
 }
 
 function appendToFormatted(state: SerializeState, str: string): void {
     state.formatted += str;
+
     if (str === state.newlineLiteral) {
         state.currentLine = "";
     } else {
@@ -208,6 +226,7 @@ function visitComments(state: SerializeState, collection: ReadonlyArray<Serializ
 
 function currentIndentation(state: SerializeState): string {
     const maybeIndentationLiteral: string | undefined = state.indentationCache[state.indentationLevel];
+
     if (maybeIndentationLiteral === undefined) {
         return expandIndentationCache(state, state.indentationLevel);
     } else {
@@ -224,11 +243,9 @@ function expandIndentationCache(state: SerializeState, level: number): string {
     return state.indentationCache[state.indentationCache.length - 1];
 }
 
-function getSerializeWriteKind(
-    node: PQP.Language.Ast.TNode,
-    serializeParametersMap: SerializeParameterMap,
-): SerializeWriteKind {
+function getSerializeWriteKind(node: Ast.TNode, serializeParametersMap: SerializeParameterMap): SerializeWriteKind {
     const maybeWriteKind: SerializeWriteKind | undefined = serializeParametersMap.writeKind.get(node.id);
+
     if (maybeWriteKind) {
         return maybeWriteKind;
     } else {

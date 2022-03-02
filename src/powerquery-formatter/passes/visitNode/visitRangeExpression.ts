@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import { getWorkspace, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 
-export function visitRangeExpression(state: SerializeParameterState, node: PQP.Language.Ast.RangeExpression): void {
+export function visitRangeExpression(state: SerializeParameterState, node: Ast.RangeExpression): void {
     const workspace: SerializeParameter = getWorkspace(state, node);
     propagateWriteKind(state, node, node.left);
 

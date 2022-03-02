@@ -5,7 +5,7 @@ import "mocha";
 import { compare, expectFormat } from "./common";
 
 describe(`small programs`, () => {
-    it(`fastPow`, () => {
+    it(`fastPow`, async () => {
         const expected: string = `
 // taken from: https://en.wikipedia.org/wiki/Exponentiation_by_squaring
 // removed negative powers, sure to have bugs
@@ -38,7 +38,8 @@ let
                 x * @fastPow(x * x, (p - 1) / 2)
 in
     fastPow(2, 8)`;
-        const actual: string = expectFormat(`
+
+        const actual: string = await expectFormat(`
 // taken from: https://en.wikipedia.org/wiki/Exponentiation_by_squaring
 // removed negative powers, sure to have bugs
 //
@@ -70,6 +71,7 @@ let
                 x * @fastPow(x * x, (p - 1) / 2)
 in
     fastPow(2, 8)`);
+
         compare(expected, actual);
     });
 });
