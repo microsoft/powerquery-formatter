@@ -11,6 +11,7 @@ export function visitTPairedConstant(state: SerializeParameterState, node: PQP.L
     propagateWriteKind(state, node, node.constant);
 
     const isPairedMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, node.paired);
+
     if (isPairedMultiline) {
         setWorkspace(state, node.paired, {
             maybeIndentationChange: 1,

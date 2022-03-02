@@ -14,11 +14,13 @@ export function visitIfExpression(state: SerializeParameterState, node: PQP.Lang
 
     let conditionWorkspace: SerializeParameter;
     let thenConstantWorkspace: SerializeParameter;
+
     if (conditionIsMultiline) {
         conditionWorkspace = {
             maybeIndentationChange: 1,
             maybeWriteKind: SerializeWriteKind.Indented,
         };
+
         thenConstantWorkspace = {
             maybeWriteKind: SerializeWriteKind.Indented,
         };
@@ -26,12 +28,15 @@ export function visitIfExpression(state: SerializeParameterState, node: PQP.Lang
         conditionWorkspace = {
             maybeWriteKind: SerializeWriteKind.PaddedLeft,
         };
+
         thenConstantWorkspace = {
             maybeWriteKind: SerializeWriteKind.PaddedLeft,
         };
     }
+
     setWorkspace(state, node.condition, conditionWorkspace);
     setWorkspace(state, node.thenConstant, thenConstantWorkspace);
+
     setWorkspace(state, node.trueExpression, {
         maybeIndentationChange: 1,
         maybeWriteKind: SerializeWriteKind.Indented,
@@ -39,6 +44,7 @@ export function visitIfExpression(state: SerializeParameterState, node: PQP.Lang
 
     const falseExpression: PQP.Language.Ast.TExpression = node.falseExpression;
     let falseExpressionWorkspace: SerializeParameter;
+
     if (falseExpression.kind === PQP.Language.Ast.NodeKind.IfExpression) {
         falseExpressionWorkspace = {
             maybeWriteKind: SerializeWriteKind.PaddedLeft,
@@ -49,6 +55,7 @@ export function visitIfExpression(state: SerializeParameterState, node: PQP.Lang
             maybeWriteKind: SerializeWriteKind.Indented,
         };
     }
+
     setWorkspace(state, node.elseConstant, { maybeWriteKind: SerializeWriteKind.Indented });
     setWorkspace(state, falseExpression, falseExpressionWorkspace);
 }

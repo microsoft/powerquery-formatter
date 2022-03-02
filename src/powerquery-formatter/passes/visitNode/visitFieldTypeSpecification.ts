@@ -17,6 +17,7 @@ export function visitFieldTypeSpecification(
     // assumes SerializeWriteKind.Indented -> maybeIndentationChange === 1
     if (workspace.maybeWriteKind === SerializeWriteKind.Indented) {
         setWorkspace(state, node.equalConstant, { maybeWriteKind: SerializeWriteKind.PaddedLeft });
+
         setWorkspace(state, node.fieldType, {
             maybeIndentationChange: 1,
             maybeWriteKind: SerializeWriteKind.Indented,

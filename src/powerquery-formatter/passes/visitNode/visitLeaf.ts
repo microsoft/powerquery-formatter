@@ -21,6 +21,7 @@ export function visitLeaf(
 
     let maybeWriteKind: SerializeWriteKind | undefined = workspace.maybeWriteKind;
     maybeWriteKind = visitComments(state, node, maybeWriteKind);
+
     if (!maybeWriteKind) {
         throw new PQP.CommonError.InvariantError("maybeWriteKind should be truthy", {
             node,

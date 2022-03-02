@@ -22,6 +22,7 @@ export function visitFunctionExpression(
 
     const expressionIsMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, node.expression);
     let expressionWorkspace: SerializeParameter;
+
     if (expressionIsMultiline) {
         expressionWorkspace = {
             maybeIndentationChange: 1,
@@ -30,5 +31,6 @@ export function visitFunctionExpression(
     } else {
         expressionWorkspace = { maybeWriteKind: SerializeWriteKind.PaddedLeft };
     }
+
     setWorkspace(state, node.expression, expressionWorkspace);
 }

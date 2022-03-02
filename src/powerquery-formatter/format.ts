@@ -39,6 +39,7 @@ export const DefaultSettings: FormatSettings = {
 
 export async function tryFormat(formatSettings: FormatSettings, text: string): Promise<TriedFormat> {
     const triedLexParse: PQP.Task.TriedLexParseTask = await PQP.TaskUtils.tryLexParse(formatSettings, text);
+
     if (PQP.TaskUtils.isError(triedLexParse)) {
         return PQP.ResultUtils.boxError(triedLexParse.error);
     }
@@ -52,6 +53,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
     const maybeCancellationToken: PQP.ICancellationToken | undefined = formatSettings.maybeCancellationToken;
 
     let commentCollectionMap: CommentCollectionMap = new Map();
+
     if (comments.length) {
         const triedCommentPass: PQP.Traverse.TriedTraverse<CommentCollectionMap> = await tryTraverseComment(
             locale,
@@ -65,6 +67,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
         if (PQP.ResultUtils.isError(triedCommentPass)) {
             return triedCommentPass;
         }
+
         commentCollectionMap = triedCommentPass.value;
     }
 
@@ -76,9 +79,11 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
         commentCollectionMap,
         nodeIdMapCollection,
     );
+
     if (PQP.ResultUtils.isError(triedIsMultilineMap)) {
         return triedIsMultilineMap;
     }
+
     const isMultilineMap: IsMultilineMap = triedIsMultilineMap.value;
 
     const triedSerializeParameter: PQP.Traverse.TriedTraverse<SerializeParameterMap> =
@@ -91,15 +96,18 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
             commentCollectionMap,
             isMultilineMap,
         );
+
     if (PQP.ResultUtils.isError(triedSerializeParameter)) {
         return triedSerializeParameter;
     }
+
     const serializeParameterMap: SerializeParameterMap = triedSerializeParameter.value;
 
     const passthroughMaps: SerializePassthroughMaps = {
         commentCollectionMap,
         serializeParameterMap,
     };
+
     const serializeRequest: SerializeSettings = {
         locale,
         ast,

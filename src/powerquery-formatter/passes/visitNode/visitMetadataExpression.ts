@@ -15,6 +15,7 @@ export function visitMetadataExpression(
     propagateWriteKind(state, node, node.left);
 
     let otherWorkspace: SerializeParameter;
+
     if (isMultiline) {
         otherWorkspace = {
             maybeWriteKind: SerializeWriteKind.Indented,

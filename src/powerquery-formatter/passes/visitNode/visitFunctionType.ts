@@ -12,6 +12,7 @@ export function visitFunctionType(state: SerializeParameterState, node: PQP.Lang
     const commonWorkspace: SerializeParameter = {
         maybeWriteKind: SerializeWriteKind.PaddedLeft,
     };
+
     setWorkspace(state, node.parameters, commonWorkspace);
     setWorkspace(state, node.functionReturnType, commonWorkspace);
 }

@@ -38,6 +38,7 @@ export function propagateWriteKind(
     maybeSetIndentationChange(state, parent, workspace.maybeIndentationChange);
 
     const maybeWriteKind: SerializeWriteKind | undefined = workspace.maybeWriteKind;
+
     if (maybeWriteKind) {
         setWorkspace(state, firstChild, { maybeWriteKind });
     }
@@ -51,6 +52,7 @@ export function maybePropagateWriteKind(
     if (maybeFirstChild) {
         const firstChild: PQP.Language.Ast.TNode = maybeFirstChild;
         propagateWriteKind(state, parent, firstChild);
+
         return true;
     } else {
         return false;

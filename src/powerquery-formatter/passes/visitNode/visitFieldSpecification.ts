@@ -24,6 +24,7 @@ export function visitFieldSpecification(
 
     const maybeFieldTypeSpecification: PQP.Language.Ast.FieldTypeSpecification | undefined =
         node.maybeFieldTypeSpecification;
+
     if (maybeFieldTypeSpecification) {
         const fieldTypeSpecification: PQP.Language.Ast.FieldTypeSpecification = maybeFieldTypeSpecification;
         const isMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, fieldTypeSpecification);
@@ -37,6 +38,7 @@ export function visitFieldSpecification(
         } else {
             typeWorkspace = { maybeWriteKind: SerializeWriteKind.PaddedLeft };
         }
+
         setWorkspace(state, fieldTypeSpecification, typeWorkspace);
     }
 }

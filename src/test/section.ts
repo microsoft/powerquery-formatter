@@ -49,6 +49,7 @@ describe("section", () => {
     b = 2
 ]
 section;`;
+
             const actual: string = await expectFormat(`[a=1, b=2] section;`);
             compare(expected, actual);
         });
@@ -60,6 +61,7 @@ section;`;
     b = {}
 ]
 section;`;
+
             const actual: string = await expectFormat(`[a = {}, b = {}] section;`);
             compare(expected, actual);
         });
@@ -75,6 +77,7 @@ section;`;
     }
 ]
 section;`;
+
             const actual: string = await expectFormat(`[a = {1}, b = {2}] section;`);
             compare(expected, actual);
         });
@@ -93,6 +96,7 @@ section;`;
     e = 5
 ]
 section;`;
+
             const actual: string = await expectFormat(`[a = 1, b = [c = {2, 3, 4}], e = 5] section;`);
             compare(expected, actual);
         });
@@ -104,6 +108,7 @@ section;`;
 section;
 
 x = 1;`;
+
             const actual: string = await expectFormat(`section; x = 1;`);
             compare(expected, actual);
         });
@@ -113,6 +118,7 @@ x = 1;`;
 section;
 
 [] x = 1;`;
+
             const actual: string = await expectFormat(`section; [] x = 1;`);
             compare(expected, actual);
         });
@@ -126,6 +132,7 @@ section;
     b = 2
 ]
 x = 1;`;
+
             const actual: string = await expectFormat(`section; [a=1, b=2] x = 1;`);
             compare(expected, actual);
         });
@@ -139,6 +146,7 @@ section;
     b = 2
 ]
 shared x = 1;`;
+
             const actual: string = await expectFormat(`section; [a=1, b=2] shared x = 1;`);
             compare(expected, actual);
         });
@@ -148,6 +156,7 @@ shared x = 1;`;
 section;
 
 [a = 1] x = 1;`;
+
             const actual: string = await expectFormat(`section; [a = 1] x = 1;`);
             compare(expected, actual);
         });
@@ -157,6 +166,7 @@ section;
 section;
 
 [a = 1] shared x = 1;`;
+
             const actual: string = await expectFormat(`section; [a = 1] shared x = 1;`);
             compare(expected, actual);
         });
@@ -168,6 +178,7 @@ section;
 x = 1;
 
 y = 2;`;
+
             const actual: string = await expectFormat(`section; x = 1; y = 2;`);
             compare(expected, actual);
         });
@@ -182,9 +193,11 @@ Constant.Alpha = 1;
 Constant.Beta = 2;
 
 Other = 3;`;
+
             const actual: string = await expectFormat(
                 `section; Other = 3; Constant.Alpha = 1; Constant.Beta = 2; Other = 3;`,
             );
+
             compare(expected, actual);
         });
     });

@@ -34,6 +34,7 @@ export function visitTWrapped(state: SerializeParameterState, node: PQP.Language
 function wrapperOpenWriteKind(state: SerializeParameterState, node: PQP.Language.Ast.TWrapped): SerializeWriteKind {
     // an open constant is multiline iff it is has a multiline comment
     const openIsMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, node.openWrapperConstant);
+
     if (openIsMultiline) {
         return SerializeWriteKind.Indented;
     }
@@ -46,13 +47,16 @@ function wrapperOpenWriteKind(state: SerializeParameterState, node: PQP.Language
     }
 
     const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = state.nodeIdMapCollection;
+
     let maybeParent: PQP.Language.Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(
         nodeIdMapCollection,
         node.id,
     );
+
     if (maybeParent && maybeParent.kind === PQP.Language.Ast.NodeKind.Csv) {
         maybeParent = PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
     }
+
     if (maybeParent && maybeParent.kind === PQP.Language.Ast.NodeKind.ArrayWrapper) {
         maybeParent = PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
     }

@@ -32,6 +32,7 @@ function visitArrayWrapperDefault(state: SerializeParameterState, node: PQP.Lang
 
     let maybeWriteKind: SerializeWriteKind | undefined;
     let maybeIndentationChange: IndentationChange | undefined;
+
     if (isMultiline) {
         maybeWriteKind = SerializeWriteKind.Indented;
         maybeIndentationChange = 1;
@@ -52,6 +53,7 @@ function visitArrayWrapperForSectionMembers(
     node: PQP.Language.Ast.IArrayWrapper<PQP.Language.Ast.SectionMember>,
 ): void {
     let maybePreviousSectionMember: PQP.Language.Ast.SectionMember | undefined;
+
     for (const member of node.elements) {
         if (member.kind !== PQP.Language.Ast.NodeKind.SectionMember) {
             throw new PQP.CommonError.InvariantError(`expected sectionMember`, { nodeKind: member.kind });
@@ -80,12 +82,14 @@ function visitArrayWrapperForUnaryExpression(
 
     propagateWriteKind(state, node, elements[0]);
     let previousWasNotOperator: boolean = elements[0].constantKind === PQP.Language.Constant.UnaryOperator.Not;
+
     for (let index: number = 1; index < numElements; index += 1) {
         const operatorConstant: PQP.Language.Ast.IConstant<PQP.Language.Constant.UnaryOperator> = elements[index];
 
         if (previousWasNotOperator || operatorConstant.constantKind === PQP.Language.Constant.UnaryOperator.Not) {
             setWorkspace(state, operatorConstant, { maybeWriteKind: SerializeWriteKind.PaddedLeft });
         }
+
         previousWasNotOperator = operatorConstant.constantKind === PQP.Language.Constant.UnaryOperator.Not;
     }
 }

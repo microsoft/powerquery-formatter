@@ -33,6 +33,7 @@ export async function getLinearLength(
             nodeIdMapCollection,
             linearLengthMap,
         );
+
         linearLengthMap.set(nodeId, linearLength);
 
         return linearLength;
@@ -80,6 +81,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
         nodeId: node.id,
         nodeKind: node.kind,
     });
+
     let linearLength: number;
 
     switch (node.kind) {
@@ -103,16 +105,9 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
         case PQP.Language.Ast.NodeKind.IsExpression:
         case PQP.Language.Ast.NodeKind.LogicalExpression:
         case PQP.Language.Ast.NodeKind.NullCoalescingExpression:
-        case PQP.Language.Ast.NodeKind.RelationalExpression: {
-            linearLength = await sumLinearLengths(
-                state,
-                node.operatorConstant.constantKind.length,
-                node.left,
-                node.operatorConstant,
-                node.right,
-            );
+        case PQP.Language.Ast.NodeKind.RelationalExpression:
+            linearLength = await visitBinOpExpressionNode(state, node);
             break;
-        }
 
         // TKeyValuePair
         case PQP.Language.Ast.NodeKind.GeneralizedIdentifierPairedAnyLiteral:
@@ -127,18 +122,9 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
         case PQP.Language.Ast.NodeKind.ListLiteral:
         case PQP.Language.Ast.NodeKind.ParameterList:
         case PQP.Language.Ast.NodeKind.RecordExpression:
-        case PQP.Language.Ast.NodeKind.RecordLiteral: {
-            const elements: ReadonlyArray<PQP.Language.Ast.TCsv> = node.content.elements;
-            const numElements: number = elements.length;
-            linearLength = await sumLinearLengths(
-                state,
-                numElements ? numElements - 1 : 0,
-                node.openWrapperConstant,
-                node.closeWrapperConstant,
-                ...elements,
-            );
+        case PQP.Language.Ast.NodeKind.RecordLiteral:
+            linearLength = await visitWrappedCsvArray(state, node);
             break;
-        }
 
         case PQP.Language.Ast.NodeKind.ArrayWrapper:
             linearLength = await sumLinearLengths(state, 0, ...node.elements);
@@ -154,9 +140,11 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
 
         case PQP.Language.Ast.NodeKind.ErrorHandlingExpression: {
             let initialLength: number = 1;
+
             if (node.maybeOtherwiseExpression) {
                 initialLength += 2;
             }
+
             linearLength = await sumLinearLengths(
                 state,
                 initialLength,
@@ -164,6 +152,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
                 node.protectedExpression,
                 node.maybeOtherwiseExpression,
             );
+
             break;
         }
 
@@ -176,6 +165,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
                 node.maybeOptionalConstant,
                 ...node.content.elements,
             );
+
             break;
 
         case PQP.Language.Ast.NodeKind.FieldSelector:
@@ -187,6 +177,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
                 node.closeWrapperConstant,
                 node.maybeOptionalConstant,
             );
+
             break;
 
         case PQP.Language.Ast.NodeKind.FieldSpecification:
@@ -197,15 +188,19 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
                 node.name,
                 node.maybeFieldTypeSpecification,
             );
+
             break;
 
         case PQP.Language.Ast.NodeKind.FieldSpecificationList: {
             const elements: ReadonlyArray<PQP.Language.Ast.ICsv<PQP.Language.Ast.FieldSpecification>> =
                 node.content.elements;
+
             let initialLength: number = 0;
+
             if (node.maybeOpenRecordMarkerConstant && elements.length) {
                 initialLength += 2;
             }
+
             linearLength = await sumLinearLengths(
                 state,
                 initialLength,
@@ -214,6 +209,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
                 node.maybeOpenRecordMarkerConstant,
                 ...elements,
             );
+
             break;
         }
 
@@ -223,9 +219,11 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
 
         case PQP.Language.Ast.NodeKind.FunctionExpression: {
             let initialLength: number = 2;
+
             if (node.maybeFunctionReturnType) {
                 initialLength += 2;
             }
+
             linearLength = await sumLinearLengths(
                 state,
                 initialLength,
@@ -234,6 +232,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
                 node.fatArrowConstant,
                 node.expression,
             );
+
             break;
         }
 
@@ -245,6 +244,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
                 node.parameters,
                 node.functionReturnType,
             );
+
             break;
 
         case PQP.Language.Ast.NodeKind.GeneralizedIdentifier:
@@ -265,6 +265,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
                 node.closeWrapperConstant,
                 node.maybeOptionalConstant,
             );
+
             break;
 
         case PQP.Language.Ast.NodeKind.LiteralExpression:
@@ -279,6 +280,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
                 node.content,
                 node.closeWrapperConstant,
             );
+
             break;
 
         case PQP.Language.Ast.NodeKind.MetadataExpression: {
@@ -292,12 +294,15 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
 
         case PQP.Language.Ast.NodeKind.Parameter: {
             let initialLength: number = 0;
+
             if (node.maybeOptionalConstant) {
                 initialLength += 1;
             }
+
             if (node.maybeParameterType) {
                 initialLength += 1;
             }
+
             linearLength = await sumLinearLengths(
                 state,
                 initialLength,
@@ -305,6 +310,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
                 node.name,
                 node.maybeParameterType,
             );
+
             break;
         }
 
@@ -316,6 +322,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
                 node.content,
                 node.closeWrapperConstant,
             );
+
             break;
 
         case PQP.Language.Ast.NodeKind.PrimitiveType:
@@ -336,9 +343,11 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
 
         case PQP.Language.Ast.NodeKind.SectionMember: {
             let initialLength: number = 0;
+
             if (node.maybeLiteralAttributes) {
                 initialLength += 1;
             }
+
             if (node.maybeSharedConstant) {
                 initialLength += 1;
             }
@@ -351,18 +360,22 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
                 node.namePairedExpression,
                 node.semicolonConstant,
             );
+
             break;
         }
 
         case PQP.Language.Ast.NodeKind.Section: {
             const sectionMembers: ReadonlyArray<PQP.Language.Ast.SectionMember> = node.sectionMembers.elements;
+
             if (sectionMembers.length) {
                 linearLength = NaN;
             } else {
                 let initialLength: number = 0;
+
                 if (node.maybeLiteralAttributes) {
                     initialLength += 1;
                 }
+
                 if (node.maybeName) {
                     initialLength += 1;
                 }
@@ -377,6 +390,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
                     ...sectionMembers,
                 );
             }
+
             break;
         }
 
@@ -402,6 +416,39 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
     state.result = linearLength;
 
     trace.exit({ linearLength });
+}
+
+// eslint-disable-next-line require-await
+async function visitBinOpExpressionNode(state: LinearLengthState, node: Ast.TBinOpExpression): Promise<number> {
+    return sumLinearLengths(
+        state,
+        node.operatorConstant.constantKind.length,
+        node.left,
+        node.operatorConstant,
+        node.right,
+    );
+}
+
+function visitWrappedCsvArray(
+    state: LinearLengthState,
+    node:
+        | Ast.InvokeExpression
+        | Ast.ListExpression
+        | Ast.ListLiteral
+        | Ast.TParameterList
+        | Ast.RecordExpression
+        | Ast.RecordLiteral,
+): Promise<number> {
+    const elements: ReadonlyArray<PQP.Language.Ast.TCsv> = node.content.elements;
+    const numElements: number = elements.length;
+
+    return sumLinearLengths(
+        state,
+        numElements ? numElements - 1 : 0,
+        node.openWrapperConstant,
+        node.closeWrapperConstant,
+        ...elements,
+    );
 }
 
 async function sumLinearLengths(

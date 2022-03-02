@@ -11,8 +11,10 @@ export function visitUnaryExpression(state: SerializeParameterState, node: PQP.L
 
     const operators: ReadonlyArray<PQP.Language.Ast.IConstant<PQP.Language.Constant.UnaryOperator>> =
         node.operators.elements;
+
     const lastOperator: PQP.Language.Ast.IConstant<PQP.Language.Constant.UnaryOperator> =
         operators[operators.length - 1];
+
     if (lastOperator.constantKind === PQP.Language.Constant.UnaryOperator.Not) {
         setWorkspace(state, node.typeExpression, { maybeWriteKind: SerializeWriteKind.PaddedLeft });
     }

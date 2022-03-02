@@ -13,6 +13,7 @@ export function visitTypePrimaryType(state: SerializeParameterState, node: PQP.L
     const paired: PQP.Language.Ast.TPrimaryType = node.paired;
     const pairedIsMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, paired);
     let pairedWorkspace: SerializeParameter;
+
     if (skipPrimaryTypeIndentation(paired)) {
         pairedWorkspace = {
             maybeWriteKind: SerializeWriteKind.PaddedLeft,
@@ -25,5 +26,6 @@ export function visitTypePrimaryType(state: SerializeParameterState, node: PQP.L
     } else {
         pairedWorkspace = { maybeWriteKind: SerializeWriteKind.PaddedLeft };
     }
+
     setWorkspace(state, paired, pairedWorkspace);
 }

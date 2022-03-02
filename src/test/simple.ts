@@ -45,6 +45,7 @@ each
         2,
         3
     }`;
+
             const actual: string = await expectFormat(`each {1,2,3}`);
             compare(expected, actual);
         });
@@ -56,6 +57,7 @@ each
         1
     else
         2`;
+
             const actual: string = await expectFormat(`each if true then 1 else 2`);
             compare(expected, actual);
         });
@@ -68,6 +70,7 @@ each
             1
         else
             2`;
+
             const actual: string = await expectFormat(`each each if true then 1 else 2`);
             compare(expected, actual);
         });
@@ -96,6 +99,7 @@ try
         1,
         2
     }`;
+
             const actual: string = await expectFormat(`try {1, 2}`);
             compare(expected, actual);
         });
@@ -108,6 +112,7 @@ try
         2
     }
 otherwise 1`;
+
             const actual: string = await expectFormat(`try {1, 2} otherwise 1`);
             compare(expected, actual);
         });
@@ -120,6 +125,7 @@ otherwise
         1,
         2
     }`;
+
             const actual: string = await expectFormat(`try 1 otherwise {1, 2}`);
             compare(expected, actual);
         });
@@ -147,6 +153,7 @@ error {
     1,
     2
 }`;
+
             const actual: string = await expectFormat(`error {1,2}`);
             compare(expected, actual);
         });
@@ -158,6 +165,7 @@ error
         1
     else
         2`;
+
             const actual: string = await expectFormat(`error if fn(1,2,3) then 1 else 2`);
             compare(expected, actual);
         });
@@ -170,6 +178,7 @@ error {
     else
         2
 }`;
+
             const actual: string = await expectFormat(`error {if true then 1 else 2}`);
             compare(expected, actual);
         });
@@ -293,6 +302,7 @@ error {
         2,
         3
     }`;
+
             const actual: string = await expectFormat(`() => {1,2,3}`);
             compare(expected, actual);
         });
@@ -349,6 +359,7 @@ if true then
     true
 else
     false`;
+
             const actual: string = await expectFormat(`if true then true else false`);
             compare(expected, actual);
         });
@@ -366,6 +377,7 @@ else
         key = value,
         cat = dog
     ]`;
+
             const actual: string = await expectFormat(`if true then {1,2,3} else [key=value, cat=dog]`);
             compare(expected, actual);
         });
@@ -379,6 +391,7 @@ if true then
         false
 else
     false`;
+
             const actual: string = await expectFormat(`if true then if true then true else false else false`);
             compare(expected, actual);
         });
@@ -391,6 +404,7 @@ else if x then
     x
 else
     x`;
+
             const actual: string = await expectFormat(`if x then x else if x then x else x`);
             compare(expected, actual);
         });
@@ -429,6 +443,7 @@ Foo{[
     X = 1,
     Y = 2
 ]}`;
+
             const actual: string = await expectFormat(`Foo{[X = 1, Y = 2]}`);
             compare(expected, actual);
         });
@@ -441,6 +456,7 @@ Foo{
     else
         2
 }`;
+
             const actual: string = await expectFormat(`Foo{if true then 1 else 2}`);
             compare(expected, actual);
         });
@@ -470,6 +486,7 @@ Foo(
     in
         x
 )`;
+
             const actual: string = await expectFormat(`Foo(let x = 1 in x)`);
             compare(expected, actual);
         });
@@ -488,6 +505,7 @@ longLinearLength(
     123456789,
     123456789
 )`;
+
             const actual: string = await expectFormat(`longLinearLength(123456789, 123456789, 123456789, 123456789)`);
             compare(expected, actual);
         });
@@ -509,6 +527,7 @@ let
     x = 1
 in
     x`;
+
             const actual: string = await expectFormat(`let x = 1 in x`);
             compare(expected, actual);
         });
@@ -531,6 +550,7 @@ in
             2,
             3
         }`;
+
             const actual: string = await expectFormat(`let x = 1, y = 2 in let lst1 = {1,2}, lst2 = {} in {1,2,3}`);
             compare(expected, actual);
         });
@@ -623,6 +643,7 @@ in
     1,
     2
 }`;
+
             const actual: string = await expectFormat(`{1,2}`);
             compare(expected, actual);
         });
@@ -633,6 +654,7 @@ in
     {},
     {}
 }`;
+
             const actual: string = await expectFormat(`{{}, {}}`);
             compare(expected, actual);
         });
@@ -649,6 +671,7 @@ let
     x = Foo(1, {2})
 in
     x`;
+
             const actual: string = await expectFormat(`let x = Foo(1, {2}) in x`);
             compare(expected, actual);
         });
@@ -669,6 +692,7 @@ in
     ..
     4
 }`;
+
             const actual: string = await expectFormat(`{if 1 then 2 else 3..4}`);
             compare(expected, actual);
         });
@@ -692,6 +716,7 @@ type {
         bar
     ]
 }`;
+
             const actual: string = await expectFormat(`type { table [ foo, bar ] }`);
             compare(expected, actual);
         });
@@ -720,6 +745,7 @@ type nullable
         foo,
         bar
     ]`;
+
             const actual: string = await expectFormat(`type nullable table [foo, bar]`);
             compare(expected, actual);
         });
@@ -744,6 +770,7 @@ type nullable
     }
 )
 `;
+
             const actual: string = await expectFormat(`({1,2})`);
             compare(expected, actual);
         });
@@ -788,6 +815,7 @@ type nullable
     a = a,
     b = b
 ]`;
+
             const actual: string = await expectFormat(`[a=a,b=b]`);
             compare(expected, actual);
         });
@@ -799,6 +827,7 @@ type nullable
     b = {}
 ]
 `;
+
             const actual: string = await expectFormat(`[a={},b={}]`);
             compare(expected, actual);
         });
@@ -813,6 +842,7 @@ type nullable
         2
     }
 ]`;
+
             const actual: string = await expectFormat(`[a={1},b={2}]`);
             compare(expected, actual);
         });
@@ -829,6 +859,7 @@ let
     x = Foo(1, [key = value])
 in
     x`;
+
             const actual: string = await expectFormat(`let x = Foo(1, [key = value]) in x`);
             compare(expected, actual);
         });
@@ -857,6 +888,7 @@ type [
     ...
 ]
 `;
+
             const actual: string = await expectFormat(`type [foo, ...]`);
             compare(expected, actual);
         });
@@ -891,6 +923,7 @@ type table [
     bar
 ]
 `;
+
             const actual: string = await expectFormat(`type table [ foo, bar ]`);
             compare(expected, actual);
         });
@@ -902,6 +935,7 @@ type table [
     optional bar
 ]
 `;
+
             const actual: string = await expectFormat(`type table [ foo, optional bar ]`);
             compare(expected, actual);
         });
@@ -925,6 +959,7 @@ type table [
     bar,
     optional foobar = number
 ]`;
+
             const actual: string = await expectFormat(`type table [foo = table [key], bar, optional foobar = number]`);
             compare(expected, actual);
         });
@@ -944,9 +979,11 @@ type table [
             const expected: string = `
 aReallyReallyReallyReallyLongIdentifier
 * aReallyReallyReallyReallyLongIdentifier`;
+
             const actual: string = await expectFormat(
                 `aReallyReallyReallyReallyLongIdentifier * aReallyReallyReallyReallyLongIdentifier`,
             );
+
             compare(expected, actual);
         });
 
@@ -965,6 +1002,7 @@ aReallyReallyReallyReallyLongIdentifier
     else
         0
 )`;
+
             const actual: string = await expectFormat(`1 + foo(if true then 1 else 0) + bar (if true then 1 else 0)`);
             compare(expected, actual);
         });
@@ -975,6 +1013,7 @@ let
     x = true and true
 in
     x`;
+
             const actual: string = await expectFormat(`let x = true and true in x`);
             compare(expected, actual);
         });
@@ -985,6 +1024,7 @@ let
     x = 1 <> 2 and 3 <> 4
 in
     x`;
+
             const actual: string = await expectFormat(`let x = 1 <> 2 and 3 <> 4 in x`);
             compare(expected, actual);
         });
@@ -1009,6 +1049,7 @@ true and true and (
     else
         false
 )`;
+
             const actual: string = await expectFormat(`true and true and (if true then true else false)`);
             compare(expected, actual);
         });
@@ -1021,6 +1062,7 @@ true and (
     else
         false
 ) and true`;
+
             const actual: string = await expectFormat(`true and (if true then true else false) and true`);
             compare(expected, actual);
         });
@@ -1033,6 +1075,7 @@ true and (
     else
         false
 ) and true`;
+
             const actual: string = await expectFormat(`(if true then true else false) and true`);
             compare(expected, actual);
         });
@@ -1064,6 +1107,7 @@ meta
     else
         3
 )`;
+
             const actual: string = await expectFormat(`1 meta (if 1 then 2 else 3)`);
             compare(expected, actual);
         });
@@ -1075,6 +1119,7 @@ meta
     2
 }
 as list`;
+
             const actual: string = await expectFormat(`{1, 2} as list`);
             compare(expected, actual);
         });
@@ -1092,6 +1137,7 @@ meta
     else
         3
 )`;
+
             const actual: string = await expectFormat(`{1, 2} meta (if 1 then 2 else 3)`);
             compare(expected, actual);
         });
@@ -1108,6 +1154,7 @@ type table [
     Foo = X(),
     Bar = Y()
 ]`;
+
             const actual: string = await expectFormat(`type table [ Foo = X(), Bar = Y() ]`);
             compare(expected, actual);
         });
@@ -1171,6 +1218,7 @@ type table [
     foo = {},
     bar = {}
 ]`;
+
             const actual: string = await expectFormat(`[foo={},bar={}]`);
             compare(expected, actual);
         });
@@ -1188,6 +1236,7 @@ type table [
         emptyLst = {}
     ]
 ]`;
+
             const actual: string = await expectFormat(`[first=[insideKey=insideValue,lst={1,2,3},emptyLst={}]]`);
             compare(expected, actual);
         });

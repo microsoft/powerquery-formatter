@@ -14,14 +14,17 @@ export function visitTKeyValuePair(state: SerializeParameterState, node: PQP.Lan
     propagateWriteKind(state, node, node.key);
 
     let equalWorkspace: SerializeParameter;
+
     if (equalConstantIsMultiline) {
         equalWorkspace = { maybeWriteKind: SerializeWriteKind.Indented };
     } else {
         equalWorkspace = { maybeWriteKind: SerializeWriteKind.PaddedLeft };
     }
+
     setWorkspace(state, node.equalConstant, equalWorkspace);
 
     let valueWorkspace: SerializeParameter;
+
     if (valueIsMultiline) {
         valueWorkspace = {
             maybeIndentationChange: 1,
@@ -30,5 +33,6 @@ export function visitTKeyValuePair(state: SerializeParameterState, node: PQP.Lan
     } else {
         valueWorkspace = { maybeWriteKind: SerializeWriteKind.PaddedLeft };
     }
+
     setWorkspace(state, node.value, valueWorkspace);
 }

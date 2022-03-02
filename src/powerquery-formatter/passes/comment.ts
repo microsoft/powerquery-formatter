@@ -36,8 +36,10 @@ export function tryTraverseComment(
     );
 }
 
+// eslint-disable-next-line require-await
 async function earlyExit(state: CommentState, node: PQP.Language.Ast.TNode): Promise<boolean> {
     const maybeCurrentComment: PQP.Language.Comment.TComment | undefined = state.maybeCurrentComment;
+
     if (maybeCurrentComment === undefined) {
         return true;
     } else if (node.tokenRange.positionEnd.codeUnit < maybeCurrentComment.positionStart.codeUnit) {
@@ -47,12 +49,14 @@ async function earlyExit(state: CommentState, node: PQP.Language.Ast.TNode): Pro
     }
 }
 
+// eslint-disable-next-line require-await
 async function visitNode(state: CommentState, node: PQP.Language.Ast.TNode): Promise<void> {
     if (!node.isLeaf) {
         return;
     }
 
     let maybeCurrentComment: PQP.Language.Comment.TComment | undefined = state.maybeCurrentComment;
+
     while (maybeCurrentComment && maybeCurrentComment.positionStart.codeUnit < node.tokenRange.positionStart.codeUnit) {
         const currentComment: PQP.Language.Comment.TComment = maybeCurrentComment;
         const commentMap: CommentCollectionMap = state.result;
@@ -65,12 +69,14 @@ async function visitNode(state: CommentState, node: PQP.Language.Ast.TNode): Pro
                 prefixedComments: [currentComment],
                 prefixedCommentsContainsNewline: currentComment.containsNewline,
             };
+
             commentMap.set(nodeId, commentCollection);
         }
         // At least one comment already attached to the TNode
         else {
             const commentCollection: CommentCollection = maybeCommentCollection;
             commentCollection.prefixedComments.push(currentComment);
+
             if (currentComment.containsNewline) {
                 commentCollection.prefixedCommentsContainsNewline = true;
             }

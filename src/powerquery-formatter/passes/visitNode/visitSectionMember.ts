@@ -24,6 +24,7 @@ export function visitSectionMember(state: SerializeParameterState, node: PQP.Lan
     } else if (node.maybeSharedConstant) {
         const sharedConstant: PQP.Language.Ast.IConstant<PQP.Language.Constant.KeywordConstant.Shared> =
             node.maybeSharedConstant;
+
         propagateWriteKind(state, node, sharedConstant);
     } else {
         propagateWriteKind(state, node, node.namePairedExpression);
@@ -33,11 +34,13 @@ export function visitSectionMember(state: SerializeParameterState, node: PQP.Lan
     if (node.maybeSharedConstant && maybeSharedConstantWriteKind) {
         const sharedConstant: PQP.Language.Ast.IConstant<PQP.Language.Constant.KeywordConstant.Shared> =
             node.maybeSharedConstant;
+
         setWorkspace(state, sharedConstant, { maybeWriteKind: maybeSharedConstantWriteKind });
     }
 
     if (!isNameExpressionPairWorkspaceSet) {
         let isNameExpressionPairIndented: boolean = false;
+
         if (node.maybeSharedConstant) {
             const sharedConstant: PQP.Language.Ast.IConstant<PQP.Language.Constant.KeywordConstant.Shared> =
                 node.maybeSharedConstant;
@@ -54,11 +57,13 @@ export function visitSectionMember(state: SerializeParameterState, node: PQP.Lan
         }
 
         let writeKind: SerializeWriteKind;
+
         if (isNameExpressionPairIndented) {
             writeKind = SerializeWriteKind.Indented;
         } else {
             writeKind = SerializeWriteKind.PaddedLeft;
         }
+
         setWorkspace(state, node.namePairedExpression, { maybeWriteKind: writeKind });
     }
 }

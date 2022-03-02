@@ -75,7 +75,6 @@ module.exports = {
         "no-this-before-super": "error",
         "no-unreachable": "error",
         "no-unsafe-optional-chaining": "error",
-        "no-unused-private-class-members": "error",
         "no-useless-backreference": "error",
         "no-useless-catch": "error",
         "no-useless-computed-key": "error",

@@ -13,6 +13,7 @@ export function visitTableType(state: SerializeParameterState, node: PQP.Languag
     const rowTypeIsMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, rowType);
 
     let rowTypeWorkspace: SerializeParameter;
+
     if (rowTypeIsMultiline) {
         rowTypeWorkspace = {
             maybeIndentationChange: 1,
@@ -23,5 +24,6 @@ export function visitTableType(state: SerializeParameterState, node: PQP.Languag
             maybeWriteKind: SerializeWriteKind.PaddedLeft,
         };
     }
+
     setWorkspace(state, rowType, rowTypeWorkspace);
 }

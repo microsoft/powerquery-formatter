@@ -8,6 +8,7 @@ import * as PQP from "@microsoft/powerquery-parser";
 import { FormatSettings, IndentationLiteral, NewlineLiteral, TriedFormat, tryFormat } from ".";
 
 const text: string = `1 as number`;
+
 const settings: FormatSettings = {
     ...PQP.DefaultSettings,
     indentationLiteral: IndentationLiteral.SpaceX4,

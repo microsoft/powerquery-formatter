@@ -26,6 +26,7 @@ export function visitItemAccessExpression(
     }
 
     let closeWrapperConstantWorkspace: SerializeParameter;
+
     if (itemSelectorIsMultiline) {
         switch (itemSelector.kind) {
             case PQP.Language.Ast.NodeKind.ListExpression:
@@ -41,5 +42,6 @@ export function visitItemAccessExpression(
             maybeWriteKind: SerializeWriteKind.Any,
         };
     }
+
     setWorkspace(state, node.closeWrapperConstant, closeWrapperConstantWorkspace);
 }

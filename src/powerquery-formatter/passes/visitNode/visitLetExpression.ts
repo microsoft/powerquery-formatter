@@ -9,6 +9,7 @@ import { SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 export function visitLetExpression(state: SerializeParameterState, node: PQP.Language.Ast.LetExpression): void {
     propagateWriteKind(state, node, node.letConstant);
     setWorkspace(state, node.inConstant, { maybeWriteKind: SerializeWriteKind.Indented });
+
     setWorkspace(state, node.expression, {
         maybeIndentationChange: 1,
         maybeWriteKind: SerializeWriteKind.Indented,

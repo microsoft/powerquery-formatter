@@ -15,16 +15,19 @@ export function visitErrorRaisingExpression(
     propagateWriteKind(state, node, node.constant);
 
     let pairedWorkspace: SerializeParameter;
+
     switch (node.paired.kind) {
         case PQP.Language.Ast.NodeKind.ListExpression:
         case PQP.Language.Ast.NodeKind.RecordExpression:
             pairedWorkspace = {
                 maybeWriteKind: SerializeWriteKind.PaddedLeft,
             };
+
             break;
 
         default: {
             const pairedIsMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, node.paired);
+
             if (pairedIsMultiline) {
                 pairedWorkspace = {
                     maybeIndentationChange: 1,
@@ -35,5 +38,6 @@ export function visitErrorRaisingExpression(
             }
         }
     }
+
     setWorkspace(state, node.paired, pairedWorkspace);
 }

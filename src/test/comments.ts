@@ -15,6 +15,7 @@ describe("comment serialize", () => {
     /*foo*/ key1 = value1,
     key2 = value2
 ]`.trim();
+
             const actual: string = await expectFormat("[ /*foo*/ key1=value1, key2=value2 ]");
             compare(expected, actual);
         });
@@ -25,6 +26,7 @@ describe("comment serialize", () => {
     /*foo*//*bar*/ key1 = value1,
     key2 = value2
 ]`.trim();
+
             const actual: string = await expectFormat("[ /*foo*//*bar*/ key1=value1, key2=value2 ]");
             compare(expected, actual);
         });
@@ -35,6 +37,7 @@ describe("comment serialize", () => {
     key1 = /*foo*/ value1,
     key2 = value2
 ]`.trim();
+
             const actual: string = await expectFormat("[ key1=/*foo*/value1, key2=value2 ]");
             compare(expected, actual);
         });
@@ -45,6 +48,7 @@ describe("comment serialize", () => {
     // foo
     key1 = value1
 ]`.trim();
+
             const actual: string = await expectFormat("[ // foo\n key1=value1 ]");
             compare(expected, actual);
         });
@@ -56,6 +60,7 @@ describe("comment serialize", () => {
     // bar
     key1 = value1
 ]`.trim();
+
             const actual: string = await expectFormat("[ // foo\n // bar\n key1=value1 ]");
             compare(expected, actual);
         });
@@ -67,6 +72,7 @@ describe("comment serialize", () => {
     // bar
     key1 = value1
 ]`.trim();
+
             const actual: string = await expectFormat("[ /* foo */ // bar\n key1=value1 ]");
             compare(expected, actual);
         });
@@ -78,6 +84,7 @@ describe("comment serialize", () => {
     // bar
     /* foobar */ key1 = value1
 ]`.trim();
+
             const actual: string = await expectFormat("[ /* foo */ // bar\n /* foobar */ key1=value1 ]");
             compare(expected, actual);
         });
@@ -89,6 +96,7 @@ describe("comment serialize", () => {
         // foo
         value1
 ]`.trim();
+
             const actual: string = await expectFormat("[ key1 = // foo\n value1 ]");
             compare(expected, actual);
         });
@@ -100,6 +108,7 @@ describe("comment serialize", () => {
     // foo
     = value1
 ]`.trim();
+
             const actual: string = await expectFormat("[ key1 // foo\n = value1 ]");
             compare(expected, actual);
         });
@@ -112,6 +121,7 @@ x = 1;
 
 // lineComment
 y = 1;`.trim();
+
             const actual: string = await expectFormat("section foobar; x = 1; // lineComment\n y = 1;");
             compare(expected, actual);
         });

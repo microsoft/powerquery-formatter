@@ -26,6 +26,7 @@ export function visitComments(
 ): SerializeWriteKind | undefined {
     const nodeId: number = node.id;
     const maybeComments: CommentCollection | undefined = state.commentCollectionMap.get(nodeId);
+
     if (!maybeComments) {
         return maybeWriteKind;
     }
@@ -34,6 +35,7 @@ export function visitComments(
     const comments: ReadonlyArray<PQP.Language.Comment.TComment> = maybeComments.prefixedComments;
 
     const numComments: number = comments.length;
+
     if (!numComments) {
         return maybeWriteKind;
     }
@@ -43,6 +45,7 @@ export function visitComments(
         const previousComment: PQP.Language.Comment.TComment | undefined = comments[index - 1];
 
         let writeKind: SerializeWriteKind;
+
         if (index === 0) {
             writeKind = maybeWriteKind || SerializeWriteKind.Any;
         } else if (comment.containsNewline) {
@@ -62,6 +65,7 @@ export function visitComments(
     state.result.comments.set(nodeId, commentParameters);
 
     const lastComment: PQP.Language.Comment.TComment = comments[comments.length - 1];
+
     if (lastComment.containsNewline) {
         maybeWriteKind = SerializeWriteKind.Indented;
     } else {

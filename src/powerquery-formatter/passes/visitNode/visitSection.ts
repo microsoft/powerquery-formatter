@@ -12,6 +12,7 @@ export function visitSection(state: SerializeParameterState, node: PQP.Language.
 
     let sectionConstantWriteKind: SerializeWriteKind = SerializeWriteKind.Any;
     const maybeLiteralAttributes: PQP.Language.Ast.RecordLiteral | undefined = node.maybeLiteralAttributes;
+
     if (maybeLiteralAttributes) {
         const literalAttributes: PQP.Language.Ast.RecordLiteral = maybeLiteralAttributes;
 
@@ -21,9 +22,11 @@ export function visitSection(state: SerializeParameterState, node: PQP.Language.
             sectionConstantWriteKind = SerializeWriteKind.PaddedLeft;
         }
     }
+
     setWorkspace(state, node.sectionConstant, { maybeWriteKind: sectionConstantWriteKind });
 
     const maybeName: PQP.Language.Ast.Identifier | undefined = node.maybeName;
+
     if (maybeName) {
         const name: PQP.Language.Ast.Identifier = maybeName;
         setWorkspace(state, name, { maybeWriteKind: SerializeWriteKind.PaddedLeft });

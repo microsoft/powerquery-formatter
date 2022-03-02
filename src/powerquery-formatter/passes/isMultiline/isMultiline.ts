@@ -27,9 +27,11 @@ export async function tryTraverseIsMultiline(
         commentCollectionMap,
         nodeIdMapCollection,
     );
+
     if (PQP.ResultUtils.isError(triedFirstPass)) {
         return triedFirstPass;
     }
+
     const isMultilineMap: IsMultilineMap = triedFirstPass.value;
 
     const result: PQP.Traverse.TriedTraverse<IsMultilineMap> = await tryTraverseIsMultilineSecondPass(
@@ -40,6 +42,7 @@ export async function tryTraverseIsMultiline(
         isMultilineMap,
         nodeIdMapCollection,
     );
+
     trace.exit();
 
     return result;

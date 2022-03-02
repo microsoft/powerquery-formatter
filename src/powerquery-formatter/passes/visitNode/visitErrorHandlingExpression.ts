@@ -15,6 +15,7 @@ export function visitErrorHandlingExpression(
     propagateWriteKind(state, node, node.tryConstant);
 
     const protectedIsMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, node.protectedExpression);
+
     if (protectedIsMultiline) {
         setWorkspace(state, node.protectedExpression, {
             maybeIndentationChange: 1,
@@ -28,6 +29,7 @@ export function visitErrorHandlingExpression(
         const otherwiseExpression: PQP.Language.Ast.OtherwiseExpression = node.maybeOtherwiseExpression;
 
         let otherwiseWriteKind: SerializeWriteKind;
+
         if (isMultiline) {
             otherwiseWriteKind = SerializeWriteKind.Indented;
         } else {

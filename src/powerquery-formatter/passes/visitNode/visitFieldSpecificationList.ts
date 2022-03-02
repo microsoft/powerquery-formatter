@@ -14,13 +14,16 @@ export function visitFieldSpecificationList(
     node: PQP.Language.Ast.FieldSpecificationList,
 ): void {
     const isMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, node);
+
     const fieldsArray: PQP.Language.Ast.IArrayWrapper<PQP.Language.Ast.ICsv<PQP.Language.Ast.FieldSpecification>> =
         node.content;
+
     visitTWrapped(state, node);
 
     if (node.maybeOpenRecordMarkerConstant) {
         const openRecordMarkerConstant: PQP.Language.Ast.IConstant<PQP.Language.Constant.MiscConstant.Ellipsis> =
             node.maybeOpenRecordMarkerConstant;
+
         let workspace: SerializeParameter;
 
         if (isMultiline) {
@@ -33,6 +36,7 @@ export function visitFieldSpecificationList(
         } else {
             workspace = { maybeWriteKind: SerializeWriteKind.Any };
         }
+
         setWorkspace(state, openRecordMarkerConstant, workspace);
     }
 }
