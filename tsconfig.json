@@ -6,6 +6,7 @@
         "module": "commonjs",
         "noEmitOnError": true,
         "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
         "noImplicitReturns": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
@@ -14,8 +15,8 @@
         "rootDir": "src",
         "sourceMap": true,
         "strict": true,
-        "target": "es5",
-        "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
+        "target": "es6",
+        "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
     },
     "exclude": ["node_modules"],
     "include": ["src/**/*.ts"],
