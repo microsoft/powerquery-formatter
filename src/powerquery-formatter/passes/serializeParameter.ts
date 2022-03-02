@@ -13,25 +13,28 @@ import { visitNode } from "./visitNode/visitNode";
 
 export function tryTraverseSerializeParameter(
     locale: string,
+    traceManager: PQP.Trace.TraceManager,
+    maybeCancellationToken: PQP.ICancellationToken | undefined,
     ast: PQP.Language.Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     commentCollectionMap: CommentCollectionMap,
     isMultilineMap: IsMultilineMap,
-    traceManager: PQP.Trace.TraceManager,
-): PQP.Traverse.TriedTraverse<SerializeParameterMap> {
+): Promise<PQP.Traverse.TriedTraverse<SerializeParameterMap>> {
     const state: SerializeParameterState = {
+        locale,
+        traceManager,
+        maybeCancellationToken,
         commentCollectionMap,
         isMultilineMap,
-        locale,
         nodeIdMapCollection,
         result: {
             writeKind: new Map(),
             indentationChange: new Map(),
             comments: new Map(),
         },
-        traceManager,
         workspaceMap: new Map(),
     };
+
     return PQP.Traverse.tryTraverseAst(
         state,
         nodeIdMapCollection,

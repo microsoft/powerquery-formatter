@@ -35,7 +35,7 @@ import { visitTWrapped } from "./visitTWrapped";
 import { visitTypePrimaryType } from "./visitTypePrimaryType";
 import { visitUnaryExpression } from "./visitUnaryExpression";
 
-export function visitNode(state: SerializeParameterState, node: PQP.Language.Ast.TNode): void {
+export async function visitNode(state: SerializeParameterState, node: PQP.Language.Ast.TNode): Promise<void> {
     const trace: PQP.Trace.Trace = state.traceManager.entry(FormatTraceConstant.SerializeParameter, visitNode.name, {
         nodeId: node.id,
         nodeKind: node.kind,

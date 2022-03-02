@@ -9,33 +9,36 @@ import { tryTraverseIsMultilineFirstPass } from "./isMultilineFirstPass";
 import { tryTraverseIsMultilineSecondPass } from "./isMultilineSecondPass";
 
 // runs a DFS pass followed by a BFS pass.
-export function tryTraverseIsMultiline(
+export async function tryTraverseIsMultiline(
     locale: string,
+    traceManager: PQP.Trace.TraceManager,
+    maybeCancellationToken: PQP.ICancellationToken | undefined,
     ast: PQP.Language.Ast.TNode,
     commentCollectionMap: CommentCollectionMap,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
-    traceManager: PQP.Trace.TraceManager,
-): PQP.Traverse.TriedTraverse<IsMultilineMap> {
+): Promise<PQP.Traverse.TriedTraverse<IsMultilineMap>> {
     const trace: PQP.Trace.Trace = traceManager.entry(FormatTraceConstant.IsMultiline, tryTraverseIsMultiline.name);
 
-    const triedFirstPass: PQP.Traverse.TriedTraverse<IsMultilineMap> = tryTraverseIsMultilineFirstPass(
+    const triedFirstPass: PQP.Traverse.TriedTraverse<IsMultilineMap> = await tryTraverseIsMultilineFirstPass(
         locale,
+        traceManager,
+        maybeCancellationToken,
         ast,
         commentCollectionMap,
         nodeIdMapCollection,
-        traceManager,
     );
     if (PQP.ResultUtils.isError(triedFirstPass)) {
         return triedFirstPass;
     }
     const isMultilineMap: IsMultilineMap = triedFirstPass.value;
 
-    const result: PQP.Traverse.TriedTraverse<IsMultilineMap> = tryTraverseIsMultilineSecondPass(
+    const result: PQP.Traverse.TriedTraverse<IsMultilineMap> = await tryTraverseIsMultilineSecondPass(
         locale,
+        traceManager,
+        maybeCancellationToken,
         ast,
         isMultilineMap,
         nodeIdMapCollection,
-        traceManager,
     );
     trace.exit();
 

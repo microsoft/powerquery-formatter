@@ -47,15 +47,18 @@ export function compare(expected: string, actual: string, newlineLiteral: Newlin
 }
 
 // Formats the text twice to ensure the formatter emits the same tokens.
-export function expectFormat(text: string, formatSettings: FormatSettings = DefaultFormatSettings): string {
+export async function expectFormat(
+    text: string,
+    formatSettings: FormatSettings = DefaultFormatSettings,
+): Promise<string> {
     text = text.trim();
-    const firstTriedFormat: TriedFormat = tryFormat(formatSettings, text);
+    const firstTriedFormat: TriedFormat = await tryFormat(formatSettings, text);
     if (PQP.ResultUtils.isError(firstTriedFormat)) {
         throw firstTriedFormat.error;
     }
     const firstOk: string = firstTriedFormat.value;
 
-    const secondTriedFormat: TriedFormat = tryFormat(formatSettings, firstOk);
+    const secondTriedFormat: TriedFormat = await tryFormat(formatSettings, firstOk);
     if (PQP.ResultUtils.isError(secondTriedFormat)) {
         throw secondTriedFormat.error;
     }

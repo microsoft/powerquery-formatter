@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import { LinearLengthMap, LinearLengthState } from "../commonTypes";
 import { FormatTraceConstant } from "../../trace";
@@ -12,23 +13,25 @@ import { FormatTraceConstant } from "../../trace";
 // Eg. the linear length of `{1, 2, 3}` as an Ast would give 9.
 //
 // Some nodes are always multiline, such as IfExpression, and will return NaN.
-export function getLinearLength(
+export async function getLinearLength(
     locale: string,
+    traceManager: PQP.Trace.TraceManager,
+    maybeCancellationToken: PQP.ICancellationToken | undefined,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     linearLengthMap: LinearLengthMap,
-    node: PQP.Language.Ast.TNode,
-    traceManager: PQP.Trace.TraceManager,
-): number {
+    node: Ast.TNode,
+): Promise<number> {
     const nodeId: number = node.id;
     const maybeLinearLength: number | undefined = linearLengthMap.get(nodeId);
 
     if (maybeLinearLength === undefined) {
-        const linearLength: number = calculateLinearLength(
+        const linearLength: number = await calculateLinearLength(
             locale,
+            traceManager,
+            maybeCancellationToken,
             node,
             nodeIdMapCollection,
             linearLengthMap,
-            traceManager,
         );
         linearLengthMap.set(nodeId, linearLength);
 
@@ -38,22 +41,24 @@ export function getLinearLength(
     }
 }
 
-function calculateLinearLength(
+async function calculateLinearLength(
     locale: string,
-    node: PQP.Language.Ast.TNode,
+    traceManager: PQP.Trace.TraceManager,
+    maybeCancellationToken: PQP.ICancellationToken | undefined,
+    node: Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     linearLengthMap: LinearLengthMap,
-    traceManager: PQP.Trace.TraceManager,
-): number {
+): Promise<number> {
     const state: LinearLengthState = {
-        linearLengthMap,
         locale,
+        traceManager,
+        maybeCancellationToken,
+        linearLengthMap,
         nodeIdMapCollection,
         result: 0,
-        traceManager,
     };
 
-    const triedTraverse: PQP.Traverse.TriedTraverse<number> = PQP.Traverse.tryTraverseAst(
+    const triedTraverse: PQP.Traverse.TriedTraverse<number> = await PQP.Traverse.tryTraverseAst(
         state,
         nodeIdMapCollection,
         node,
@@ -70,7 +75,7 @@ function calculateLinearLength(
     }
 }
 
-function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void {
+async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<void> {
     const trace: PQP.Trace.Trace = state.traceManager.entry(FormatTraceConstant.LinearLength, visitNode.name, {
         nodeId: node.id,
         nodeKind: node.kind,
@@ -88,7 +93,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
         case PQP.Language.Ast.NodeKind.NullableType:
         case PQP.Language.Ast.NodeKind.OtherwiseExpression:
         case PQP.Language.Ast.NodeKind.TypePrimaryType:
-            linearLength = sumLinearLengths(state, 1, node.constant, node.paired);
+            linearLength = await sumLinearLengths(state, 1, node.constant, node.paired);
             break;
 
         // TBinOpExpression
@@ -99,7 +104,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
         case PQP.Language.Ast.NodeKind.LogicalExpression:
         case PQP.Language.Ast.NodeKind.NullCoalescingExpression:
         case PQP.Language.Ast.NodeKind.RelationalExpression: {
-            linearLength = sumLinearLengths(
+            linearLength = await sumLinearLengths(
                 state,
                 node.operatorConstant.constantKind.length,
                 node.left,
@@ -113,7 +118,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
         case PQP.Language.Ast.NodeKind.GeneralizedIdentifierPairedAnyLiteral:
         case PQP.Language.Ast.NodeKind.GeneralizedIdentifierPairedExpression:
         case PQP.Language.Ast.NodeKind.IdentifierPairedExpression:
-            linearLength = sumLinearLengths(state, 2, node.key, node.equalConstant, node.value);
+            linearLength = await sumLinearLengths(state, 2, node.key, node.equalConstant, node.value);
             break;
 
         // TWrapped where Content is TCsv[] and no extra attributes
@@ -125,7 +130,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
         case PQP.Language.Ast.NodeKind.RecordLiteral: {
             const elements: ReadonlyArray<PQP.Language.Ast.TCsv> = node.content.elements;
             const numElements: number = elements.length;
-            linearLength = sumLinearLengths(
+            linearLength = await sumLinearLengths(
                 state,
                 numElements ? numElements - 1 : 0,
                 node.openWrapperConstant,
@@ -136,7 +141,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
         }
 
         case PQP.Language.Ast.NodeKind.ArrayWrapper:
-            linearLength = sumLinearLengths(state, 0, ...node.elements);
+            linearLength = await sumLinearLengths(state, 0, ...node.elements);
             break;
 
         case PQP.Language.Ast.NodeKind.Constant:
@@ -144,7 +149,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
             break;
 
         case PQP.Language.Ast.NodeKind.Csv:
-            linearLength = sumLinearLengths(state, 0, node.node, node.maybeCommaConstant);
+            linearLength = await sumLinearLengths(state, 0, node.node, node.maybeCommaConstant);
             break;
 
         case PQP.Language.Ast.NodeKind.ErrorHandlingExpression: {
@@ -152,7 +157,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
             if (node.maybeOtherwiseExpression) {
                 initialLength += 2;
             }
-            linearLength = sumLinearLengths(
+            linearLength = await sumLinearLengths(
                 state,
                 initialLength,
                 node.tryConstant,
@@ -163,7 +168,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
         }
 
         case PQP.Language.Ast.NodeKind.FieldProjection:
-            linearLength = sumLinearLengths(
+            linearLength = await sumLinearLengths(
                 state,
                 0,
                 node.openWrapperConstant,
@@ -174,7 +179,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
             break;
 
         case PQP.Language.Ast.NodeKind.FieldSelector:
-            linearLength = sumLinearLengths(
+            linearLength = await sumLinearLengths(
                 state,
                 0,
                 node.openWrapperConstant,
@@ -185,7 +190,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
             break;
 
         case PQP.Language.Ast.NodeKind.FieldSpecification:
-            linearLength = sumLinearLengths(
+            linearLength = await sumLinearLengths(
                 state,
                 0,
                 node.maybeOptionalConstant,
@@ -201,7 +206,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
             if (node.maybeOpenRecordMarkerConstant && elements.length) {
                 initialLength += 2;
             }
-            linearLength = sumLinearLengths(
+            linearLength = await sumLinearLengths(
                 state,
                 initialLength,
                 node.openWrapperConstant,
@@ -213,7 +218,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
         }
 
         case PQP.Language.Ast.NodeKind.FieldTypeSpecification:
-            linearLength = sumLinearLengths(state, 2, node.equalConstant, node.fieldType);
+            linearLength = await sumLinearLengths(state, 2, node.equalConstant, node.fieldType);
             break;
 
         case PQP.Language.Ast.NodeKind.FunctionExpression: {
@@ -221,7 +226,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
             if (node.maybeFunctionReturnType) {
                 initialLength += 2;
             }
-            linearLength = sumLinearLengths(
+            linearLength = await sumLinearLengths(
                 state,
                 initialLength,
                 node.parameters,
@@ -233,7 +238,13 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
         }
 
         case PQP.Language.Ast.NodeKind.FunctionType:
-            linearLength = sumLinearLengths(state, 2, node.functionConstant, node.parameters, node.functionReturnType);
+            linearLength = await sumLinearLengths(
+                state,
+                2,
+                node.functionConstant,
+                node.parameters,
+                node.functionReturnType,
+            );
             break;
 
         case PQP.Language.Ast.NodeKind.GeneralizedIdentifier:
@@ -242,11 +253,11 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
             break;
 
         case PQP.Language.Ast.NodeKind.IdentifierExpression:
-            linearLength = sumLinearLengths(state, 0, node.maybeInclusiveConstant, node.identifier);
+            linearLength = await sumLinearLengths(state, 0, node.maybeInclusiveConstant, node.identifier);
             break;
 
         case PQP.Language.Ast.NodeKind.ItemAccessExpression:
-            linearLength = sumLinearLengths(
+            linearLength = await sumLinearLengths(
                 state,
                 0,
                 node.openWrapperConstant,
@@ -261,7 +272,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
             break;
 
         case PQP.Language.Ast.NodeKind.ListType:
-            linearLength = sumLinearLengths(
+            linearLength = await sumLinearLengths(
                 state,
                 0,
                 node.openWrapperConstant,
@@ -271,12 +282,12 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
             break;
 
         case PQP.Language.Ast.NodeKind.MetadataExpression: {
-            linearLength = sumLinearLengths(state, 2, node.left, node.operatorConstant, node.right);
+            linearLength = await sumLinearLengths(state, 2, node.left, node.operatorConstant, node.right);
             break;
         }
 
         case PQP.Language.Ast.NodeKind.NotImplementedExpression:
-            linearLength = sumLinearLengths(state, 0, node.ellipsisConstant);
+            linearLength = await sumLinearLengths(state, 0, node.ellipsisConstant);
             break;
 
         case PQP.Language.Ast.NodeKind.Parameter: {
@@ -287,7 +298,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
             if (node.maybeParameterType) {
                 initialLength += 1;
             }
-            linearLength = sumLinearLengths(
+            linearLength = await sumLinearLengths(
                 state,
                 initialLength,
                 node.maybeOptionalConstant,
@@ -298,7 +309,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
         }
 
         case PQP.Language.Ast.NodeKind.ParenthesizedExpression:
-            linearLength = sumLinearLengths(
+            linearLength = await sumLinearLengths(
                 state,
                 0,
                 node.openWrapperConstant,
@@ -312,15 +323,15 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
             break;
 
         case PQP.Language.Ast.NodeKind.RangeExpression:
-            linearLength = sumLinearLengths(state, 0, node.left, node.rangeConstant, node.right);
+            linearLength = await sumLinearLengths(state, 0, node.left, node.rangeConstant, node.right);
             break;
 
         case PQP.Language.Ast.NodeKind.RecordType:
-            linearLength = sumLinearLengths(state, 0, node.fields);
+            linearLength = await sumLinearLengths(state, 0, node.fields);
             break;
 
         case PQP.Language.Ast.NodeKind.RecursivePrimaryExpression:
-            linearLength = sumLinearLengths(state, 0, node.head, ...node.recursiveExpressions.elements);
+            linearLength = await sumLinearLengths(state, 0, node.head, ...node.recursiveExpressions.elements);
             break;
 
         case PQP.Language.Ast.NodeKind.SectionMember: {
@@ -332,7 +343,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
                 initialLength += 1;
             }
 
-            linearLength = sumLinearLengths(
+            linearLength = await sumLinearLengths(
                 state,
                 initialLength,
                 node.maybeLiteralAttributes,
@@ -356,7 +367,7 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
                     initialLength += 1;
                 }
 
-                linearLength = sumLinearLengths(
+                linearLength = await sumLinearLengths(
                     state,
                     initialLength,
                     node.maybeLiteralAttributes,
@@ -370,11 +381,11 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
         }
 
         case PQP.Language.Ast.NodeKind.TableType:
-            linearLength = sumLinearLengths(state, 1, node.tableConstant, node.rowType);
+            linearLength = await sumLinearLengths(state, 1, node.tableConstant, node.rowType);
             break;
 
         case PQP.Language.Ast.NodeKind.UnaryExpression:
-            linearLength = sumLinearLengths(state, 1, node.typeExpression, ...node.operators.elements);
+            linearLength = await sumLinearLengths(state, 1, node.typeExpression, ...node.operators.elements);
             break;
 
         // is always multiline, therefore cannot have linear line length
@@ -393,24 +404,25 @@ function visitNode(state: LinearLengthState, node: PQP.Language.Ast.TNode): void
     trace.exit({ linearLength });
 }
 
-function sumLinearLengths(
+async function sumLinearLengths(
     state: LinearLengthState,
     initialLength: number,
-    ...maybeNodes: (PQP.Language.Ast.TNode | undefined)[]
-): number {
-    let summedLinearLength: number = initialLength;
-    for (const maybeNode of maybeNodes) {
-        if (maybeNode) {
-            const nodeLinearLength: number = getLinearLength(
-                state.locale,
-                state.nodeIdMapCollection,
-                state.linearLengthMap,
-                maybeNode,
-                state.traceManager,
-            );
-            summedLinearLength += nodeLinearLength;
-        }
-    }
+    ...maybeNodes: (Ast.TNode | undefined)[]
+): Promise<number> {
+    const nodes: Ast.TNode[] = maybeNodes.filter(
+        (value: Ast.TNode | undefined): value is Ast.TNode => value !== undefined,
+    );
 
-    return summedLinearLength;
+    const linearLengths: ReadonlyArray<number> = await PQP.ArrayUtils.mapAsync(nodes, (node: Ast.TNode) =>
+        getLinearLength(
+            state.locale,
+            state.traceManager,
+            state.maybeCancellationToken,
+            state.nodeIdMapCollection,
+            state.linearLengthMap,
+            node,
+        ),
+    );
+
+    return linearLengths.reduce((sum: number, linearLength: number) => sum + linearLength, initialLength);
 }

@@ -9,12 +9,16 @@ import { CommentCollection, CommentCollectionMap, CommentState } from "./commonT
 // Returns a Map<leafId, an array of comments attached to the leafId>.
 export function tryTraverseComment(
     locale: string,
+    traceManager: PQP.Trace.TraceManager,
+    maybeCancellationToken: PQP.ICancellationToken | undefined,
     root: PQP.Language.Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     comments: ReadonlyArray<PQP.Language.Comment.TComment>,
-): PQP.Traverse.TriedTraverse<CommentCollectionMap> {
+): Promise<PQP.Traverse.TriedTraverse<CommentCollectionMap>> {
     const state: CommentState = {
         locale,
+        traceManager,
+        maybeCancellationToken,
         result: new Map(),
         comments,
         commentsIndex: 0,
@@ -32,7 +36,7 @@ export function tryTraverseComment(
     );
 }
 
-function earlyExit(state: CommentState, node: PQP.Language.Ast.TNode): boolean {
+async function earlyExit(state: CommentState, node: PQP.Language.Ast.TNode): Promise<boolean> {
     const maybeCurrentComment: PQP.Language.Comment.TComment | undefined = state.maybeCurrentComment;
     if (maybeCurrentComment === undefined) {
         return true;
@@ -43,7 +47,7 @@ function earlyExit(state: CommentState, node: PQP.Language.Ast.TNode): boolean {
     }
 }
 
-function visitNode(state: CommentState, node: PQP.Language.Ast.TNode): void {
+async function visitNode(state: CommentState, node: PQP.Language.Ast.TNode): Promise<void> {
     if (!node.isLeaf) {
         return;
     }

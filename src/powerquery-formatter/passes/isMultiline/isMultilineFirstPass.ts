@@ -16,18 +16,20 @@ import { getLinearLength } from "./linearLength";
 
 export function tryTraverseIsMultilineFirstPass(
     locale: string,
+    traceManager: PQP.Trace.TraceManager,
+    maybeCancellationToken: PQP.ICancellationToken | undefined,
     ast: PQP.Language.Ast.TNode,
     commentCollectionMap: CommentCollectionMap,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
-    traceManager: PQP.Trace.TraceManager,
-): PQP.Traverse.TriedTraverse<IsMultilineMap> {
+): Promise<PQP.Traverse.TriedTraverse<IsMultilineMap>> {
     const state: IsMultilineFirstPassState = {
+        locale,
+        traceManager,
+        maybeCancellationToken,
         commentCollectionMap,
         linearLengthMap: new Map(),
-        locale,
         nodeIdMapCollection,
         result: new Map(),
-        traceManager,
     };
 
     return PQP.Traverse.tryTraverseAst<IsMultilineFirstPassState, IsMultilineMap>(
@@ -50,7 +52,7 @@ const InvokeExpressionIdentifierLinearLengthExclusions: ReadonlyArray<string> = 
 const TBinOpExpressionLinearLengthThreshold: number = 40;
 const InvokeExpressionLinearLengthThreshold: number = 40;
 
-function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNode): void {
+async function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNode): Promise<void> {
     const trace: PQP.Trace.Trace = state.traceManager.entry(FormatTraceConstant.IsMultilinePhase1, visitNode.name, {
         nodeId: node.id,
         nodeKind: node.kind,
@@ -90,12 +92,13 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
             ) {
                 isMultiline = true;
             }
-            const linearLength: number = getLinearLength(
+            const linearLength: number = await getLinearLength(
                 state.locale,
+                state.traceManager,
+                state.maybeCancellationToken,
                 state.nodeIdMapCollection,
                 state.linearLengthMap,
                 node,
-                state.traceManager,
             );
             if (linearLength > TBinOpExpressionLinearLengthThreshold) {
                 isMultiline = true;
@@ -224,12 +227,13 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
 
             if (args.length > 1) {
                 const linearLengthMap: LinearLengthMap = state.linearLengthMap;
-                const linearLength: number = getLinearLength(
+                const linearLength: number = await getLinearLength(
                     state.locale,
+                    state.traceManager,
+                    state.maybeCancellationToken,
                     nodeIdMapCollection,
                     linearLengthMap,
                     node,
-                    state.traceManager,
                 );
 
                 const maybeArrayWrapper: PQP.Language.Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(
@@ -257,12 +261,13 @@ function visitNode(state: IsMultilineFirstPassState, node: PQP.Language.Ast.TNod
                 const recursivePrimaryExpression: PQP.Language.Ast.RecursivePrimaryExpression =
                     maybeRecursivePrimaryExpression;
 
-                const headLinearLength: number = getLinearLength(
+                const headLinearLength: number = await getLinearLength(
                     state.locale,
+                    state.traceManager,
+                    state.maybeCancellationToken,
                     nodeIdMapCollection,
                     linearLengthMap,
                     recursivePrimaryExpression.head,
-                    state.traceManager,
                 );
                 const compositeLinearLength: number = headLinearLength + linearLength;
 

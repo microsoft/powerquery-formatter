@@ -6,65 +6,65 @@ import { compare, expectFormat } from "./common";
 
 describe("section", () => {
     describe("Section", () => {
-        it("section;", () => {
+        it("section;", async () => {
             const expected: string = `section;`;
-            const actual: string = expectFormat(`section;`);
+            const actual: string = await expectFormat(`section;`);
             compare(expected, actual);
         });
 
-        it("section name;", () => {
+        it("section name;", async () => {
             const expected: string = `section name;`;
-            const actual: string = expectFormat(`section name;`);
+            const actual: string = await expectFormat(`section name;`);
             compare(expected, actual);
         });
 
-        it("[] section name;", () => {
+        it("[] section name;", async () => {
             const expected: string = `[] section name;`;
-            const actual: string = expectFormat(`[] section name;`);
+            const actual: string = await expectFormat(`[] section name;`);
             compare(expected, actual);
         });
 
-        it("[] section;", () => {
+        it("[] section;", async () => {
             const expected: string = `[] section;`;
-            const actual: string = expectFormat(`[] section;`);
+            const actual: string = await expectFormat(`[] section;`);
             compare(expected, actual);
         });
 
-        it("[a = 1] section;", () => {
+        it("[a = 1] section;", async () => {
             const expected: string = `[a = 1] section;`;
-            const actual: string = expectFormat(`[a = 1] section;`);
+            const actual: string = await expectFormat(`[a = 1] section;`);
             compare(expected, actual);
         });
 
-        it("[a = {}] section;", () => {
+        it("[a = {}] section;", async () => {
             const expected: string = `[a = {}] section;`;
-            const actual: string = expectFormat(`[a = {}] section;`);
+            const actual: string = await expectFormat(`[a = {}] section;`);
             compare(expected, actual);
         });
 
-        it("[a = 1, b = 2] section;", () => {
+        it("[a = 1, b = 2] section;", async () => {
             const expected: string = `
 [
     a = 1,
     b = 2
 ]
 section;`;
-            const actual: string = expectFormat(`[a=1, b=2] section;`);
+            const actual: string = await expectFormat(`[a=1, b=2] section;`);
             compare(expected, actual);
         });
 
-        it("[a = {}, b = {}] section;", () => {
+        it("[a = {}, b = {}] section;", async () => {
             const expected: string = `
 [
     a = {},
     b = {}
 ]
 section;`;
-            const actual: string = expectFormat(`[a = {}, b = {}] section;`);
+            const actual: string = await expectFormat(`[a = {}, b = {}] section;`);
             compare(expected, actual);
         });
 
-        it("[a = {1}, b = {2}] section;", () => {
+        it("[a = {1}, b = {2}] section;", async () => {
             const expected: string = `
 [
     a = {
@@ -75,11 +75,11 @@ section;`;
     }
 ]
 section;`;
-            const actual: string = expectFormat(`[a = {1}, b = {2}] section;`);
+            const actual: string = await expectFormat(`[a = {1}, b = {2}] section;`);
             compare(expected, actual);
         });
 
-        it("[a = 1, b = [c = {2, 3, 4}], e = 5] section;", () => {
+        it("[a = 1, b = [c = {2, 3, 4}], e = 5] section;", async () => {
             const expected: string = `
 [
     a = 1,
@@ -93,31 +93,31 @@ section;`;
     e = 5
 ]
 section;`;
-            const actual: string = expectFormat(`[a = 1, b = [c = {2, 3, 4}], e = 5] section;`);
+            const actual: string = await expectFormat(`[a = 1, b = [c = {2, 3, 4}], e = 5] section;`);
             compare(expected, actual);
         });
     });
 
     describe("SectionMember", () => {
-        it("section; x = 1;", () => {
+        it("section; x = 1;", async () => {
             const expected: string = `
 section;
 
 x = 1;`;
-            const actual: string = expectFormat(`section; x = 1;`);
+            const actual: string = await expectFormat(`section; x = 1;`);
             compare(expected, actual);
         });
 
-        it("section; [] x = 1;", () => {
+        it("section; [] x = 1;", async () => {
             const expected: string = `
 section;
 
 [] x = 1;`;
-            const actual: string = expectFormat(`section; [] x = 1;`);
+            const actual: string = await expectFormat(`section; [] x = 1;`);
             compare(expected, actual);
         });
 
-        it("section; [a=1, b=2] x = 1;", () => {
+        it("section; [a=1, b=2] x = 1;", async () => {
             const expected: string = `
 section;
 
@@ -126,11 +126,11 @@ section;
     b = 2
 ]
 x = 1;`;
-            const actual: string = expectFormat(`section; [a=1, b=2] x = 1;`);
+            const actual: string = await expectFormat(`section; [a=1, b=2] x = 1;`);
             compare(expected, actual);
         });
 
-        it("section; [a=1, b=2] shared x = 1;", () => {
+        it("section; [a=1, b=2] shared x = 1;", async () => {
             const expected: string = `
 section;
 
@@ -139,40 +139,40 @@ section;
     b = 2
 ]
 shared x = 1;`;
-            const actual: string = expectFormat(`section; [a=1, b=2] shared x = 1;`);
+            const actual: string = await expectFormat(`section; [a=1, b=2] shared x = 1;`);
             compare(expected, actual);
         });
 
-        it("section; [a = 1] x = 1;", () => {
+        it("section; [a = 1] x = 1;", async () => {
             const expected: string = `
 section;
 
 [a = 1] x = 1;`;
-            const actual: string = expectFormat(`section; [a = 1] x = 1;`);
+            const actual: string = await expectFormat(`section; [a = 1] x = 1;`);
             compare(expected, actual);
         });
 
-        it("section; [a = 1] shared x = 1;", () => {
+        it("section; [a = 1] shared x = 1;", async () => {
             const expected: string = `
 section;
 
 [a = 1] shared x = 1;`;
-            const actual: string = expectFormat(`section; [a = 1] shared x = 1;`);
+            const actual: string = await expectFormat(`section; [a = 1] shared x = 1;`);
             compare(expected, actual);
         });
 
-        it("section; x = 1; y = 2;", () => {
+        it("section; x = 1; y = 2;", async () => {
             const expected: string = `
 section;
 
 x = 1;
 
 y = 2;`;
-            const actual: string = expectFormat(`section; x = 1; y = 2;`);
+            const actual: string = await expectFormat(`section; x = 1; y = 2;`);
             compare(expected, actual);
         });
 
-        it("section; Other = 3; Constant.Alpha = 1; Constant.Beta = 2; Other = 3;", () => {
+        it("section; Other = 3; Constant.Alpha = 1; Constant.Beta = 2; Other = 3;", async () => {
             const expected: string = `
 section;
 
@@ -182,7 +182,7 @@ Constant.Alpha = 1;
 Constant.Beta = 2;
 
 Other = 3;`;
-            const actual: string = expectFormat(
+            const actual: string = await expectFormat(
                 `section; Other = 3; Constant.Alpha = 1; Constant.Beta = 2; Other = 3;`,
             );
             compare(expected, actual);

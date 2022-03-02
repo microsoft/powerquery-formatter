@@ -9,16 +9,18 @@ import { FormatTraceConstant } from "../../trace";
 
 export function tryTraverseIsMultilineSecondPass(
     locale: string,
+    traceManager: PQP.Trace.TraceManager,
+    maybeCancellationToken: PQP.ICancellationToken | undefined,
     ast: PQP.Language.Ast.TNode,
     isMultilineMap: IsMultilineMap,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
-    traceManager: PQP.Trace.TraceManager,
-): PQP.Traverse.TriedTraverse<IsMultilineMap> {
+): Promise<PQP.Traverse.TriedTraverse<IsMultilineMap>> {
     const state: IsMultilineSecondPassState = {
         locale,
+        traceManager,
+        maybeCancellationToken,
         nodeIdMapCollection,
         result: isMultilineMap,
-        traceManager,
     };
 
     return PQP.Traverse.tryTraverseAst(
@@ -32,7 +34,7 @@ export function tryTraverseIsMultilineSecondPass(
     );
 }
 
-function visitNode(state: IsMultilineSecondPassState, node: PQP.Language.Ast.TNode): void {
+async function visitNode(state: IsMultilineSecondPassState, node: PQP.Language.Ast.TNode): Promise<void> {
     const trace: PQP.Trace.Trace = state.traceManager.entry(FormatTraceConstant.IsMultilinePhase2, visitNode.name, {
         nodeId: node.id,
         nodeKind: node.kind,
