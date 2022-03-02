@@ -396,11 +396,13 @@ async function visitBinOpExpression(
     const left: Ast.TNode = node.left;
     const right: Ast.TNode = node.right;
 
+    let isMultiline: boolean;
+
     if (
         (AstUtils.isTBinOpExpression(left) && containsLogicalExpression(left)) ||
         (AstUtils.isTBinOpExpression(right) && containsLogicalExpression(right))
     ) {
-        return true;
+        isMultiline = true;
     }
 
     const linearLength: number = await getLinearLength(
@@ -413,10 +415,12 @@ async function visitBinOpExpression(
     );
 
     if (linearLength > TBinOpExpressionLinearLengthThreshold) {
-        return true;
+        isMultiline = true;
     } else {
-        return isAnyMultiline(isMultilineMap, left, node.operatorConstant, right);
+        isMultiline = isAnyMultiline(isMultilineMap, left, node.operatorConstant, right);
     }
+
+    return isMultiline;
 }
 
 function visitListOrRecordNode(
