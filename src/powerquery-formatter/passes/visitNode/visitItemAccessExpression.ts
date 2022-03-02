@@ -1,20 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import { IsMultilineMap, SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 import { expectGetIsMultiline } from "../isMultiline/common";
 import { setWorkspace } from "./visitNodeUtils";
 import { visitTWrapped } from "./visitTWrapped";
 
-export function visitItemAccessExpression(
-    state: SerializeParameterState,
-    node: PQP.Language.Ast.ItemAccessExpression,
-): void {
+export function visitItemAccessExpression(state: SerializeParameterState, node: Ast.ItemAccessExpression): void {
     const isMultilineMap: IsMultilineMap = state.isMultilineMap;
     const isMultiline: boolean = expectGetIsMultiline(isMultilineMap, node);
-    const itemSelector: PQP.Language.Ast.TExpression = node.content;
+    const itemSelector: Ast.TExpression = node.content;
     const itemSelectorIsMultiline: boolean = expectGetIsMultiline(isMultilineMap, itemSelector);
     visitTWrapped(state, node);
 
@@ -29,8 +26,8 @@ export function visitItemAccessExpression(
 
     if (itemSelectorIsMultiline) {
         switch (itemSelector.kind) {
-            case PQP.Language.Ast.NodeKind.ListExpression:
-            case PQP.Language.Ast.NodeKind.RecordExpression:
+            case Ast.NodeKind.ListExpression:
+            case Ast.NodeKind.RecordExpression:
                 closeWrapperConstantWorkspace = { maybeWriteKind: SerializeWriteKind.Any };
                 break;
 

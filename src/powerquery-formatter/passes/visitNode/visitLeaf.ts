@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import { getWorkspace, maybeSetIndentationChange } from "./visitNodeUtils";
 import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../commonTypes";
@@ -9,12 +10,7 @@ import { visitComments } from "./visitComments";
 
 export function visitLeaf(
     state: SerializeParameterState,
-    node:
-        | PQP.Language.Ast.TConstant
-        | PQP.Language.Ast.GeneralizedIdentifier
-        | PQP.Language.Ast.Identifier
-        | PQP.Language.Ast.LiteralExpression
-        | PQP.Language.Ast.PrimitiveType,
+    node: Ast.TConstant | Ast.GeneralizedIdentifier | Ast.Identifier | Ast.LiteralExpression | Ast.PrimitiveType,
 ): void {
     const workspace: SerializeParameter = getWorkspace(state, node);
     maybeSetIndentationChange(state, node, workspace.maybeIndentationChange);

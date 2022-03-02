@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import { propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 import { SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 
-export function visitLetExpression(state: SerializeParameterState, node: PQP.Language.Ast.LetExpression): void {
+export function visitLetExpression(state: SerializeParameterState, node: Ast.LetExpression): void {
     propagateWriteKind(state, node, node.letConstant);
     setWorkspace(state, node.inConstant, { maybeWriteKind: SerializeWriteKind.Indented });
 

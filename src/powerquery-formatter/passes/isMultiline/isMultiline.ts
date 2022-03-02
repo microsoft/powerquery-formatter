@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import { CommentCollectionMap, IsMultilineMap } from "../commonTypes";
 import { FormatTraceConstant } from "../../trace";
@@ -13,7 +14,7 @@ export async function tryTraverseIsMultiline(
     locale: string,
     traceManager: PQP.Trace.TraceManager,
     maybeCancellationToken: PQP.ICancellationToken | undefined,
-    ast: PQP.Language.Ast.TNode,
+    ast: Ast.TNode,
     commentCollectionMap: CommentCollectionMap,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
 ): Promise<PQP.Traverse.TriedTraverse<IsMultilineMap>> {

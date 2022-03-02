@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import { IsMultilineMap, SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 import { propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 import { expectGetIsMultiline } from "../isMultiline/common";
 
-export function visitTKeyValuePair(state: SerializeParameterState, node: PQP.Language.Ast.TKeyValuePair): void {
+export function visitTKeyValuePair(state: SerializeParameterState, node: Ast.TKeyValuePair): void {
     const isMultilineMap: IsMultilineMap = state.isMultilineMap;
     const equalConstantIsMultiline: boolean = expectGetIsMultiline(isMultilineMap, node.equalConstant);
     const valueIsMultiline: boolean = expectGetIsMultiline(isMultilineMap, node.value);

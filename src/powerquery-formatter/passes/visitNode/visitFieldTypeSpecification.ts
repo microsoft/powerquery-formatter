@@ -1,15 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import { getWorkspace, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 
-export function visitFieldTypeSpecification(
-    state: SerializeParameterState,
-    node: PQP.Language.Ast.FieldTypeSpecification,
-): void {
+export function visitFieldTypeSpecification(state: SerializeParameterState, node: Ast.FieldTypeSpecification): void {
     // can't use propagateWriteKind as I want the equalConstant on the
     // same line as the previous node (FieldParameter).
     const workspace: SerializeParameter = getWorkspace(state, node);

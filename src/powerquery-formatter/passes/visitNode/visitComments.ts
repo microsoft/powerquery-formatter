@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import {
     CommentCollection,
@@ -21,7 +22,7 @@ import {
 //  * the TNode is set to Indented (last comment contains a newline)
 export function visitComments(
     state: SerializeParameterState,
-    node: PQP.Language.Ast.TNode,
+    node: Ast.TNode,
     maybeWriteKind: SerializeWriteKind | undefined,
 ): SerializeWriteKind | undefined {
     const nodeId: number = node.id;

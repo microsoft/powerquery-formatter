@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import { getWorkspace, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 import { SerializeParameter, SerializeParameterState } from "../commonTypes";
@@ -36,181 +37,181 @@ import { visitTypePrimaryType } from "./visitTypePrimaryType";
 import { visitUnaryExpression } from "./visitUnaryExpression";
 
 // eslint-disable-next-line require-await
-export async function visitNode(state: SerializeParameterState, node: PQP.Language.Ast.TNode): Promise<void> {
+export async function visitNode(state: SerializeParameterState, node: Ast.TNode): Promise<void> {
     const trace: PQP.Trace.Trace = state.traceManager.entry(FormatTraceConstant.SerializeParameter, visitNode.name, {
         nodeId: node.id,
         nodeKind: node.kind,
     });
 
     switch (node.kind) {
-        case PQP.Language.Ast.NodeKind.ArrayWrapper:
+        case Ast.NodeKind.ArrayWrapper:
             visitArrayWrapper(state, node);
             break;
 
         // TPairedConstant
-        case PQP.Language.Ast.NodeKind.AsNullablePrimitiveType:
-        case PQP.Language.Ast.NodeKind.AsType:
-        case PQP.Language.Ast.NodeKind.EachExpression:
-        case PQP.Language.Ast.NodeKind.IsNullablePrimitiveType:
-        case PQP.Language.Ast.NodeKind.NullablePrimitiveType:
-        case PQP.Language.Ast.NodeKind.NullableType:
-        case PQP.Language.Ast.NodeKind.OtherwiseExpression:
+        case Ast.NodeKind.AsNullablePrimitiveType:
+        case Ast.NodeKind.AsType:
+        case Ast.NodeKind.EachExpression:
+        case Ast.NodeKind.IsNullablePrimitiveType:
+        case Ast.NodeKind.NullablePrimitiveType:
+        case Ast.NodeKind.NullableType:
+        case Ast.NodeKind.OtherwiseExpression:
             visitTPairedConstant(state, node);
             break;
 
         // TBinOpExpression
-        case PQP.Language.Ast.NodeKind.ArithmeticExpression:
-        case PQP.Language.Ast.NodeKind.AsExpression:
-        case PQP.Language.Ast.NodeKind.EqualityExpression:
-        case PQP.Language.Ast.NodeKind.IsExpression:
-        case PQP.Language.Ast.NodeKind.LogicalExpression:
-        case PQP.Language.Ast.NodeKind.NullCoalescingExpression:
-        case PQP.Language.Ast.NodeKind.RelationalExpression:
+        case Ast.NodeKind.ArithmeticExpression:
+        case Ast.NodeKind.AsExpression:
+        case Ast.NodeKind.EqualityExpression:
+        case Ast.NodeKind.IsExpression:
+        case Ast.NodeKind.LogicalExpression:
+        case Ast.NodeKind.NullCoalescingExpression:
+        case Ast.NodeKind.RelationalExpression:
             visitTBinOpExpression(state, node);
             break;
 
         // TKeyValuePair
-        case PQP.Language.Ast.NodeKind.GeneralizedIdentifierPairedAnyLiteral:
-        case PQP.Language.Ast.NodeKind.GeneralizedIdentifierPairedExpression:
-        case PQP.Language.Ast.NodeKind.IdentifierPairedExpression:
+        case Ast.NodeKind.GeneralizedIdentifierPairedAnyLiteral:
+        case Ast.NodeKind.GeneralizedIdentifierPairedExpression:
+        case Ast.NodeKind.IdentifierPairedExpression:
             visitTKeyValuePair(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.ListLiteral:
-        case PQP.Language.Ast.NodeKind.ListExpression:
-        case PQP.Language.Ast.NodeKind.RecordExpression:
-        case PQP.Language.Ast.NodeKind.RecordLiteral:
+        case Ast.NodeKind.ListLiteral:
+        case Ast.NodeKind.ListExpression:
+        case Ast.NodeKind.RecordExpression:
+        case Ast.NodeKind.RecordLiteral:
             visitTWrapped(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.Csv:
+        case Ast.NodeKind.Csv:
             visitTCsv(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.ErrorHandlingExpression:
+        case Ast.NodeKind.ErrorHandlingExpression:
             visitErrorHandlingExpression(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.ErrorRaisingExpression:
+        case Ast.NodeKind.ErrorRaisingExpression:
             visitErrorRaisingExpression(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.FieldProjection:
+        case Ast.NodeKind.FieldProjection:
             visitTWrapped(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.FieldSelector:
+        case Ast.NodeKind.FieldSelector:
             propagateWriteKind(state, node, node.openWrapperConstant);
             break;
 
-        case PQP.Language.Ast.NodeKind.FieldSpecification:
+        case Ast.NodeKind.FieldSpecification:
             visitFieldSpecification(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.FieldSpecificationList:
+        case Ast.NodeKind.FieldSpecificationList:
             visitFieldSpecificationList(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.FieldTypeSpecification:
+        case Ast.NodeKind.FieldTypeSpecification:
             visitFieldTypeSpecification(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.FunctionExpression:
+        case Ast.NodeKind.FunctionExpression:
             visitFunctionExpression(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.FunctionType:
+        case Ast.NodeKind.FunctionType:
             visitFunctionType(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.IdentifierExpression:
+        case Ast.NodeKind.IdentifierExpression:
             visitIdentifierExpression(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.IfExpression:
+        case Ast.NodeKind.IfExpression:
             visitIfExpression(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.InvokeExpression:
+        case Ast.NodeKind.InvokeExpression:
             visitTWrapped(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.ItemAccessExpression:
+        case Ast.NodeKind.ItemAccessExpression:
             visitItemAccessExpression(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.LetExpression:
+        case Ast.NodeKind.LetExpression:
             visitLetExpression(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.ListType:
+        case Ast.NodeKind.ListType:
             visitListType(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.MetadataExpression:
+        case Ast.NodeKind.MetadataExpression:
             visitMetadataExpression(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.NotImplementedExpression:
+        case Ast.NodeKind.NotImplementedExpression:
             propagateWriteKind(state, node, node.ellipsisConstant);
             break;
 
-        case PQP.Language.Ast.NodeKind.Parameter:
+        case Ast.NodeKind.Parameter:
             visitTParameter(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.ParameterList:
+        case Ast.NodeKind.ParameterList:
             propagateWriteKind(state, node, node.openWrapperConstant);
             break;
 
-        case PQP.Language.Ast.NodeKind.ParenthesizedExpression:
+        case Ast.NodeKind.ParenthesizedExpression:
             visitParenthesizedExpression(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.RangeExpression:
+        case Ast.NodeKind.RangeExpression:
             visitRangeExpression(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.RecordType: {
+        case Ast.NodeKind.RecordType: {
             const workspace: SerializeParameter = getWorkspace(state, node);
             setWorkspace(state, node.fields, workspace);
             break;
         }
 
-        case PQP.Language.Ast.NodeKind.RecursivePrimaryExpression:
+        case Ast.NodeKind.RecursivePrimaryExpression:
             propagateWriteKind(state, node, node.head);
             break;
 
-        case PQP.Language.Ast.NodeKind.TableType:
+        case Ast.NodeKind.TableType:
             visitTableType(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.Section:
+        case Ast.NodeKind.Section:
             visitSection(state, node);
             break;
 
-        case PQP.Language.Ast.NodeKind.SectionMember:
+        case Ast.NodeKind.SectionMember:
             visitSectionMember(state, node);
             break;
 
         // TPairedConstant overload
-        case PQP.Language.Ast.NodeKind.TypePrimaryType: {
+        case Ast.NodeKind.TypePrimaryType: {
             visitTypePrimaryType(state, node);
             break;
         }
 
-        case PQP.Language.Ast.NodeKind.UnaryExpression:
+        case Ast.NodeKind.UnaryExpression:
             visitUnaryExpression(state, node);
             break;
 
         // Leaf nodes.
         // If a parent gave the leaf node a workspace it assigns indentationChange,
         // while writeType can be overwritten if the leaf node has a multiline comment attached.
-        case PQP.Language.Ast.NodeKind.Constant:
-        case PQP.Language.Ast.NodeKind.GeneralizedIdentifier:
-        case PQP.Language.Ast.NodeKind.Identifier:
-        case PQP.Language.Ast.NodeKind.LiteralExpression:
-        case PQP.Language.Ast.NodeKind.PrimitiveType:
+        case Ast.NodeKind.Constant:
+        case Ast.NodeKind.GeneralizedIdentifier:
+        case Ast.NodeKind.Identifier:
+        case Ast.NodeKind.LiteralExpression:
+        case Ast.NodeKind.PrimitiveType:
             visitLeaf(state, node);
             break;
 

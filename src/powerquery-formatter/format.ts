@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import {
     CommentCollectionMap,
@@ -44,7 +45,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
         return PQP.ResultUtils.boxError(triedLexParse.error);
     }
 
-    const ast: PQP.Language.Ast.TNode = triedLexParse.ast;
+    const ast: Ast.TNode = triedLexParse.ast;
     const comments: ReadonlyArray<PQP.Language.Comment.TComment> = triedLexParse.lexerSnapshot.comments;
     const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = triedLexParse.nodeIdMapCollection;
 

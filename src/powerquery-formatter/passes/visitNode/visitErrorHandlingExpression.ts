@@ -1,16 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import { propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 import { SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 import { expectGetIsMultiline } from "../isMultiline/common";
 
-export function visitErrorHandlingExpression(
-    state: SerializeParameterState,
-    node: PQP.Language.Ast.ErrorHandlingExpression,
-): void {
+export function visitErrorHandlingExpression(state: SerializeParameterState, node: Ast.ErrorHandlingExpression): void {
     const isMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, node);
     propagateWriteKind(state, node, node.tryConstant);
 
@@ -26,7 +23,7 @@ export function visitErrorHandlingExpression(
     }
 
     if (node.maybeOtherwiseExpression) {
-        const otherwiseExpression: PQP.Language.Ast.OtherwiseExpression = node.maybeOtherwiseExpression;
+        const otherwiseExpression: Ast.OtherwiseExpression = node.maybeOtherwiseExpression;
 
         let otherwiseWriteKind: SerializeWriteKind;
 

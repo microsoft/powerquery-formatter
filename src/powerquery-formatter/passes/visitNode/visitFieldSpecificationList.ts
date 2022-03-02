@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 import { expectGetIsMultiline } from "../isMultiline/common";
@@ -9,19 +10,15 @@ import { setWorkspace } from "./visitNodeUtils";
 import { visitTWrapped } from "./visitTWrapped";
 
 // TPairedConstant override
-export function visitFieldSpecificationList(
-    state: SerializeParameterState,
-    node: PQP.Language.Ast.FieldSpecificationList,
-): void {
+export function visitFieldSpecificationList(state: SerializeParameterState, node: Ast.FieldSpecificationList): void {
     const isMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, node);
 
-    const fieldsArray: PQP.Language.Ast.IArrayWrapper<PQP.Language.Ast.ICsv<PQP.Language.Ast.FieldSpecification>> =
-        node.content;
+    const fieldsArray: Ast.IArrayWrapper<Ast.ICsv<Ast.FieldSpecification>> = node.content;
 
     visitTWrapped(state, node);
 
     if (node.maybeOpenRecordMarkerConstant) {
-        const openRecordMarkerConstant: PQP.Language.Ast.IConstant<PQP.Language.Constant.MiscConstant.Ellipsis> =
+        const openRecordMarkerConstant: Ast.IConstant<PQP.Language.Constant.MiscConstant.Ellipsis> =
             node.maybeOpenRecordMarkerConstant;
 
         let workspace: SerializeParameter;

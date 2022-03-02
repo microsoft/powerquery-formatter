@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import { CommentCollection, CommentCollectionMap, CommentState } from "./commonTypes";
 
@@ -11,7 +12,7 @@ export function tryTraverseComment(
     locale: string,
     traceManager: PQP.Trace.TraceManager,
     maybeCancellationToken: PQP.ICancellationToken | undefined,
-    root: PQP.Language.Ast.TNode,
+    root: Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     comments: ReadonlyArray<PQP.Language.Comment.TComment>,
 ): Promise<PQP.Traverse.TriedTraverse<CommentCollectionMap>> {
@@ -37,7 +38,7 @@ export function tryTraverseComment(
 }
 
 // eslint-disable-next-line require-await
-async function earlyExit(state: CommentState, node: PQP.Language.Ast.TNode): Promise<boolean> {
+async function earlyExit(state: CommentState, node: Ast.TNode): Promise<boolean> {
     const maybeCurrentComment: PQP.Language.Comment.TComment | undefined = state.maybeCurrentComment;
 
     if (maybeCurrentComment === undefined) {
@@ -50,7 +51,7 @@ async function earlyExit(state: CommentState, node: PQP.Language.Ast.TNode): Pro
 }
 
 // eslint-disable-next-line require-await
-async function visitNode(state: CommentState, node: PQP.Language.Ast.TNode): Promise<void> {
+async function visitNode(state: CommentState, node: Ast.TNode): Promise<void> {
     if (!node.isLeaf) {
         return;
     }

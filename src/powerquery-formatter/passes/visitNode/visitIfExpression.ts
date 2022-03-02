@@ -1,13 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as PQP from "@microsoft/powerquery-parser";
+import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import { propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 import { SerializeParameter, SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 import { expectGetIsMultiline } from "../isMultiline/common";
 
-export function visitIfExpression(state: SerializeParameterState, node: PQP.Language.Ast.IfExpression): void {
+export function visitIfExpression(state: SerializeParameterState, node: Ast.IfExpression): void {
     propagateWriteKind(state, node, node.ifConstant);
 
     const conditionIsMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, node.condition);
@@ -42,10 +42,10 @@ export function visitIfExpression(state: SerializeParameterState, node: PQP.Lang
         maybeWriteKind: SerializeWriteKind.Indented,
     });
 
-    const falseExpression: PQP.Language.Ast.TExpression = node.falseExpression;
+    const falseExpression: Ast.TExpression = node.falseExpression;
     let falseExpressionWorkspace: SerializeParameter;
 
-    if (falseExpression.kind === PQP.Language.Ast.NodeKind.IfExpression) {
+    if (falseExpression.kind === Ast.NodeKind.IfExpression) {
         falseExpressionWorkspace = {
             maybeWriteKind: SerializeWriteKind.PaddedLeft,
         };
