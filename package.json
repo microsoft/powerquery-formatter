@@ -1,6 +1,6 @@
 {
     "name": "@microsoft/powerquery-formatter",
-    "version": "0.0.48",
+    "version": "0.0.49",
     "author": "Microsoft",
     "license": "MIT",
     "scripts": {
@@ -47,7 +47,7 @@
         "typescript": "^4.5.4"
     },
     "dependencies": {
-        "@microsoft/powerquery-parser": "0.6.7"
+        "@microsoft/powerquery-parser": "0.6.8"
     },
     "files": [
         "lib/powerquery-formatter/**/*"
