@@ -15,26 +15,26 @@ import { FormatTraceConstant } from "../../trace";
 //
 // Some nodes are always multiline, such as IfExpression, and will return NaN.
 export async function getLinearLength(
+    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
+    linearLengthMap: LinearLengthMap,
+    node: Ast.TNode,
     locale: string,
     traceManager: TraceManager,
     maybeCorrelationId: number | undefined,
     maybeCancellationToken: PQP.ICancellationToken | undefined,
-    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
-    linearLengthMap: LinearLengthMap,
-    node: Ast.TNode,
 ): Promise<number> {
     const nodeId: number = node.id;
     const maybeLinearLength: number | undefined = linearLengthMap.get(nodeId);
 
     if (maybeLinearLength === undefined) {
         const linearLength: number = await calculateLinearLength(
+            nodeIdMapCollection,
+            linearLengthMap,
+            node,
             locale,
             traceManager,
             maybeCorrelationId,
             maybeCancellationToken,
-            node,
-            nodeIdMapCollection,
-            linearLengthMap,
         );
 
         linearLengthMap.set(nodeId, linearLength);
@@ -46,13 +46,13 @@ export async function getLinearLength(
 }
 
 async function calculateLinearLength(
+    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
+    linearLengthMap: LinearLengthMap,
+    node: Ast.TNode,
     locale: string,
     traceManager: TraceManager,
     maybeCorrelationId: number | undefined,
     maybeCancellationToken: PQP.ICancellationToken | undefined,
-    node: Ast.TNode,
-    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
-    linearLengthMap: LinearLengthMap,
 ): Promise<number> {
     const state: LinearLengthState = {
         locale,
@@ -120,7 +120,7 @@ async function visitNode(
         case Ast.NodeKind.LogicalExpression:
         case Ast.NodeKind.NullCoalescingExpression:
         case Ast.NodeKind.RelationalExpression:
-            linearLength = await visitBinOpExpressionNode(state, trace.id, node);
+            linearLength = await visitBinOpExpressionNode(state, node, trace.id);
             break;
 
         // TKeyValuePair
@@ -137,7 +137,7 @@ async function visitNode(
         case Ast.NodeKind.ParameterList:
         case Ast.NodeKind.RecordExpression:
         case Ast.NodeKind.RecordLiteral:
-            linearLength = await visitWrappedCsvArray(state, trace.id, node);
+            linearLength = await visitWrappedCsvArray(state, node, trace.id);
             break;
 
         case Ast.NodeKind.ArrayWrapper:
@@ -447,8 +447,8 @@ async function visitNode(
 // eslint-disable-next-line require-await
 async function visitBinOpExpressionNode(
     state: LinearLengthState,
-    maybeCorrelationId: number | undefined,
     node: Ast.TBinOpExpression,
+    maybeCorrelationId: number | undefined,
 ): Promise<number> {
     return sumLinearLengths(
         state,
@@ -462,7 +462,6 @@ async function visitBinOpExpressionNode(
 
 function visitWrappedCsvArray(
     state: LinearLengthState,
-    maybeCorrelationId: number | undefined,
     node:
         | Ast.InvokeExpression
         | Ast.ListExpression
@@ -470,6 +469,7 @@ function visitWrappedCsvArray(
         | Ast.TParameterList
         | Ast.RecordExpression
         | Ast.RecordLiteral,
+    maybeCorrelationId: number | undefined,
 ): Promise<number> {
     const elements: ReadonlyArray<Ast.TCsv> = node.content.elements;
     const numElements: number = elements.length;
@@ -502,13 +502,13 @@ async function sumLinearLengths(
 
     const linearLengths: ReadonlyArray<number> = await PQP.ArrayUtils.mapAsync(nodes, (node: Ast.TNode) =>
         getLinearLength(
+            state.nodeIdMapCollection,
+            state.linearLengthMap,
+            node,
             state.locale,
             state.traceManager,
             trace.id,
             state.maybeCancellationToken,
-            state.nodeIdMapCollection,
-            state.linearLengthMap,
-            node,
         ),
     );
 

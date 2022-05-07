@@ -17,13 +17,13 @@ import { FormatTraceConstant } from "../../trace";
 import { getLinearLength } from "./linearLength";
 
 export function tryTraverseIsMultilineFirstPass(
+    ast: Ast.TNode,
+    commentCollectionMap: CommentCollectionMap,
+    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     locale: string,
     traceManager: TraceManager,
     maybeCorrelationId: number | undefined,
     maybeCancellationToken: PQP.ICancellationToken | undefined,
-    ast: Ast.TNode,
-    commentCollectionMap: CommentCollectionMap,
-    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
 ): Promise<PQP.Traverse.TriedTraverse<IsMultilineMap>> {
     const state: IsMultilineFirstPassState = {
         locale,
@@ -97,7 +97,7 @@ async function visitNode(
         case Ast.NodeKind.LogicalExpression:
         case Ast.NodeKind.NullCoalescingExpression:
         case Ast.NodeKind.RelationalExpression:
-            isMultiline = await visitBinOpExpression(state, trace.id, node, isMultilineMap);
+            isMultiline = await visitBinOpExpression(state, node, isMultilineMap, trace.id);
             break;
 
         // TKeyValuePair
@@ -206,13 +206,13 @@ async function visitNode(
                 const linearLengthMap: LinearLengthMap = state.linearLengthMap;
 
                 const linearLength: number = await getLinearLength(
+                    nodeIdMapCollection,
+                    linearLengthMap,
+                    node,
                     state.locale,
                     state.traceManager,
                     trace.id,
                     state.maybeCancellationToken,
-                    nodeIdMapCollection,
-                    linearLengthMap,
-                    node,
                 );
 
                 const maybeArrayWrapper: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(
@@ -243,13 +243,13 @@ async function visitNode(
                 const recursivePrimaryExpression: Ast.RecursivePrimaryExpression = maybeRecursivePrimaryExpression;
 
                 const headLinearLength: number = await getLinearLength(
+                    nodeIdMapCollection,
+                    linearLengthMap,
+                    recursivePrimaryExpression.head,
                     state.locale,
                     state.traceManager,
                     trace.id,
                     state.maybeCancellationToken,
-                    nodeIdMapCollection,
-                    linearLengthMap,
-                    recursivePrimaryExpression.head,
                 );
 
                 const compositeLinearLength: number = headLinearLength + linearLength;
@@ -404,9 +404,9 @@ async function visitNode(
 
 async function visitBinOpExpression(
     state: IsMultilineFirstPassState,
-    maybeCorrelationId: number | undefined,
     node: Ast.TBinOpExpression,
     isMultilineMap: IsMultilineMap,
+    maybeCorrelationId: number | undefined,
 ): Promise<boolean> {
     const left: Ast.TNode = node.left;
     const right: Ast.TNode = node.right;
@@ -421,13 +421,13 @@ async function visitBinOpExpression(
     }
 
     const linearLength: number = await getLinearLength(
+        state.nodeIdMapCollection,
+        state.linearLengthMap,
+        node,
         state.locale,
         state.traceManager,
         maybeCorrelationId,
         state.maybeCancellationToken,
-        state.nodeIdMapCollection,
-        state.linearLengthMap,
-        node,
     );
 
     if (linearLength > TBinOpExpressionLinearLengthThreshold) {

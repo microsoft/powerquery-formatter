@@ -38,7 +38,7 @@ export interface SerializePassthroughMaps {
 }
 
 export function trySerialize(settings: SerializeSettings): TriedSerialize {
-    return PQP.ResultUtils.ensureResult(settings.locale, () => serialize(settings));
+    return PQP.ResultUtils.ensureResult(() => serialize(settings), settings.locale);
 }
 
 interface SerializeState {

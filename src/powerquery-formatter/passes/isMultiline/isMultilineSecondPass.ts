@@ -10,13 +10,13 @@ import { IsMultilineMap, IsMultilineSecondPassState } from "../commonTypes";
 import { FormatTraceConstant } from "../../trace";
 
 export function tryTraverseIsMultilineSecondPass(
+    ast: Ast.TNode,
+    isMultilineMap: IsMultilineMap,
+    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     locale: string,
     traceManager: TraceManager,
     maybeCorrelationId: number | undefined,
     maybeCancellationToken: PQP.ICancellationToken | undefined,
-    ast: Ast.TNode,
-    isMultilineMap: IsMultilineMap,
-    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
 ): Promise<PQP.Traverse.TriedTraverse<IsMultilineMap>> {
     const state: IsMultilineSecondPassState = {
         locale,
