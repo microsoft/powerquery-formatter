@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+import { Trace, TraceManager } from "@microsoft/powerquery-parser/lib/powerquery-parser/common/trace";
 import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import {
@@ -16,8 +17,10 @@ import {
     NewlineLiteral,
     SerializePassthroughMaps,
     SerializeSettings,
+    TriedSerialize,
     trySerialize,
 } from "./serialize";
+import { FormatTraceConstant } from "./trace";
 import { tryTraverseIsMultiline } from "./passes/isMultiline/isMultiline";
 
 export type TriedFormat = PQP.Result<string, TFormatError>;
@@ -39,6 +42,12 @@ export const DefaultSettings: FormatSettings = {
 };
 
 export async function tryFormat(formatSettings: FormatSettings, text: string): Promise<TriedFormat> {
+    const trace: Trace = formatSettings.traceManager.entry(
+        FormatTraceConstant.Format,
+        tryFormat.name,
+        formatSettings.maybeInitialCorrelationId,
+    );
+
     const triedLexParse: PQP.Task.TriedLexParseTask = await PQP.TaskUtils.tryLexParse(formatSettings, text);
 
     if (PQP.TaskUtils.isError(triedLexParse)) {
@@ -50,7 +59,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
     const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = triedLexParse.nodeIdMapCollection;
 
     const locale: string = formatSettings.locale;
-    const traceManager: PQP.Trace.TraceManager = formatSettings.traceManager;
+    const traceManager: TraceManager = formatSettings.traceManager;
     const maybeCancellationToken: PQP.ICancellationToken | undefined = formatSettings.maybeCancellationToken;
 
     let commentCollectionMap: CommentCollectionMap = new Map();
@@ -59,6 +68,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
         const triedCommentPass: PQP.Traverse.TriedTraverse<CommentCollectionMap> = await tryTraverseComment(
             locale,
             traceManager,
+            trace.id,
             maybeCancellationToken,
             ast,
             nodeIdMapCollection,
@@ -75,6 +85,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
     const triedIsMultilineMap: PQP.Traverse.TriedTraverse<IsMultilineMap> = await tryTraverseIsMultiline(
         locale,
         formatSettings.traceManager,
+        trace.id,
         maybeCancellationToken,
         ast,
         commentCollectionMap,
@@ -91,6 +102,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
         await tryTraverseSerializeParameter(
             locale,
             formatSettings.traceManager,
+            trace.id,
             maybeCancellationToken,
             ast,
             nodeIdMapCollection,
@@ -118,7 +130,11 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
         traceManager: formatSettings.traceManager,
         newlineLiteral: formatSettings.newlineLiteral,
         maybeCancellationToken: undefined,
+        maybeInitialCorrelationId: trace.id,
     };
 
-    return trySerialize(serializeRequest);
+    const triedSerialize: TriedSerialize = trySerialize(serializeRequest);
+    trace.exit();
+
+    return triedSerialize;
 }

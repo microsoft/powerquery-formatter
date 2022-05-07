@@ -3,6 +3,7 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
+import { TraceManager } from "@microsoft/powerquery-parser/lib/powerquery-parser/common/trace";
 
 import { CommentCollection, CommentCollectionMap, CommentState } from "./commonTypes";
 
@@ -10,7 +11,8 @@ import { CommentCollection, CommentCollectionMap, CommentState } from "./commonT
 // Returns a Map<leafId, an array of comments attached to the leafId>.
 export function tryTraverseComment(
     locale: string,
-    traceManager: PQP.Trace.TraceManager,
+    traceManager: TraceManager,
+    maybeCorrelationId: number | undefined,
     maybeCancellationToken: PQP.ICancellationToken | undefined,
     root: Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
@@ -20,6 +22,7 @@ export function tryTraverseComment(
         locale,
         traceManager,
         maybeCancellationToken,
+        maybeInitialCorrelationId: maybeCorrelationId,
         result: new Map(),
         comments,
         commentsIndex: 0,

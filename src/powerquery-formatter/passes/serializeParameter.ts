@@ -2,9 +2,11 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+import { Trace, TraceManager } from "@microsoft/powerquery-parser/lib/powerquery-parser/common/trace";
 import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import { CommentCollectionMap, IsMultilineMap, SerializeParameterMap, SerializeParameterState } from "./commonTypes";
+import { FormatTraceConstant } from "../trace";
 import { visitNode } from "./visitNode/visitNode";
 
 // TNodes (in general) have two responsibilities:
@@ -15,17 +17,25 @@ import { visitNode } from "./visitNode/visitNode";
 
 export function tryTraverseSerializeParameter(
     locale: string,
-    traceManager: PQP.Trace.TraceManager,
+    traceManager: TraceManager,
+    maybeCorrelationId: number | undefined,
     maybeCancellationToken: PQP.ICancellationToken | undefined,
     ast: Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     commentCollectionMap: CommentCollectionMap,
     isMultilineMap: IsMultilineMap,
 ): Promise<PQP.Traverse.TriedTraverse<SerializeParameterMap>> {
+    const trace: Trace = traceManager.entry(
+        FormatTraceConstant.SerializeParameter,
+        tryTraverseSerializeParameter.name,
+        maybeCorrelationId,
+    );
+
     const state: SerializeParameterState = {
         locale,
         traceManager,
         maybeCancellationToken,
+        maybeInitialCorrelationId: trace.id,
         commentCollectionMap,
         isMultilineMap,
         nodeIdMapCollection,
@@ -37,7 +47,7 @@ export function tryTraverseSerializeParameter(
         workspaceMap: new Map(),
     };
 
-    return PQP.Traverse.tryTraverseAst(
+    const result: Promise<PQP.Traverse.TriedTraverse<SerializeParameterMap>> = PQP.Traverse.tryTraverseAst(
         state,
         nodeIdMapCollection,
         ast,
@@ -46,4 +56,8 @@ export function tryTraverseSerializeParameter(
         PQP.Traverse.assertGetAllAstChildren,
         undefined,
     );
+
+    trace.exit();
+
+    return result;
 }

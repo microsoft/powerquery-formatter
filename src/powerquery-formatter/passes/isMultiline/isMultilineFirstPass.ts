@@ -3,6 +3,7 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { Ast, AstUtils } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
+import { Trace, TraceManager } from "@microsoft/powerquery-parser/lib/powerquery-parser/common/trace";
 
 import {
     CommentCollection,
@@ -17,7 +18,8 @@ import { getLinearLength } from "./linearLength";
 
 export function tryTraverseIsMultilineFirstPass(
     locale: string,
-    traceManager: PQP.Trace.TraceManager,
+    traceManager: TraceManager,
+    maybeCorrelationId: number | undefined,
     maybeCancellationToken: PQP.ICancellationToken | undefined,
     ast: Ast.TNode,
     commentCollectionMap: CommentCollectionMap,
@@ -27,6 +29,7 @@ export function tryTraverseIsMultilineFirstPass(
         locale,
         traceManager,
         maybeCancellationToken,
+        maybeInitialCorrelationId: maybeCorrelationId,
         commentCollectionMap,
         linearLengthMap: new Map(),
         nodeIdMapCollection,
@@ -54,11 +57,20 @@ const InvokeExpressionIdentifierLinearLengthExclusions: ReadonlyArray<string> = 
 const TBinOpExpressionLinearLengthThreshold: number = 40;
 const InvokeExpressionLinearLengthThreshold: number = 40;
 
-async function visitNode(state: IsMultilineFirstPassState, node: Ast.TNode): Promise<void> {
-    const trace: PQP.Trace.Trace = state.traceManager.entry(FormatTraceConstant.IsMultilinePhase1, visitNode.name, {
-        nodeId: node.id,
-        nodeKind: node.kind,
-    });
+async function visitNode(
+    state: IsMultilineFirstPassState,
+    node: Ast.TNode,
+    maybeCorrelationId: number | undefined,
+): Promise<void> {
+    const trace: Trace = state.traceManager.entry(
+        FormatTraceConstant.IsMultilinePhase1,
+        visitNode.name,
+        maybeCorrelationId,
+        {
+            nodeId: node.id,
+            nodeKind: node.kind,
+        },
+    );
 
     const isMultilineMap: IsMultilineMap = state.result;
     let isMultiline: boolean = false;
@@ -85,7 +97,7 @@ async function visitNode(state: IsMultilineFirstPassState, node: Ast.TNode): Pro
         case Ast.NodeKind.LogicalExpression:
         case Ast.NodeKind.NullCoalescingExpression:
         case Ast.NodeKind.RelationalExpression:
-            isMultiline = await visitBinOpExpression(state, node, isMultilineMap);
+            isMultiline = await visitBinOpExpression(state, trace.id, node, isMultilineMap);
             break;
 
         // TKeyValuePair
@@ -196,6 +208,7 @@ async function visitNode(state: IsMultilineFirstPassState, node: Ast.TNode): Pro
                 const linearLength: number = await getLinearLength(
                     state.locale,
                     state.traceManager,
+                    trace.id,
                     state.maybeCancellationToken,
                     nodeIdMapCollection,
                     linearLengthMap,
@@ -232,6 +245,7 @@ async function visitNode(state: IsMultilineFirstPassState, node: Ast.TNode): Pro
                 const headLinearLength: number = await getLinearLength(
                     state.locale,
                     state.traceManager,
+                    trace.id,
                     state.maybeCancellationToken,
                     nodeIdMapCollection,
                     linearLengthMap,
@@ -390,6 +404,7 @@ async function visitNode(state: IsMultilineFirstPassState, node: Ast.TNode): Pro
 
 async function visitBinOpExpression(
     state: IsMultilineFirstPassState,
+    maybeCorrelationId: number | undefined,
     node: Ast.TBinOpExpression,
     isMultilineMap: IsMultilineMap,
 ): Promise<boolean> {
@@ -408,6 +423,7 @@ async function visitBinOpExpression(
     const linearLength: number = await getLinearLength(
         state.locale,
         state.traceManager,
+        maybeCorrelationId,
         state.maybeCancellationToken,
         state.nodeIdMapCollection,
         state.linearLengthMap,

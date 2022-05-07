@@ -3,6 +3,7 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
+import { Trace } from "@microsoft/powerquery-parser/lib/powerquery-parser/common/trace";
 
 import { getWorkspace, propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 import { SerializeParameter, SerializeParameterState } from "../commonTypes";
@@ -37,11 +38,20 @@ import { visitTypePrimaryType } from "./visitTypePrimaryType";
 import { visitUnaryExpression } from "./visitUnaryExpression";
 
 // eslint-disable-next-line require-await
-export async function visitNode(state: SerializeParameterState, node: Ast.TNode): Promise<void> {
-    const trace: PQP.Trace.Trace = state.traceManager.entry(FormatTraceConstant.SerializeParameter, visitNode.name, {
-        nodeId: node.id,
-        nodeKind: node.kind,
-    });
+export async function visitNode(
+    state: SerializeParameterState,
+    node: Ast.TNode,
+    maybeCorrelationId: number | undefined,
+): Promise<void> {
+    const trace: Trace = state.traceManager.entry(
+        FormatTraceConstant.SerializeParameter,
+        visitNode.name,
+        maybeCorrelationId,
+        {
+            nodeId: node.id,
+            nodeKind: node.kind,
+        },
+    );
 
     switch (node.kind) {
         case Ast.NodeKind.ArrayWrapper:
