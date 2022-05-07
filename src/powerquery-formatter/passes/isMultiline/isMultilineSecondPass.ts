@@ -3,7 +3,7 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { Ast, AstUtils } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
-import { Trace } from "@microsoft/powerquery-parser";
+import { Trace, TraceManager } from "@microsoft/powerquery-parser/lib/powerquery-parser/common/trace";
 
 import { expectGetIsMultiline, setIsMultiline } from "./common";
 import { IsMultilineMap, IsMultilineSecondPassState } from "../commonTypes";
@@ -11,7 +11,8 @@ import { FormatTraceConstant } from "../../trace";
 
 export function tryTraverseIsMultilineSecondPass(
     locale: string,
-    traceManager: Trace.TraceManager,
+    traceManager: TraceManager,
+    maybeCorrelationId: number | undefined,
     maybeCancellationToken: PQP.ICancellationToken | undefined,
     ast: Ast.TNode,
     isMultilineMap: IsMultilineMap,
@@ -21,6 +22,7 @@ export function tryTraverseIsMultilineSecondPass(
         locale,
         traceManager,
         maybeCancellationToken,
+        maybeInitialCorrelationId: maybeCorrelationId,
         nodeIdMapCollection,
         result: isMultilineMap,
     };
@@ -37,11 +39,20 @@ export function tryTraverseIsMultilineSecondPass(
 }
 
 // eslint-disable-next-line require-await
-async function visitNode(state: IsMultilineSecondPassState, node: Ast.TNode): Promise<void> {
-    const trace: Trace.Trace = state.traceManager.entry(FormatTraceConstant.IsMultilinePhase2, visitNode.name, {
-        nodeId: node.id,
-        nodeKind: node.kind,
-    });
+async function visitNode(
+    state: IsMultilineSecondPassState,
+    node: Ast.TNode,
+    maybeCorrelationId: number | undefined,
+): Promise<void> {
+    const trace: Trace = state.traceManager.entry(
+        FormatTraceConstant.IsMultilinePhase2,
+        visitNode.name,
+        maybeCorrelationId,
+        {
+            nodeId: node.id,
+            nodeKind: node.kind,
+        },
+    );
 
     // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
     switch (node.kind) {
@@ -67,7 +78,7 @@ async function visitNode(state: IsMultilineSecondPassState, node: Ast.TNode): Pr
     trace.exit();
 }
 
-function visitBinOpExpression(state: IsMultilineSecondPassState, node: Ast.TNode, trace: Trace.Trace): void {
+function visitBinOpExpression(state: IsMultilineSecondPassState, node: Ast.TNode, trace: Trace): void {
     const isMultilineMap: IsMultilineMap = state.result;
 
     const maybeParent: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(
@@ -76,7 +87,7 @@ function visitBinOpExpression(state: IsMultilineSecondPassState, node: Ast.TNode
     );
 
     if (maybeParent && AstUtils.isTBinOpExpression(maybeParent) && expectGetIsMultiline(isMultilineMap, maybeParent)) {
-        trace.trace("Updating isMultiline for nested BinOp");
+        trace.trace("Updating isMultiline for nested BinOp", { nodeId: node.id, nodeKind: node.kind });
 
         setIsMultiline(isMultilineMap, node, true);
     }
@@ -85,7 +96,7 @@ function visitBinOpExpression(state: IsMultilineSecondPassState, node: Ast.TNode
 function visitListOrRecord(
     state: IsMultilineSecondPassState,
     node: Ast.ListExpression | Ast.ListLiteral | Ast.RecordExpression | Ast.RecordLiteral,
-    trace: Trace.Trace,
+    trace: Trace,
 ): void {
     if (node.content.elements.length) {
         trace.trace("Updating isMultiline for collection");

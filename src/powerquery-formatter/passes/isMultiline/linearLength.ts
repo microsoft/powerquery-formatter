@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+import { Trace, TraceManager } from "@microsoft/powerquery-parser/lib/powerquery-parser/common/trace";
 import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import { LinearLengthMap, LinearLengthState } from "../commonTypes";
@@ -15,7 +16,8 @@ import { FormatTraceConstant } from "../../trace";
 // Some nodes are always multiline, such as IfExpression, and will return NaN.
 export async function getLinearLength(
     locale: string,
-    traceManager: PQP.Trace.TraceManager,
+    traceManager: TraceManager,
+    maybeCorrelationId: number | undefined,
     maybeCancellationToken: PQP.ICancellationToken | undefined,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     linearLengthMap: LinearLengthMap,
@@ -28,6 +30,7 @@ export async function getLinearLength(
         const linearLength: number = await calculateLinearLength(
             locale,
             traceManager,
+            maybeCorrelationId,
             maybeCancellationToken,
             node,
             nodeIdMapCollection,
@@ -44,7 +47,8 @@ export async function getLinearLength(
 
 async function calculateLinearLength(
     locale: string,
-    traceManager: PQP.Trace.TraceManager,
+    traceManager: TraceManager,
+    maybeCorrelationId: number | undefined,
     maybeCancellationToken: PQP.ICancellationToken | undefined,
     node: Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
@@ -54,6 +58,7 @@ async function calculateLinearLength(
         locale,
         traceManager,
         maybeCancellationToken,
+        maybeInitialCorrelationId: maybeCorrelationId,
         linearLengthMap,
         nodeIdMapCollection,
         result: 0,
@@ -76,11 +81,20 @@ async function calculateLinearLength(
     }
 }
 
-async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<void> {
-    const trace: PQP.Trace.Trace = state.traceManager.entry(FormatTraceConstant.LinearLength, visitNode.name, {
-        nodeId: node.id,
-        nodeKind: node.kind,
-    });
+async function visitNode(
+    state: LinearLengthState,
+    node: Ast.TNode,
+    maybeCorrelationId: number | undefined,
+): Promise<void> {
+    const trace: Trace = state.traceManager.entry(
+        FormatTraceConstant.LinearLength,
+        visitNode.name,
+        maybeCorrelationId,
+        {
+            nodeId: node.id,
+            nodeKind: node.kind,
+        },
+    );
 
     let linearLength: number;
 
@@ -95,7 +109,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
         case Ast.NodeKind.NullableType:
         case Ast.NodeKind.OtherwiseExpression:
         case Ast.NodeKind.TypePrimaryType:
-            linearLength = await sumLinearLengths(state, 1, node.constant, node.paired);
+            linearLength = await sumLinearLengths(state, trace.id, 1, node.constant, node.paired);
             break;
 
         // TBinOpExpression
@@ -106,14 +120,14 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
         case Ast.NodeKind.LogicalExpression:
         case Ast.NodeKind.NullCoalescingExpression:
         case Ast.NodeKind.RelationalExpression:
-            linearLength = await visitBinOpExpressionNode(state, node);
+            linearLength = await visitBinOpExpressionNode(state, trace.id, node);
             break;
 
         // TKeyValuePair
         case Ast.NodeKind.GeneralizedIdentifierPairedAnyLiteral:
         case Ast.NodeKind.GeneralizedIdentifierPairedExpression:
         case Ast.NodeKind.IdentifierPairedExpression:
-            linearLength = await sumLinearLengths(state, 2, node.key, node.equalConstant, node.value);
+            linearLength = await sumLinearLengths(state, trace.id, 2, node.key, node.equalConstant, node.value);
             break;
 
         // TWrapped where Content is TCsv[] and no extra attributes
@@ -123,11 +137,11 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
         case Ast.NodeKind.ParameterList:
         case Ast.NodeKind.RecordExpression:
         case Ast.NodeKind.RecordLiteral:
-            linearLength = await visitWrappedCsvArray(state, node);
+            linearLength = await visitWrappedCsvArray(state, trace.id, node);
             break;
 
         case Ast.NodeKind.ArrayWrapper:
-            linearLength = await sumLinearLengths(state, 0, ...node.elements);
+            linearLength = await sumLinearLengths(state, trace.id, 0, ...node.elements);
             break;
 
         case Ast.NodeKind.Constant:
@@ -135,7 +149,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
             break;
 
         case Ast.NodeKind.Csv:
-            linearLength = await sumLinearLengths(state, 0, node.node, node.maybeCommaConstant);
+            linearLength = await sumLinearLengths(state, trace.id, 0, node.node, node.maybeCommaConstant);
             break;
 
         case Ast.NodeKind.ErrorHandlingExpression: {
@@ -147,6 +161,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
 
             linearLength = await sumLinearLengths(
                 state,
+                trace.id,
                 initialLength,
                 node.tryConstant,
                 node.protectedExpression,
@@ -159,6 +174,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
         case Ast.NodeKind.FieldProjection:
             linearLength = await sumLinearLengths(
                 state,
+                trace.id,
                 0,
                 node.openWrapperConstant,
                 node.closeWrapperConstant,
@@ -171,6 +187,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
         case Ast.NodeKind.FieldSelector:
             linearLength = await sumLinearLengths(
                 state,
+                trace.id,
                 0,
                 node.openWrapperConstant,
                 node.content,
@@ -183,6 +200,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
         case Ast.NodeKind.FieldSpecification:
             linearLength = await sumLinearLengths(
                 state,
+                trace.id,
                 0,
                 node.maybeOptionalConstant,
                 node.name,
@@ -202,6 +220,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
 
             linearLength = await sumLinearLengths(
                 state,
+                trace.id,
                 initialLength,
                 node.openWrapperConstant,
                 node.closeWrapperConstant,
@@ -213,7 +232,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
         }
 
         case Ast.NodeKind.FieldTypeSpecification:
-            linearLength = await sumLinearLengths(state, 2, node.equalConstant, node.fieldType);
+            linearLength = await sumLinearLengths(state, trace.id, 2, node.equalConstant, node.fieldType);
             break;
 
         case Ast.NodeKind.FunctionExpression: {
@@ -225,6 +244,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
 
             linearLength = await sumLinearLengths(
                 state,
+                trace.id,
                 initialLength,
                 node.parameters,
                 node.maybeFunctionReturnType,
@@ -238,6 +258,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
         case Ast.NodeKind.FunctionType:
             linearLength = await sumLinearLengths(
                 state,
+                trace.id,
                 2,
                 node.functionConstant,
                 node.parameters,
@@ -252,12 +273,13 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
             break;
 
         case Ast.NodeKind.IdentifierExpression:
-            linearLength = await sumLinearLengths(state, 0, node.maybeInclusiveConstant, node.identifier);
+            linearLength = await sumLinearLengths(state, trace.id, 0, node.maybeInclusiveConstant, node.identifier);
             break;
 
         case Ast.NodeKind.ItemAccessExpression:
             linearLength = await sumLinearLengths(
                 state,
+                trace.id,
                 0,
                 node.openWrapperConstant,
                 node.content,
@@ -274,6 +296,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
         case Ast.NodeKind.ListType:
             linearLength = await sumLinearLengths(
                 state,
+                trace.id,
                 0,
                 node.openWrapperConstant,
                 node.content,
@@ -283,12 +306,12 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
             break;
 
         case Ast.NodeKind.MetadataExpression: {
-            linearLength = await sumLinearLengths(state, 2, node.left, node.operatorConstant, node.right);
+            linearLength = await sumLinearLengths(state, trace.id, 2, node.left, node.operatorConstant, node.right);
             break;
         }
 
         case Ast.NodeKind.NotImplementedExpression:
-            linearLength = await sumLinearLengths(state, 0, node.ellipsisConstant);
+            linearLength = await sumLinearLengths(state, trace.id, 0, node.ellipsisConstant);
             break;
 
         case Ast.NodeKind.Parameter: {
@@ -304,6 +327,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
 
             linearLength = await sumLinearLengths(
                 state,
+                trace.id,
                 initialLength,
                 node.maybeOptionalConstant,
                 node.name,
@@ -316,6 +340,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
         case Ast.NodeKind.ParenthesizedExpression:
             linearLength = await sumLinearLengths(
                 state,
+                trace.id,
                 0,
                 node.openWrapperConstant,
                 node.content,
@@ -329,15 +354,15 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
             break;
 
         case Ast.NodeKind.RangeExpression:
-            linearLength = await sumLinearLengths(state, 0, node.left, node.rangeConstant, node.right);
+            linearLength = await sumLinearLengths(state, trace.id, 0, node.left, node.rangeConstant, node.right);
             break;
 
         case Ast.NodeKind.RecordType:
-            linearLength = await sumLinearLengths(state, 0, node.fields);
+            linearLength = await sumLinearLengths(state, trace.id, 0, node.fields);
             break;
 
         case Ast.NodeKind.RecursivePrimaryExpression:
-            linearLength = await sumLinearLengths(state, 0, node.head, ...node.recursiveExpressions.elements);
+            linearLength = await sumLinearLengths(state, trace.id, 0, node.head, ...node.recursiveExpressions.elements);
             break;
 
         case Ast.NodeKind.SectionMember: {
@@ -353,6 +378,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
 
             linearLength = await sumLinearLengths(
                 state,
+                trace.id,
                 initialLength,
                 node.maybeLiteralAttributes,
                 node.maybeSharedConstant,
@@ -381,6 +407,7 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
 
                 linearLength = await sumLinearLengths(
                     state,
+                    trace.id,
                     initialLength,
                     node.maybeLiteralAttributes,
                     node.sectionConstant,
@@ -394,11 +421,11 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
         }
 
         case Ast.NodeKind.TableType:
-            linearLength = await sumLinearLengths(state, 1, node.tableConstant, node.rowType);
+            linearLength = await sumLinearLengths(state, trace.id, 1, node.tableConstant, node.rowType);
             break;
 
         case Ast.NodeKind.UnaryExpression:
-            linearLength = await sumLinearLengths(state, 1, node.typeExpression, ...node.operators.elements);
+            linearLength = await sumLinearLengths(state, trace.id, 1, node.typeExpression, ...node.operators.elements);
             break;
 
         // is always multiline, therefore cannot have linear line length
@@ -418,9 +445,14 @@ async function visitNode(state: LinearLengthState, node: Ast.TNode): Promise<voi
 }
 
 // eslint-disable-next-line require-await
-async function visitBinOpExpressionNode(state: LinearLengthState, node: Ast.TBinOpExpression): Promise<number> {
+async function visitBinOpExpressionNode(
+    state: LinearLengthState,
+    maybeCorrelationId: number | undefined,
+    node: Ast.TBinOpExpression,
+): Promise<number> {
     return sumLinearLengths(
         state,
+        maybeCorrelationId,
         node.operatorConstant.constantKind.length,
         node.left,
         node.operatorConstant,
@@ -430,6 +462,7 @@ async function visitBinOpExpressionNode(state: LinearLengthState, node: Ast.TBin
 
 function visitWrappedCsvArray(
     state: LinearLengthState,
+    maybeCorrelationId: number | undefined,
     node:
         | Ast.InvokeExpression
         | Ast.ListExpression
@@ -443,6 +476,7 @@ function visitWrappedCsvArray(
 
     return sumLinearLengths(
         state,
+        maybeCorrelationId,
         numElements ? numElements - 1 : 0,
         node.openWrapperConstant,
         node.closeWrapperConstant,
@@ -452,9 +486,16 @@ function visitWrappedCsvArray(
 
 async function sumLinearLengths(
     state: LinearLengthState,
+    maybeCorrelationId: number | undefined,
     initialLength: number,
     ...maybeNodes: (Ast.TNode | undefined)[]
 ): Promise<number> {
+    const trace: Trace = state.traceManager.entry(
+        FormatTraceConstant.LinearLength,
+        sumLinearLengths.name,
+        maybeCorrelationId,
+    );
+
     const nodes: Ast.TNode[] = maybeNodes.filter(
         (value: Ast.TNode | undefined): value is Ast.TNode => value !== undefined,
     );
@@ -463,6 +504,7 @@ async function sumLinearLengths(
         getLinearLength(
             state.locale,
             state.traceManager,
+            trace.id,
             state.maybeCancellationToken,
             state.nodeIdMapCollection,
             state.linearLengthMap,
@@ -470,5 +512,12 @@ async function sumLinearLengths(
         ),
     );
 
-    return linearLengths.reduce((sum: number, linearLength: number) => sum + linearLength, initialLength);
+    const result: number = linearLengths.reduce(
+        (sum: number, linearLength: number) => sum + linearLength,
+        initialLength,
+    );
+
+    trace.exit();
+
+    return result;
 }
