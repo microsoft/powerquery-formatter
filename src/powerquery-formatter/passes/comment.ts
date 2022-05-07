@@ -10,13 +10,13 @@ import { CommentCollection, CommentCollectionMap, CommentState } from "./commonT
 // TODO pass in leafIds instead for a big speed boost.
 // Returns a Map<leafId, an array of comments attached to the leafId>.
 export function tryTraverseComment(
+    root: Ast.TNode,
+    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
+    comments: ReadonlyArray<PQP.Language.Comment.TComment>,
     locale: string,
     traceManager: TraceManager,
     maybeCorrelationId: number | undefined,
     maybeCancellationToken: PQP.ICancellationToken | undefined,
-    root: Ast.TNode,
-    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
-    comments: ReadonlyArray<PQP.Language.Comment.TComment>,
 ): Promise<PQP.Traverse.TriedTraverse<CommentCollectionMap>> {
     const state: CommentState = {
         locale,

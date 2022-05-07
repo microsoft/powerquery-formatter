@@ -16,14 +16,14 @@ import { visitNode } from "./visitNode/visitNode";
 //   done by calling setWorkspace(state, childNode, workspace)
 
 export function tryTraverseSerializeParameter(
-    locale: string,
-    traceManager: TraceManager,
-    maybeCorrelationId: number | undefined,
-    maybeCancellationToken: PQP.ICancellationToken | undefined,
     ast: Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     commentCollectionMap: CommentCollectionMap,
     isMultilineMap: IsMultilineMap,
+    locale: string,
+    traceManager: TraceManager,
+    maybeCorrelationId: number | undefined,
+    maybeCancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<PQP.Traverse.TriedTraverse<SerializeParameterMap>> {
     const trace: Trace = traceManager.entry(
         FormatTraceConstant.SerializeParameter,

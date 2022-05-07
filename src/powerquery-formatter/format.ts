@@ -66,13 +66,13 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
 
     if (comments.length) {
         const triedCommentPass: PQP.Traverse.TriedTraverse<CommentCollectionMap> = await tryTraverseComment(
+            ast,
+            nodeIdMapCollection,
+            comments,
             locale,
             traceManager,
             trace.id,
             maybeCancellationToken,
-            ast,
-            nodeIdMapCollection,
-            comments,
         );
 
         if (PQP.ResultUtils.isError(triedCommentPass)) {
@@ -83,13 +83,13 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
     }
 
     const triedIsMultilineMap: PQP.Traverse.TriedTraverse<IsMultilineMap> = await tryTraverseIsMultiline(
+        ast,
+        commentCollectionMap,
+        nodeIdMapCollection,
         locale,
         formatSettings.traceManager,
         trace.id,
         maybeCancellationToken,
-        ast,
-        commentCollectionMap,
-        nodeIdMapCollection,
     );
 
     if (PQP.ResultUtils.isError(triedIsMultilineMap)) {
@@ -100,14 +100,14 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
 
     const triedSerializeParameter: PQP.Traverse.TriedTraverse<SerializeParameterMap> =
         await tryTraverseSerializeParameter(
-            locale,
-            formatSettings.traceManager,
-            trace.id,
-            maybeCancellationToken,
             ast,
             nodeIdMapCollection,
             commentCollectionMap,
             isMultilineMap,
+            locale,
+            formatSettings.traceManager,
+            trace.id,
+            maybeCancellationToken,
         );
 
     if (PQP.ResultUtils.isError(triedSerializeParameter)) {
