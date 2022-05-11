@@ -4,6 +4,7 @@
 import * as PQP from "@microsoft/powerquery-parser";
 import { Ast, AstUtils } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 import { Trace, TraceManager } from "@microsoft/powerquery-parser/lib/powerquery-parser/common/trace";
+import { FormatTraceConstant } from "../../trace";
 
 import {
     CommentCollection,
@@ -13,7 +14,6 @@ import {
     LinearLengthMap,
 } from "../commonTypes";
 import { expectGetIsMultiline, setIsMultiline } from "./common";
-import { FormatTraceConstant } from "../../trace";
 import { getLinearLength } from "./linearLength";
 
 export function tryTraverseIsMultilineFirstPass(
@@ -406,8 +406,14 @@ async function visitBinOpExpression(
     state: IsMultilineFirstPassState,
     node: Ast.TBinOpExpression,
     isMultilineMap: IsMultilineMap,
-    maybeCorrelationId: number | undefined,
+    correlationId: number,
 ): Promise<boolean> {
+    const trace: Trace = state.traceManager.entry(
+        FormatTraceConstant.IsMultilinePhase1,
+        visitBinOpExpression.name,
+        correlationId,
+    );
+
     const left: Ast.TNode = node.left;
     const right: Ast.TNode = node.right;
 
@@ -426,7 +432,7 @@ async function visitBinOpExpression(
         node,
         state.locale,
         state.traceManager,
-        maybeCorrelationId,
+        trace.id,
         state.maybeCancellationToken,
     );
 
@@ -435,6 +441,8 @@ async function visitBinOpExpression(
     } else {
         isMultiline = isAnyMultiline(isMultilineMap, left, node.operatorConstant, right);
     }
+
+    trace.exit();
 
     return isMultiline;
 }

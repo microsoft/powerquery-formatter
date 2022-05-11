@@ -48,7 +48,13 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
         formatSettings.maybeInitialCorrelationId,
     );
 
-    const triedLexParse: PQP.Task.TriedLexParseTask = await PQP.TaskUtils.tryLexParse(formatSettings, text);
+    const triedLexParse: PQP.Task.TriedLexParseTask = await PQP.TaskUtils.tryLexParse(
+        {
+            ...formatSettings,
+            maybeInitialCorrelationId: trace.id,
+        },
+        text,
+    );
 
     if (PQP.TaskUtils.isError(triedLexParse)) {
         return PQP.ResultUtils.boxError(triedLexParse.error);
