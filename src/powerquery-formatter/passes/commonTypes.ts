@@ -67,6 +67,33 @@ export interface SerializeParameterState extends PQP.Traverse.ITraversalState<Se
     readonly workspaceMap: Map<number, SerializeParameter>;
 }
 
+export interface CommentResultV2 {
+    readonly commentCollectionMap: CommentCollectionMap;
+    readonly containerIdHavingComments: Set<number>;
+}
+
+export interface CommentStateV2 extends PQP.Traverse.ITraversalState<CommentResultV2> {
+    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
+    readonly comments: ReadonlyArray<PQP.Language.Comment.TComment>;
+    /**
+     * The leaf ids whose closest container was found already
+     */
+    readonly leafIdsOfItsContainerFound: Set<number>;
+    commentsIndex: number;
+    maybeCurrentComment: PQP.Language.Comment.TComment | undefined;
+}
+
+export interface SerializeParameterMapV2 {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    readonly parametersMap: Map<number, Record<string, any>>;
+}
+
+export interface SerializeParameterStateV2 extends PQP.Traverse.ITraversalState<SerializeParameterMapV2> {
+    readonly commentCollectionMap: CommentCollectionMap;
+    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
+    readonly workspaceMap: Map<number, SerializeParameter>;
+}
+
 export const DefaultSerializeParameter: SerializeParameter = {
     maybeWriteKind: SerializeWriteKind.Any,
     maybeIndentationChange: undefined,

@@ -7,45 +7,22 @@ import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language
 
 import {
     CommentCollectionMap,
-    IsMultilineMap,
-    SerializeParameterMap,
-    tryTraverseComment,
-    tryTraverseSerializeParameter,
+    CommentResultV2,
+    SerializeParameterMapV2,
+    tryTraverseCommentV2,
+    tryTraverseSerializeParameterV2,
 } from "./passes";
-import {
-    IndentationLiteral,
-    NewlineLiteral,
-    SerializePassthroughMaps,
-    SerializeSettings,
-    TriedSerialize,
-    trySerialize,
-} from "./serialize";
+import { FormatSettings, TriedFormat } from "./format";
+import { SerializePassthroughMapsV2, SerializeSettingsV2, trySerializeV2 } from "./serializeV2";
+
 import { FormatTraceConstant } from "./trace";
-import { tryTraverseIsMultiline } from "./passes/isMultiline/isMultiline";
+import { SyncThemeRegistry } from "./themes";
+import { TriedSerialize } from "./serialize";
 
-export type TriedFormat = PQP.Result<string, TFormatError>;
-
-export type TFormatError =
-    | PQP.CommonError.CommonError
-    | PQP.Lexer.LexError.TLexError
-    | PQP.Parser.ParseError.TParseError;
-
-export interface FormatSettings extends PQP.Settings {
-    readonly indentationLiteral: IndentationLiteral;
-    readonly newlineLiteral: NewlineLiteral;
-    readonly maxWidth?: number;
-}
-
-export const DefaultSettings: FormatSettings = {
-    ...PQP.DefaultSettings,
-    indentationLiteral: IndentationLiteral.SpaceX4,
-    newlineLiteral: NewlineLiteral.Windows,
-};
-
-export async function tryFormat(formatSettings: FormatSettings, text: string): Promise<TriedFormat> {
+export async function tryFormatV2(formatSettings: FormatSettings, text: string): Promise<TriedFormat> {
     const trace: Trace = formatSettings.traceManager.entry(
         FormatTraceConstant.Format,
-        tryFormat.name,
+        tryFormatV2.name,
         formatSettings.maybeInitialCorrelationId,
     );
 
@@ -70,9 +47,10 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
     const maybeCancellationToken: PQP.ICancellationToken | undefined = formatSettings.maybeCancellationToken;
 
     let commentCollectionMap: CommentCollectionMap = new Map();
+    let containerIdHavingComments: Set<number> = new Set();
 
     if (comments.length) {
-        const triedCommentPass: PQP.Traverse.TriedTraverse<CommentCollectionMap> = await tryTraverseComment(
+        const triedCommentPass: PQP.Traverse.TriedTraverse<CommentResultV2> = await tryTraverseCommentV2(
             ast,
             nodeIdMapCollection,
             comments,
@@ -86,31 +64,19 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
             return triedCommentPass;
         }
 
-        commentCollectionMap = triedCommentPass.value;
+        commentCollectionMap = triedCommentPass.value.commentCollectionMap;
+        containerIdHavingComments = triedCommentPass.value.containerIdHavingComments;
     }
 
-    const triedIsMultilineMap: PQP.Traverse.TriedTraverse<IsMultilineMap> = await tryTraverseIsMultiline(
-        ast,
-        commentCollectionMap,
-        nodeIdMapCollection,
-        locale,
-        formatSettings.traceManager,
-        trace.id,
-        maybeCancellationToken,
-    );
+    // move its static as a singleton instant for now
+    const newRegistry: SyncThemeRegistry = SyncThemeRegistry.defaultInstance;
 
-    if (PQP.ResultUtils.isError(triedIsMultilineMap)) {
-        return triedIsMultilineMap;
-    }
-
-    const isMultilineMap: IsMultilineMap = triedIsMultilineMap.value;
-
-    const triedSerializeParameter: PQP.Traverse.TriedTraverse<SerializeParameterMap> =
-        await tryTraverseSerializeParameter(
+    const triedSerializeParameter: PQP.Traverse.TriedTraverse<SerializeParameterMapV2> =
+        await tryTraverseSerializeParameterV2(
             ast,
             nodeIdMapCollection,
             commentCollectionMap,
-            isMultilineMap,
+            newRegistry.scopeMetaProvider,
             locale,
             formatSettings.traceManager,
             trace.id,
@@ -121,14 +87,15 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
         return triedSerializeParameter;
     }
 
-    const serializeParameterMap: SerializeParameterMap = triedSerializeParameter.value;
+    const serializeParameterMap: SerializeParameterMapV2 = triedSerializeParameter.value;
 
-    const passthroughMaps: SerializePassthroughMaps = {
+    const passthroughMaps: SerializePassthroughMapsV2 = {
         commentCollectionMap,
+        containerIdHavingComments,
         serializeParameterMap,
     };
 
-    const serializeRequest: SerializeSettings = {
+    const serializeRequest: SerializeSettingsV2 = {
         locale,
         ast,
         nodeIdMapCollection,
@@ -138,9 +105,10 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
         newlineLiteral: formatSettings.newlineLiteral,
         maybeCancellationToken: undefined,
         maybeInitialCorrelationId: trace.id,
+        maxWidth: formatSettings.maxWidth,
     };
 
-    const triedSerialize: TriedSerialize = trySerialize(serializeRequest);
+    const triedSerialize: TriedSerialize = await trySerializeV2(serializeRequest);
     trace.exit();
 
     return triedSerialize;
