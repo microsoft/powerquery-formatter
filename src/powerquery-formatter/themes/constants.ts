@@ -27,41 +27,47 @@ export type SerializeParameterV2 = Partial<{
     clearTailingWhitespaceBeforeAppending: boolean;
 }>;
 
+const StatementsContainers: NK[] = [
+    NK.IfExpression,
+    NK.EachExpression,
+    NK.ErrorHandlingExpression,
+    NK.ErrorRaisingExpression,
+    NK.FunctionExpression,
+    NK.LetExpression,
+    NK.OtherwiseExpression,
+    NK.ParenthesizedExpression,
+    NK.RecordLiteral,
+];
+
+const ExpressionContainers: NK[] = [
+    NK.ArrayWrapper,
+    NK.ArithmeticExpression,
+    NK.AsExpression,
+    NK.MetadataExpression,
+    NK.ParameterList,
+    NK.IdentifierExpression,
+    NK.EqualityExpression,
+    NK.LogicalExpression,
+    NK.IdentifierPairedExpression,
+    NK.GeneralizedIdentifierPairedExpression,
+    NK.FieldSpecificationList,
+    NK.FieldSpecification,
+];
+
+export const ContainerSet: ReadonlySet<NK> = new Set<NK>([...StatementsContainers, ...ExpressionContainers]);
+
 export const defaultTheme: IRawTheme<SerializeParameterV2> = {
     name: "default",
     settings: [
         // common
         {
-            scope: [
-                NK.IfExpression,
-                NK.EachExpression,
-                NK.ErrorHandlingExpression,
-                NK.ErrorRaisingExpression,
-                NK.FunctionExpression,
-                NK.LetExpression,
-                NK.OtherwiseExpression,
-                NK.ParenthesizedExpression,
-                NK.RecordLiteral,
-            ],
+            scope: StatementsContainers,
             parameters: {
                 container: true,
             },
         },
         {
-            scope: [
-                NK.ArrayWrapper,
-                NK.ArithmeticExpression,
-                NK.AsExpression,
-                NK.MetadataExpression,
-                NK.ParameterList,
-                NK.IdentifierExpression,
-                NK.EqualityExpression,
-                NK.LogicalExpression,
-                NK.IdentifierPairedExpression,
-                NK.GeneralizedIdentifierPairedExpression,
-                NK.FieldSpecificationList,
-                NK.FieldSpecification,
-            ],
+            scope: ExpressionContainers,
             parameters: {
                 container: true,
                 skipPostContainerNewLine: true,

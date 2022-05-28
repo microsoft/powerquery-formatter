@@ -17,10 +17,7 @@ describe("comment serialize", () => {
 ]
 `;
 
-            const expected2: string = `
-[ /*foo*/ key1 = value1,
-key2 = value2 ]
-`;
+            const expected2: string = `[ /*foo*/ key1 = value1, key2 = value2 ]`;
 
             const actual: string = await expectFormatV2("[ /*foo*/ key1=value1, key2=value2 ]");
 
@@ -41,10 +38,7 @@ key2 = value2 ]
 ]
 `;
 
-            const expected2: string = `
-[ /*foo*/  /*bar*/ key1 = value1,
-key2 = value2 ]
-`;
+            const expected2: string = `[ /*foo*/  /*bar*/ key1 = value1, key2 = value2 ]`;
 
             const actual: string = await expectFormatV2("[ /*foo*//*bar*/ key1=value1, key2=value2 ]");
 
@@ -219,7 +213,8 @@ section foobar;
 x = 1;
 
 // lineComment
-y = 1;
+y =
+    1;
 `;
 
             const actual: string = await expectFormatV2("section foobar; x = 1; // lineComment\n y = 1;");

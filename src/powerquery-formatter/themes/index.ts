@@ -1,5 +1,5 @@
 export * from "./types";
-export { SerializeParameterV2 } from "./constants";
+export { ContainerSet, SerializeParameterV2 } from "./constants";
 export { ThemeTrieElementRule } from "./themes";
 export { SyncThemeRegistry } from "./register";
 export {

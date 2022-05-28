@@ -3,34 +3,13 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
-import { NodeKind as NK } from "@microsoft/powerquery-parser/lib/powerquery-parser/language/ast/ast";
+import { ContainerSet } from "../themes";
+
 import { TraceManager } from "@microsoft/powerquery-parser/lib/powerquery-parser/common/trace";
 
 import { CommentCollection, CommentCollectionMap, CommentResultV2, CommentStateV2 } from "./commonTypes";
 
-// todo try to put this into src/powerquery-formatter/themes/constants.ts
-const containerNodeKindSet: Set<PQP.Language.Ast.NodeKind> = new Set([
-    NK.ArithmeticExpression,
-    NK.IfExpression,
-    NK.EachExpression,
-    NK.ErrorHandlingExpression,
-    NK.ErrorRaisingExpression,
-    NK.FunctionExpression,
-    NK.LetExpression,
-    NK.OtherwiseExpression,
-    NK.ParenthesizedExpression,
-    NK.RecordLiteral,
-    NK.ArrayWrapper,
-    NK.ArithmeticExpression,
-    NK.AsExpression,
-    NK.MetadataExpression,
-    NK.ParameterList,
-    NK.IdentifierExpression,
-    NK.EqualityExpression,
-    NK.LogicalExpression,
-    NK.FieldSpecificationList,
-    NK.FieldSpecification,
-]);
+const containerNodeKindSet: ReadonlySet<PQP.Language.Ast.NodeKind> = ContainerSet;
 
 export function tryTraverseCommentV2(
     root: Ast.TNode,
