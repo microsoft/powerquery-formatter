@@ -9,6 +9,7 @@ import { SerializeParameterV2 } from "./themes";
 import { CommentCollection, CommentCollectionMap, LinearLengthMap, SerializeParameterMapV2 } from "./passes";
 import { IndentationLiteral, NewlineLiteral, TriedSerialize } from "./serialize";
 import { getLinearLengthV2 } from "./passes/utils/linearLengthV2";
+import { NodeKind } from "@microsoft/powerquery-parser/lib/powerquery-parser/language/ast/ast";
 
 // const GLOBAL_HEADING_WHITE_SPACE_REG: RegExp = /^[ \t]+/g;
 const GLOBAL_TAILING_WHITE_SPACE_REG: RegExp = /[ \t]+$/g;
@@ -57,6 +58,8 @@ interface SerializeState {
     currentLine: string;
     isPseudoLine: boolean;
     isPseudoLineJustCreated: boolean;
+    // syntax fields
+    currentSectionMemberKeyLiteral: string;
 }
 
 async function serializeV2(settings: SerializeSettingsV2): Promise<string> {
@@ -118,6 +121,8 @@ function stateFromSettings(settings: SerializeSettingsV2): SerializeState {
         currentLine: "",
         isPseudoLine: false,
         isPseudoLineJustCreated: false,
+        // syntax fields
+        currentSectionMemberKeyLiteral: "",
     };
 
     expandIndentationCache(state, 10);
@@ -131,6 +136,20 @@ interface InheritOptions {
 
 async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOptions: InheritOptions): Promise<void> {
     const nodeId: number = node.id;
+
+    // ad-hoc syntax handling for section members
+    if (node.kind === NodeKind.SectionMember) {
+        const currentSectionMemberKeyLiteral: string = node.namePairedExpression.key.literal;
+
+        if (
+            state.currentSectionMemberKeyLiteral &&
+            shouldBreakAwayFromLastSectionMember(state.currentSectionMemberKeyLiteral, currentSectionMemberKeyLiteral)
+        ) {
+            appendToFormatted(state, state.newlineLiteral);
+        }
+
+        state.currentSectionMemberKeyLiteral = currentSectionMemberKeyLiteral;
+    }
 
     let parameter: SerializeParameterV2 = state.passthroughMaps.serializeParameterMap.parametersMap.get(nodeId) ?? {};
     const directlyHavingComments: boolean = state.passthroughMaps.containerIdHavingComments.has(nodeId);
@@ -333,6 +352,29 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
     }
 }
 
+function getSectionMemberLiteralTailPair(sectionLiteral: string): [string, string] {
+    const dotIndex: number = sectionLiteral.indexOf(".");
+    let head: string;
+    let tail: string;
+
+    if (dotIndex === -1) {
+        head = sectionLiteral;
+        tail = "";
+    } else {
+        head = sectionLiteral.substring(0, dotIndex);
+        tail = sectionLiteral.substring(dotIndex + 1);
+    }
+
+    return [head, tail];
+}
+
+function shouldBreakAwayFromLastSectionMember(lastSectionLiteral: string, currentSectionLiteral: string): boolean {
+    const [lastHead]: [string, string] = getSectionMemberLiteralTailPair(lastSectionLiteral);
+    const [curHead]: [string, string] = getSectionMemberLiteralTailPair(currentSectionLiteral);
+
+    return lastHead !== curHead;
+}
+
 function visitIdentifierOrLiteral(
     state: SerializeState,
     node: Ast.GeneralizedIdentifier | Ast.Identifier | Ast.LiteralExpression,
@@ -458,7 +500,6 @@ function wipeOutTailingWhiteSpaces(state: SerializeState): void {
  * A pseudo line is the line already appended but without crlf at its head
  * markCurrentEmptyLinePseudo can turn the current empty line into a pseudo line
  * @param state
- * @param cleanUpTailingWhiteSpaceOfTheFormatted
  */
 function markCurrentEmptyLinePseudo(state: SerializeState): void {
     if (state.currentLine === "" && state.lastTokenType !== "CommentsLine") {

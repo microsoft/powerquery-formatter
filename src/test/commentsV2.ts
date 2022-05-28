@@ -207,6 +207,7 @@ section foobar;
 
 x =
     1;
+
 // lineComment
 y =
     1;
@@ -216,6 +217,7 @@ y =
 section foobar;
 
 x = 1;
+
 // lineComment
 y = 1;
 `;
