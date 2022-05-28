@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 export function strcmp(a: string, b: string): number {
     if (a < b) {
         return -1;

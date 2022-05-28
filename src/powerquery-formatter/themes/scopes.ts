@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 import { IThemeProvider } from "./types";
 import { ThemeTrieElementRule } from "./themes";

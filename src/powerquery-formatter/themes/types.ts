@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { ThemeTrieElementRule } from "./themes";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

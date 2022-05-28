@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 export * from "./types";
 export { ContainerSet, SerializeParameterV2 } from "./constants";
 export { ThemeTrieElementRule } from "./themes";

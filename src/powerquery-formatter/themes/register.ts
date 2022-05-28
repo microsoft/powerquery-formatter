@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { IRawTheme, IThemeProvider, RegistryOptions } from "./types";
 import { Theme, ThemeTrieElementRule } from "./themes";
 

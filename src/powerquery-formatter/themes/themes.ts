@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { IRawTheme, IRawThemeSetting } from "./types";
 import { strArrCmp, strcmp } from "./utils";
 
