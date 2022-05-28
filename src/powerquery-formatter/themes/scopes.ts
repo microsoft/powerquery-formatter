@@ -131,11 +131,15 @@ export class ScopeListElement {
 
         const len: number = parentScopes.length;
         let index: number = 0;
-        // combinator would only exist on the parent scopes
-        let selector: string = this._purgeScopeNameCombinator(parentScopes[index])[1];
+
+        // combinator would only exist in the parent scopes, but parentScope starts from the second
+        const [isFirstScopeNameCombinator, firstScopeName]: [boolean, string] = this._purgeScopeNameCombinator(
+            parentScopes[index],
+        );
+
+        let selector: string = firstScopeName;
         let selectorWithDot: string = `${selector}.`;
-        // the first scopeName with combinator would be ignored
-        let hasCombinator: boolean = false;
+        let hasCombinator: boolean = isFirstScopeNameCombinator;
 
         while (target) {
             if (this._matchesScope(target.scope, selector, selectorWithDot)) {
@@ -180,6 +184,7 @@ export class ScopeListElement {
             return parameters;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let assignedParameters: Record<string, any> | undefined = undefined;
 
         if (source.themeData) {
@@ -222,7 +227,7 @@ export class ScopeListElement {
     /**
      * Append scope/scopes to the current list
      *
-     * @param grammar
+     * @param scopeMetadataProvider
      * @param scope     a single scopeName or multiple scopeName seperated by space
      */
     public push(scopeMetadataProvider: ScopeMetadataProvider, scope: string | undefined): ScopeListElement {
@@ -353,6 +358,7 @@ export class StackElement {
     public pop(): StackElement {
         // cannot pop root stack
         // todo make a handled assertion over here
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return this.parent!;
     }
 
