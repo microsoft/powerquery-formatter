@@ -177,6 +177,7 @@ shared x = 1;
 section;
 
 x = 1;
+
 y = 2;
 `;
 
@@ -189,8 +190,10 @@ y = 2;
 section;
 
 Other = 3;
+
 Constant.Alpha = 1;
 Constant.Beta = 2;
+
 Other = 3;
 `;
 
