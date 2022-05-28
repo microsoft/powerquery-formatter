@@ -1188,7 +1188,7 @@ in
     x
 `;
 
-            const expected2: string = `let x =Foo( 1, { 2 } ) in x`;
+            const expected2: string = `let x = Foo( 1, { 2 } ) in x`;
             const actual: string = await expectFormatV2(`let x = Foo(1, {2}) in x`);
             const actual2: string = await expectFormatV2(`let x = Foo(1, {2}) in x`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1215,8 +1215,7 @@ in
     if 1 then
         2
     else
-        3
-    ..4
+        3..4
 }
 `;
 
@@ -1467,15 +1466,14 @@ let
         Foo(
             1,
             [
-                key =
-                    value
+                key = value
             ]
         )
 in
     x
 `;
 
-            const expected2: string = `let x =Foo( 1, [ key =value ] ) in x`;
+            const expected2: string = `let x = Foo( 1, [ key = value ] ) in x`;
 
             const actual: string = await expectFormatV2(`let x = Foo(1, [key = value]) in x`);
             const actual2: string = await expectFormatV2(`let x = Foo(1, [key = value]) in x`, DefaultFormatSettings2);

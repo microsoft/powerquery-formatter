@@ -33,7 +33,6 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
         // common
         {
             scope: [
-                NK.ArithmeticExpression,
                 NK.IfExpression,
                 NK.EachExpression,
                 NK.ErrorHandlingExpression,
@@ -232,7 +231,6 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
         // RangeExpression
         {
             scope: [
-                `${NK.RangeExpression}> ${constKd2Str(MiscConstant.DotDot)}`,
                 `${NK.RangeExpression}> ${NK.LiteralExpression}`,
                 `${NK.RangeExpression}> ${NK.GeneralizedIdentifier}`,
                 `${NK.RangeExpression}> ${NK.Identifier}`,
@@ -240,6 +238,14 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             parameters: {
                 leftPadding: false,
                 rightPadding: false,
+            },
+        },
+        {
+            scope: [`${NK.RangeExpression}> ${constKd2Str(MiscConstant.DotDot)}`],
+            parameters: {
+                leftPadding: false,
+                rightPadding: false,
+                clearTailingWhitespaceBeforeAppending: true,
             },
         },
         // UnaryExpression
@@ -307,6 +313,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
         {
             scope: [`${NK.IdentifierPairedExpression}> ${constKd2Str(EqualityOperator.EqualTo)}`],
             parameters: {
+                rightPadding: true,
                 blockOpener: "R",
             },
         },

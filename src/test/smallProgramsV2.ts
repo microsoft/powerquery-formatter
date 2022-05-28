@@ -20,7 +20,7 @@ let
     isEven = ( x as number ) => Number.Mod( x, 2 ) = 0,
     pow =
         ( x as number, p as number ) =>
-            if p= 0 then
+            if p = 0 then
                 1
             else if p < 0 then
                 error "negative power not supported"
@@ -28,14 +28,14 @@ let
                 x * @pow( x, p - 1 ),
     fastPow =
         ( x as number, p as number ) =>
-            if p= 0 then
+            if p = 0 then
                 1
             else if p < 0 then
                 error "negative power not supported"
             else if isEven( p ) then
                 @fastPow( x * x, p / 2 )
             else
-                x * @fastPow( x * x,( p - 1 ) / 2 )
+                x * @fastPow( x * x, ( p - 1 ) / 2 )
 in
     fastPow( 2, 8 )
 `;
