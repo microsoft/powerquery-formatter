@@ -87,7 +87,7 @@ async function visitNode(
     maybeCorrelationId: number | undefined,
 ): Promise<void> {
     const trace: Trace = state.traceManager.entry(
-        FormatTraceConstant.LinearLength,
+        FormatTraceConstant.LinearLengthV2,
         visitNode.name,
         maybeCorrelationId,
         {

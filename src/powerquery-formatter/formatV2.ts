@@ -21,7 +21,7 @@ import { TriedSerialize } from "./serialize";
 
 export async function tryFormatV2(formatSettings: FormatSettings, text: string): Promise<TriedFormat> {
     const trace: Trace = formatSettings.traceManager.entry(
-        FormatTraceConstant.Format,
+        FormatTraceConstant.FormatV2,
         tryFormatV2.name,
         formatSettings.maybeInitialCorrelationId,
     );
