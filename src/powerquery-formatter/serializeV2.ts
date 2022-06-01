@@ -17,6 +17,7 @@ const GLOBAL_TAILING_CRLF_REG: RegExp = /(\r\n|\n\r|\r|\n)*$/g;
 
 export interface SerializeSettingsV2 extends PQP.CommonSettings {
     readonly ast: Ast.TNode;
+    readonly text: string;
     readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly passthroughMaps: SerializePassthroughMapsV2;
     readonly indentationLiteral: IndentationLiteral;
@@ -39,6 +40,7 @@ type BlockStatus = "Block" | "InlineBlock";
 
 interface SerializeState {
     readonly node: Ast.TNode;
+    readonly text: string;
     readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly passthroughMaps: SerializePassthroughMapsV2;
     readonly locale: string;
@@ -104,6 +106,7 @@ function stateFromSettings(settings: SerializeSettingsV2): SerializeState {
     // i super wanna turn this file into a class wrapping this state with its utils
     const state: SerializeState = {
         node: settings.ast,
+        text: settings.text,
         nodeIdMapCollection: settings.nodeIdMapCollection,
         passthroughMaps: settings.passthroughMaps,
         locale: settings.locale,
@@ -229,6 +232,15 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
             state.blockStatusArray.push("Block");
         }
     } else if (parameter.blockOpener === "L" || parameter.blockCloser === "L") {
+        let activated: boolean = true;
+
+        if (parameter.blockOpenerActivatedMatcher) {
+            activated = shouldActivateAnchorByText(
+                state.text.substring(0, node.tokenRange.positionStart.codeUnit),
+                parameter.blockOpenerActivatedMatcher,
+            );
+        }
+
         if (parameter.blockCloser) {
             const curBlockStatus: BlockStatus | undefined = state.blockStatusArray.pop();
 
@@ -253,7 +265,7 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
             }
 
             state.lastTokenType = "Closer";
-        } else if (parameter.blockOpener) {
+        } else if (parameter.blockOpener && activated) {
             // eslint-disable-next-line require-atomic-updates
             state.lastTokenType = "Opener";
 
@@ -311,7 +323,16 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
     }
 
     if (parameter.blockOpener === "R" || parameter.blockCloser === "R") {
-        if (parameter.blockOpener) {
+        let activated: boolean = true;
+
+        if (parameter.blockOpenerActivatedMatcher) {
+            activated = shouldActivateAnchorByText(
+                state.text.substring(node.tokenRange.positionEnd.codeUnit),
+                parameter.blockOpenerActivatedMatcher,
+            );
+        }
+
+        if (parameter.blockOpener && activated) {
             // eslint-disable-next-line require-atomic-updates
             state.lastTokenType = "Opener";
 
@@ -531,14 +552,15 @@ function markCurrentEmptyLinePseudo(state: SerializeState): void {
     }
 }
 
+function shouldActivateAnchorByText(text: string, matcher: RegExp): boolean {
+    return Boolean(text.match(matcher));
+}
+
 function maybeDedentContainer(state: SerializeState, parameter: SerializeParameterV2): void {
     if (parameter.dedentContainerConditionReg) {
         const currentFormatted: string = state.formatted + state.formatted;
-        // for now this regex was from internal, thus it is safe to create it
-        // eslint-disable-next-line security/detect-non-literal-regexp
-        const conditionReg: RegExp = new RegExp(parameter.dedentContainerConditionReg);
 
-        if (currentFormatted.match(conditionReg) && state.currentLine === "") {
+        if (currentFormatted.match(parameter.dedentContainerConditionReg) && state.currentLine === "") {
             markCurrentEmptyLinePseudo(state);
             state.indentationLevel -= 1;
             appendToFormatted(state, " ");

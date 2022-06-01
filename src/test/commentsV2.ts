@@ -199,12 +199,10 @@ value1]
             const expected: string = `
 section foobar;
 
-x =
-    1;
+x = 1;
 
 // lineComment
-y =
-    1;
+y = 1;
 `;
 
             const expected2: string = `
@@ -213,8 +211,7 @@ section foobar;
 x = 1;
 
 // lineComment
-y =
-    1;
+y = 1;
 `;
 
             const actual: string = await expectFormatV2("section foobar; x = 1; // lineComment\n y = 1;");

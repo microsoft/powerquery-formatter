@@ -16,10 +16,11 @@ export type Offset = "L" | "R";
 
 export type SerializeParameterV2 = Partial<{
     container: boolean;
-    dedentContainerConditionReg: string;
+    dedentContainerConditionReg: RegExp;
     skipPostContainerNewLine: boolean;
     ignoreInline: boolean;
     blockOpener: Offset;
+    blockOpenerActivatedMatcher: RegExp;
     blockCloser: Offset;
     noWhiteSpaceBetweenWhenNoContentBetweenOpenerAndCloser: boolean;
     contentDivider: Offset;
@@ -32,7 +33,7 @@ export type SerializeParameterV2 = Partial<{
     clearTailingWhitespaceCarriageReturnBeforeAppending: boolean;
 }>;
 
-const StatementsContainers: NK[] = [
+const StatementContainers: NK[] = [
     NK.IfExpression,
     NK.EachExpression,
     NK.ErrorHandlingExpression,
@@ -63,14 +64,14 @@ const ExpressionContainers: NK[] = [
     NK.FieldProjection,
 ];
 
-export const ContainerSet: ReadonlySet<NK> = new Set<NK>([...StatementsContainers, ...ExpressionContainers]);
+export const ContainerSet: ReadonlySet<NK> = new Set<NK>([...StatementContainers, ...ExpressionContainers]);
 
 export const defaultTheme: IRawTheme<SerializeParameterV2> = {
     name: "default",
     settings: [
         // common
         {
-            scope: StatementsContainers,
+            scope: StatementContainers,
             parameters: {
                 container: true,
             },
@@ -147,7 +148,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             scope: [NK.IfExpression],
             parameters: {
                 container: true,
-                dedentContainerConditionReg: "(?<=else)[\\s]+$",
+                dedentContainerConditionReg: /(else)[\s]*$/g,
                 ignoreInline: true,
             },
         },
@@ -335,6 +336,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             parameters: {
                 rightPadding: true,
                 blockOpener: "R",
+                blockOpenerActivatedMatcher: /^[\s]*(if)/g,
             },
         },
         // FieldSelector & FieldProjection

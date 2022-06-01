@@ -871,8 +871,7 @@ Foo(
             const expected: string = `
 Foo(
     let
-        x =
-            1
+        x = 1
     in
         x
 )
@@ -957,8 +956,7 @@ longLinearLength(
         it(`let x = 1 in x`, async () => {
             const expected: string = `
 let
-    x =
-        1
+    x = 1
 in
     x
 `;
@@ -974,19 +972,15 @@ in
         it(`let x = 1, y = 2 in let lst1 = {1,2}, lst2 = {} in {1,2,3}`, async () => {
             const expected: string = `
 let
-    x =
-        1,
-    y =
-        2
+    x = 1,
+    y = 2
 in
     let
-        lst1 =
-            {
-                1,
-                2
-            },
-        lst2 =
-            {}
+        lst1 = {
+            1,
+            2
+        },
+        lst2 = {}
     in
         {
             1,
@@ -1176,13 +1170,12 @@ in
         it(`let x = Foo(1, {2}) in x`, async () => {
             const expected: string = `
 let
-    x =
-        Foo(
-            1,
-            {
-                2
-            }
-        )
+    x = Foo(
+        1,
+        {
+            2
+        }
+    )
 in
     x
 `;
@@ -1461,13 +1454,12 @@ type nullable table [
         it(`let x = Foo(1, [key = value]) in x`, async () => {
             const expected: string = `
 let
-    x =
-        Foo(
-            1,
-            [
-                key = value
-            ]
-        )
+    x = Foo(
+        1,
+        [
+            key = value
+        ]
+    )
 in
     x
 `;
@@ -1720,8 +1712,7 @@ aReallyReallyReallyReallyLongIdentifier * aReallyReallyReallyReallyLongIdentifie
         it(`let x = true and true`, async () => {
             const expected: string = `
 let
-    x =
-        true and true
+    x = true and true
 in
     x
 `;
@@ -1737,8 +1728,7 @@ in
         it(`let x = 1 <> 2 and 3 <> 4 in x`, async () => {
             const expected: string = `
 let
-    x =
-        1 <> 2 and 3 <> 4
+    x = 1 <> 2 and 3 <> 4
 in
     x
 `;

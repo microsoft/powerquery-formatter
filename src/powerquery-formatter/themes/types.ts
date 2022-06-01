@@ -21,8 +21,7 @@ export interface IRawThemeSetting<T extends IParameters = IParameters> {
      * and one scopeList could also be consisted of multiple scopes seperated by space like:
      *    eg:
      *      "scope1 scope2 scope3 scope4"
-     *    todo:
-     *      consider "scope1> scope2 scope3 scope4"
+     *      "scope1> scope2 scope3 scope4"
      */
     readonly scope?: string | string[];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

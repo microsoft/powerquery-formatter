@@ -98,6 +98,7 @@ export async function tryFormatV2(formatSettings: FormatSettings, text: string):
     const serializeRequest: SerializeSettingsV2 = {
         locale,
         ast,
+        text,
         nodeIdMapCollection,
         passthroughMaps,
         indentationLiteral: formatSettings.indentationLiteral,
