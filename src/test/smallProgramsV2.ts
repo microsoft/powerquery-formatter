@@ -17,27 +17,27 @@ describe(`small programs V2`, () => {
 //     else if n is even then return exp_by_squaring(x * x,  n / 2);
 //     else if n is odd then return x * exp_by_squaring(x * x, (n - 1) / 2);
 let
-    isEven = ( x as number ) => Number.Mod( x, 2 ) = 0,
+    isEven = (x as number) => Number.Mod(x, 2) = 0,
     pow =
-        ( x as number, p as number ) =>
+        (x as number, p as number) =>
             if p = 0 then
                 1
             else if p < 0 then
                 error "negative power not supported"
             else
-                x * @pow( x, p - 1 ),
+                x * @pow(x, p - 1),
     fastPow =
-        ( x as number, p as number ) =>
+        (x as number, p as number) =>
             if p = 0 then
                 1
             else if p < 0 then
                 error "negative power not supported"
-            else if isEven( p ) then
-                @fastPow( x * x, p / 2 )
+            else if isEven(p) then
+                @fastPow(x * x, p / 2)
             else
-                x * @fastPow( x * x, ( p - 1 ) / 2 )
+                x * @fastPow(x * x, (p - 1) / 2)
 in
-    fastPow( 2, 8 )
+    fastPow(2, 8)
 `;
 
         const actual: string = await expectFormatV2(

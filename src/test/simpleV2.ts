@@ -51,7 +51,7 @@ each
     }
 `;
 
-            const expected2: string = `each { 1, 2, 3 }`;
+            const expected2: string = `each {1, 2, 3}`;
 
             const actual: string = await expectFormatV2(`each {1,2,3}`);
             const actual2: string = await expectFormatV2(`each {1,2,3}`, DefaultFormatSettings2);
@@ -138,7 +138,7 @@ try
     }
 `;
 
-            const expected2: string = `try { 1, 2 }`;
+            const expected2: string = `try {1, 2}`;
 
             const actual: string = await expectFormatV2(`try {1, 2}`);
             const actual2: string = await expectFormatV2(`try {1, 2}`, DefaultFormatSettings2);
@@ -157,7 +157,7 @@ otherwise
     1
 `;
 
-            const expected2: string = `try { 1, 2 } otherwise 1`;
+            const expected2: string = `try {1, 2} otherwise 1`;
 
             const actual: string = await expectFormatV2(`try {1, 2} otherwise 1`);
             const actual2: string = await expectFormatV2(`try {1, 2} otherwise 1`, DefaultFormatSettings2);
@@ -176,7 +176,7 @@ otherwise
     }
 `;
 
-            const expected2: string = `try 1 otherwise { 1, 2 }`;
+            const expected2: string = `try 1 otherwise {1, 2}`;
 
             const actual: string = await expectFormatV2(`try 1 otherwise {1, 2}`);
             const actual2: string = await expectFormatV2(`try 1 otherwise {1, 2}`, DefaultFormatSettings2);
@@ -227,7 +227,7 @@ error
     }
 `;
 
-            const expected2: string = `error { 1, 2 }`;
+            const expected2: string = `error {1, 2}`;
 
             const actual: string = await expectFormatV2(`error {1,2}`);
             const actual2: string = await expectFormatV2(`error {1,2}`, DefaultFormatSettings2);
@@ -248,7 +248,7 @@ error
         2
 `;
 
-            const expected2: string = `error if fn( 1, 2, 3 ) then 1 else 2`;
+            const expected2: string = `error if fn(1, 2, 3) then 1 else 2`;
 
             const actual: string = await expectFormatV2(`error if fn(1,2,3) then 1 else 2`);
             const actual2: string = await expectFormatV2(`error if fn(1,2,3) then 1 else 2`, DefaultFormatSettings2);
@@ -267,7 +267,7 @@ error
     }
 `;
 
-            const expected2: string = `error { if true then 1 else 2 }`;
+            const expected2: string = `error {if true then 1 else 2}`;
 
             const actual: string = await expectFormatV2(`error {if true then 1 else 2}`);
             const actual2: string = await expectFormatV2(`error {if true then 1 else 2}`, DefaultFormatSettings2);
@@ -282,14 +282,14 @@ error
     describe(`FieldProjection`, () => {
         it(`{}[[x]]`, async () => {
             const expected: string = `
-{} [
+{}[
     [
         x
     ]
 ]
 `;
 
-            const expected2: string = `{} [ [ x ] ]`;
+            const expected2: string = `{}[[x]]`;
 
             const actual: string = await expectFormatV2(`{}[[x]]`);
             const actual2: string = await expectFormatV2(`{}[[x]]`, DefaultFormatSettings2);
@@ -300,14 +300,14 @@ error
 
         it(`{}[[x]]?`, async () => {
             const expected: string = `
-{} [
+{}[
     [
         x
     ]
-] ?
+]?
 `;
 
-            const expected2: string = `{} [ [ x ] ] ?`;
+            const expected2: string = `{}[[x]]?`;
 
             const actual: string = await expectFormatV2(`{}[[x]]?`);
             const actual2: string = await expectFormatV2(`{}[[x]]?`, DefaultFormatSettings2);
@@ -317,7 +317,7 @@ error
 
         it(`{}[[x], [y]]`, async () => {
             const expected: string = `
-{} [
+{}[
     [
         x
     ],
@@ -327,8 +327,7 @@ error
 ]
 `;
 
-            const expected2: string = `{} [ [ x ], [ y ] ]
-`;
+            const expected2: string = `{}[[x], [y]]`;
 
             const actual: string = await expectFormatV2(`{}[[x], [y]]`);
             const actual2: string = await expectFormatV2(`{}[[x], [y]]`, DefaultFormatSettings2);
@@ -342,14 +341,14 @@ error
     // -----------------------------------
     describe(`FieldSelector`, () => {
         it(`[x]`, async () => {
-            const expected: string = `[ x ]`;
+            const expected: string = `[x]`;
 
             const actual: string = await expectFormatV2(`[x]`, DefaultFormatSettings2);
             compareV2(expected, actual);
         });
 
         it(`[x]?`, async () => {
-            const expected: string = `[ x ] ?`;
+            const expected: string = `[x]?`;
 
             const actual: string = await expectFormatV2(`[x]?`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -396,7 +395,7 @@ error
     0
 `;
 
-            const expected2: string = `( x ) as number => 0`;
+            const expected2: string = `(x) as number => 0`;
 
             const actual: string = await expectFormatV2(`(x) as number => 0`);
             const actual2: string = await expectFormatV2(`(x) as number => 0`, DefaultFormatSettings2);
@@ -412,7 +411,7 @@ error
     0
 `;
 
-            const expected2: string = `( x as number ) as number => 0`;
+            const expected2: string = `(x as number) as number => 0`;
 
             const actual: string = await expectFormatV2(`(x as number) as number => 0`);
             const actual2: string = await expectFormatV2(`(x as number) as number => 0`, DefaultFormatSettings2);
@@ -428,7 +427,7 @@ error
     0
 `;
 
-            const expected2: string = `( x as type ) as number => 0`;
+            const expected2: string = `(x as type) as number => 0`;
 
             const actual: string = await expectFormatV2(`(x as type) as number => 0`);
             const actual2: string = await expectFormatV2(`(x as type) as number => 0`, DefaultFormatSettings2);
@@ -444,7 +443,7 @@ error
     0
 `;
 
-            const expected2: string = `( optional x ) => 0`;
+            const expected2: string = `(optional x) => 0`;
 
             const actual: string = await expectFormatV2(`(optional x) => 0`);
             const actual2: string = await expectFormatV2(`(optional x) => 0`, DefaultFormatSettings2);
@@ -460,7 +459,7 @@ error
     0
 `;
 
-            const expected2: string = `( optional x as number ) => 0`;
+            const expected2: string = `(optional x as number) => 0`;
 
             const actual: string = await expectFormatV2(`(optional x as number) => 0`);
             const actual2: string = await expectFormatV2(`(optional x as number) => 0`, DefaultFormatSettings2);
@@ -476,7 +475,7 @@ error
     0
 `;
 
-            const expected2: string = `( optional x as nullable number ) => 0`;
+            const expected2: string = `(optional x as nullable number) => 0`;
 
             const actual: string = await expectFormatV2(`(optional x as nullable number) => 0`);
 
@@ -498,7 +497,7 @@ error
     0
 `;
 
-            const expected2: string = `( x, y ) => 0`;
+            const expected2: string = `(x, y) => 0`;
 
             const actual: string = await expectFormatV2(`(x, y) => 0`);
             const actual2: string = await expectFormatV2(`(x, y) => 0`, DefaultFormatSettings2);
@@ -515,7 +514,7 @@ error
     0
 `;
 
-            const expected2: string = `( x, y as number ) => 0`;
+            const expected2: string = `(x, y as number) => 0`;
 
             const actual: string = await expectFormatV2(`(x, y as number) => 0`);
             const actual2: string = await expectFormatV2(`(x, y as number) => 0`, DefaultFormatSettings2);
@@ -532,7 +531,7 @@ error
     0
 `;
 
-            const expected2: string = `( x as number, y ) => 0`;
+            const expected2: string = `(x as number, y) => 0`;
 
             const actual: string = await expectFormatV2(`(x as number, y) => 0`);
             const actual2: string = await expectFormatV2(`(x as number, y) => 0`, DefaultFormatSettings2);
@@ -550,7 +549,7 @@ error
     }
 `;
 
-            const expected2: string = `() => { 1, 2, 3 }`;
+            const expected2: string = `() => {1, 2, 3}`;
 
             const actual: string = await expectFormatV2(`() => {1,2,3}`);
             const actual2: string = await expectFormatV2(`() => {1,2,3}`, DefaultFormatSettings2);
@@ -570,7 +569,7 @@ type function (
 ) as any
 `;
 
-            const expected2: string = `type function ( foo as any ) as any`;
+            const expected2: string = `type function (foo as any) as any`;
 
             const actual: string = await expectFormatV2(`type function (foo as any) as any`);
             const actual2: string = await expectFormatV2(`type function (foo as any) as any`, DefaultFormatSettings2);
@@ -586,7 +585,7 @@ type function (
 ) as any
 `;
 
-            const expected2: string = `type function ( foo as any, bar as any ) as any`;
+            const expected2: string = `type function (foo as any, bar as any) as any`;
 
             const actual: string = await expectFormatV2(`type function (foo as any, bar as any) as any`);
 
@@ -607,7 +606,7 @@ type function (
 ) as any
 `;
 
-            const expected2: string = `type function ( foo as any, optional bar as any ) as any`;
+            const expected2: string = `type function (foo as any, optional bar as any) as any`;
 
             const actual: string = await expectFormatV2(`type function (foo as any, optional bar as any) as any`);
 
@@ -633,7 +632,7 @@ type function (
 ]
 `;
 
-            const expected2: string = `[ date ]`;
+            const expected2: string = `[date]`;
 
             const actual: string = await expectFormatV2(`[date]`);
 
@@ -650,7 +649,7 @@ type function (
 ]
 `;
 
-            const expected2: string = `[ foo bar ]`;
+            const expected2: string = `[foo bar]`;
 
             const actual: string = await expectFormatV2(`[foo bar]`);
 
@@ -696,7 +695,7 @@ else
     ]
 `;
 
-            const expected2: string = `if true then { 1, 2, 3 } else [ key = value, cat = dog ]`;
+            const expected2: string = `if true then {1, 2, 3} else [key = value, cat = dog]`;
 
             const actual: string = await expectFormatV2(`if true then {1,2,3} else [key=value, cat=dog]`);
 
@@ -778,7 +777,7 @@ Foo{
 }
 `;
 
-            const expected2: string = `Foo{ 0 }`;
+            const expected2: string = `Foo{0}`;
             const actual: string = await expectFormatV2(`Foo{0}`);
             const actual2: string = await expectFormatV2(`Foo{0}`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -794,7 +793,7 @@ Foo{
 }
 `;
 
-            const expected2: string = `Foo{ [ X = 1 ] }`;
+            const expected2: string = `Foo{[X = 1]}`;
             const actual: string = await expectFormatV2(`Foo{[X = 1]}`);
             const actual2: string = await expectFormatV2(`Foo{[X = 1]}`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -811,7 +810,7 @@ Foo{
 }
 `;
 
-            const expected2: string = `Foo{ [ X = 1, Y = 2 ] }`;
+            const expected2: string = `Foo{[X = 1, Y = 2]}`;
 
             const actual: string = await expectFormatV2(`Foo{[X = 1, Y = 2]}`);
             const actual2: string = await expectFormatV2(`Foo{[X = 1, Y = 2]}`, DefaultFormatSettings2);
@@ -829,7 +828,7 @@ Foo{
 }
 `;
 
-            const expected2: string = `Foo{ if true then 1 else 2 }`;
+            const expected2: string = `Foo{if true then 1 else 2}`;
 
             const actual: string = await expectFormatV2(`Foo{if true then 1 else 2}`);
             const actual2: string = await expectFormatV2(`Foo{if true then 1 else 2}`, DefaultFormatSettings2);
@@ -861,7 +860,7 @@ Foo(
 )
 `;
 
-            const expected2: string = `Foo( 1 )`;
+            const expected2: string = `Foo(1)`;
             const actual: string = await expectFormatV2(`Foo(1)`);
             const actual2: string = await expectFormatV2(`Foo(1)`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -879,7 +878,7 @@ Foo(
 )
 `;
 
-            const expected2: string = `Foo( let x = 1 in x )`;
+            const expected2: string = `Foo(let x = 1 in x)`;
             const actual: string = await expectFormatV2(`Foo(let x = 1 in x)`);
             const actual2: string = await expectFormatV2(`Foo(let x = 1 in x)`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -894,7 +893,7 @@ Foo(
 )
 `;
 
-            const expected2: string = `Foo( 1, 2 )`;
+            const expected2: string = `Foo(1, 2)`;
             const actual: string = await expectFormatV2(`Foo(1, 2)`);
             const actual2: string = await expectFormatV2(`Foo(1, 2)`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -911,7 +910,7 @@ longLinearLength(
 )
 `;
 
-            const expected2: string = `longLinearLength( 123456789, 123456789, 123456789, 123456789 )`;
+            const expected2: string = `longLinearLength(123456789, 123456789, 123456789, 123456789)`;
             const actual: string = await expectFormatV2(`longLinearLength(123456789, 123456789, 123456789, 123456789)`);
 
             const actual2: string = await expectFormatV2(
@@ -937,7 +936,7 @@ longLinearLength(
 )
 `;
 
-            const expected2: string = `#datetimezone( 2013, 02, 26, 09, 15, 00, 09, 00 )`;
+            const expected2: string = `#datetimezone(2013, 02, 26, 09, 15, 00, 09, 00)`;
 
             const actual: string = await expectFormatV2(`#datetimezone(2013, 02, 26, 09, 15, 00, 09, 00)`);
 
@@ -996,7 +995,7 @@ in
         }
 `;
 
-            const expected2: string = `let x = 1, y = 2 in let lst1 = { 1, 2 }, lst2 = {} in { 1, 2, 3 }`;
+            const expected2: string = `let x = 1, y = 2 in let lst1 = {1, 2}, lst2 = {} in {1, 2, 3}`;
             const actual: string = await expectFormatV2(`let x = 1, y = 2 in let lst1 = {1,2}, lst2 = {} in {1,2,3}`);
 
             const actual2: string = await expectFormatV2(
@@ -1118,7 +1117,7 @@ in
 }
 `;
 
-            const expected2: string = `{ 1 }`;
+            const expected2: string = `{1}`;
             const actual: string = await expectFormatV2(`{1}`);
             const actual2: string = await expectFormatV2(`{1}`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1133,7 +1132,7 @@ in
 }
 `;
 
-            const expected2: string = `{ 1, 2 }`;
+            const expected2: string = `{1, 2}`;
             const actual: string = await expectFormatV2(`{1,2}`);
             const actual2: string = await expectFormatV2(`{1,2}`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1148,7 +1147,7 @@ in
 }
 `;
 
-            const expected2: string = `{ {}, {} }`;
+            const expected2: string = `{{}, {}}`;
 
             const actual: string = await expectFormatV2(`{{}, {}}`);
             const actual2: string = await expectFormatV2(`{{}, {}}`, DefaultFormatSettings2);
@@ -1166,7 +1165,7 @@ in
     }
 `;
 
-            const expected2: string = `( x ) => { x }`;
+            const expected2: string = `(x) => {x}`;
 
             const actual: string = await expectFormatV2(`(x) => {x}`);
             const actual2: string = await expectFormatV2(`(x) => {x}`, DefaultFormatSettings2);
@@ -1188,7 +1187,7 @@ in
     x
 `;
 
-            const expected2: string = `let x = Foo( 1, { 2 } ) in x`;
+            const expected2: string = `let x = Foo(1, {2}) in x`;
             const actual: string = await expectFormatV2(`let x = Foo(1, {2}) in x`);
             const actual2: string = await expectFormatV2(`let x = Foo(1, {2}) in x`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1202,7 +1201,7 @@ in
 }
 `;
 
-            const expected2: string = `{ 0..1 }`;
+            const expected2: string = `{0..1}`;
             const actual: string = await expectFormatV2(`{0..1}`);
             const actual2: string = await expectFormatV2(`{0..1}`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1219,7 +1218,7 @@ in
 }
 `;
 
-            const expected2: string = `{ if 1 then 2 else 3..4 }`;
+            const expected2: string = `{if 1 then 2 else 3..4}`;
             const actual: string = await expectFormatV2(`{if 1 then 2 else 3..4}`);
             const actual2: string = await expectFormatV2(`{if 1 then 2 else 3..4}`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1238,7 +1237,7 @@ type {
 }
 `;
 
-            const expected2: string = `type { any }`;
+            const expected2: string = `type {any}`;
             const actual: string = await expectFormatV2(`type {any}`);
             const actual2: string = await expectFormatV2(`type {any}`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1255,7 +1254,7 @@ type {
 }
 `;
 
-            const expected2: string = `type { table [ foo, bar ] }`;
+            const expected2: string = `type {table [foo, bar]}`;
             const actual: string = await expectFormatV2(`type { table [ foo, bar ] }`);
             const actual2: string = await expectFormatV2(`type { table [ foo, bar ] }`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1282,7 +1281,7 @@ type nullable table [
 ]
 `;
 
-            const expected2: string = `type nullable table [ foo ]`;
+            const expected2: string = `type nullable table [foo]`;
             const actual: string = await expectFormatV2(`type nullable table [foo]`);
             const actual2: string = await expectFormatV2(`type nullable table [foo]`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1297,7 +1296,7 @@ type nullable table [
 ]
 `;
 
-            const expected2: string = `type nullable table [ foo, bar ]`;
+            const expected2: string = `type nullable table [foo, bar]`;
             const actual: string = await expectFormatV2(`type nullable table [foo, bar]`);
             const actual2: string = await expectFormatV2(`type nullable table [foo, bar]`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1316,7 +1315,7 @@ type nullable table [
 )
 `;
 
-            const expected2: string = `( 1 )`;
+            const expected2: string = `(1)`;
             const actual: string = await expectFormatV2(`(1)`);
             const actual2: string = await expectFormatV2(`(1)`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1333,7 +1332,7 @@ type nullable table [
 )
 `;
 
-            const expected2: string = `( { 1, 2 } )`;
+            const expected2: string = `({1, 2})`;
             const actual: string = await expectFormatV2(`({1,2})`);
 
             const actual2: string = await expectFormatV2(`({1,2})`, DefaultFormatSettings2);
@@ -1386,7 +1385,7 @@ type nullable table [
 ]
 `;
 
-            const expected2: string = `[ a = a ]`;
+            const expected2: string = `[a = a]`;
             const actual: string = await expectFormatV2(`[a=a]`);
             const actual2: string = await expectFormatV2(`[a=a]`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1401,7 +1400,7 @@ type nullable table [
 ]
 `;
 
-            const expected2: string = `[ a = a, b = b ]`;
+            const expected2: string = `[a = a, b = b]`;
             const actual: string = await expectFormatV2(`[a=a,b=b]`);
             const actual2: string = await expectFormatV2(`[a=a,b=b]`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1416,7 +1415,7 @@ type nullable table [
 ]
 `;
 
-            const expected2: string = `[ a = {}, b = {} ]`;
+            const expected2: string = `[a = {}, b = {}]`;
             const actual: string = await expectFormatV2(`[a={},b={}]`);
             const actual2: string = await expectFormatV2(`[a={},b={}]`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1435,7 +1434,7 @@ type nullable table [
 ]
 `;
 
-            const expected2: string = `[ a = { 1 }, b = { 2 } ]`;
+            const expected2: string = `[a = {1}, b = {2}]`;
             const actual: string = await expectFormatV2(`[a={1},b={2}]`);
             const actual2: string = await expectFormatV2(`[a={1},b={2}]`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1452,7 +1451,7 @@ type nullable table [
     ]
 `;
 
-            const expected2: string = `( x ) => [ x = x ]`;
+            const expected2: string = `(x) => [x = x]`;
             const actual: string = await expectFormatV2(`(x) => [x = x]`);
             const actual2: string = await expectFormatV2(`(x) => [x = x]`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1473,7 +1472,7 @@ in
     x
 `;
 
-            const expected2: string = `let x = Foo( 1, [ key = value ] ) in x`;
+            const expected2: string = `let x = Foo(1, [key = value]) in x`;
 
             const actual: string = await expectFormatV2(`let x = Foo(1, [key = value]) in x`);
             const actual2: string = await expectFormatV2(`let x = Foo(1, [key = value]) in x`, DefaultFormatSettings2);
@@ -1493,7 +1492,7 @@ type [
 ]
 `;
 
-            const expected2: string = `type [ ... ]`;
+            const expected2: string = `type [...]`;
             const actual: string = await expectFormatV2(`type [...]`);
             const actual2: string = await expectFormatV2(`type [...]`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1507,7 +1506,7 @@ type [
 ]
 `;
 
-            const expected2: string = `type [ foo ]`;
+            const expected2: string = `type [foo]`;
             const actual: string = await expectFormatV2(`type [foo]`);
             const actual2: string = await expectFormatV2(`type [foo]`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1522,7 +1521,7 @@ type [
 ]
 `;
 
-            const expected2: string = `type [ foo, ... ]`;
+            const expected2: string = `type [foo, ...]`;
             const actual: string = await expectFormatV2(`type [foo, ...]`);
             const actual2: string = await expectFormatV2(`type [foo, ...]`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1549,7 +1548,7 @@ type table [
 ]
 `;
 
-            const expected2: string = `type table [ foo ]`;
+            const expected2: string = `type table [foo]`;
             const actual: string = await expectFormatV2(`type table [foo]`);
             const actual2: string = await expectFormatV2(`type table [foo]`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1563,7 +1562,7 @@ type table [
 ]
 `;
 
-            const expected2: string = `type table [ optional foo ]`;
+            const expected2: string = `type table [optional foo]`;
             const actual: string = await expectFormatV2(`type table [optional foo]`);
             const actual2: string = await expectFormatV2(`type table [optional foo]`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1578,7 +1577,7 @@ type table [
 ]
 `;
 
-            const expected2: string = `type table [ foo, bar ]`;
+            const expected2: string = `type table [foo, bar]`;
             const actual: string = await expectFormatV2(`type table [ foo, bar ]`);
             const actual2: string = await expectFormatV2(`type table [ foo, bar ]`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1593,7 +1592,7 @@ type table [
 ]
 `;
 
-            const expected2: string = `type table [ foo, optional bar ]`;
+            const expected2: string = `type table [foo, optional bar]`;
             const actual: string = await expectFormatV2(`type table [ foo, optional bar ]`);
             const actual2: string = await expectFormatV2(`type table [ foo, optional bar ]`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1607,7 +1606,7 @@ type table [
 ]
 `;
 
-            const expected2: string = `type table [ foo = number ]`;
+            const expected2: string = `type table [foo = number]`;
             const actual: string = await expectFormatV2(`type table [foo = number]`);
             const actual2: string = await expectFormatV2(`type table [foo = number]`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1623,7 +1622,7 @@ type table [
 ]
 `;
 
-            const expected2: string = `type table [ foo = table [ key ] ]`;
+            const expected2: string = `type table [foo = table [key]]`;
             const actual: string = await expectFormatV2(`type table [foo = table [key]]`);
             const actual2: string = await expectFormatV2(`type table [foo = table [key]]`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1641,7 +1640,7 @@ type table [
 ]
 `;
 
-            const expected2: string = `type table [ foo = table [ key ], bar, optional foobar = number ]`;
+            const expected2: string = `type table [foo = table [key], bar, optional foobar = number]`;
 
             const actual: string = await expectFormatV2(
                 `type table [foo = table [key], bar, optional foobar = number]`,
@@ -1705,7 +1704,7 @@ aReallyReallyReallyReallyLongIdentifier * aReallyReallyReallyReallyLongIdentifie
 )
 `;
 
-            const expected2: string = `1 + foo( if true then 1 else 0 ) + bar( if true then 1 else 0 )`;
+            const expected2: string = `1 + foo(if true then 1 else 0) + bar(if true then 1 else 0)`;
 
             const actual: string = await expectFormatV2(`1 + foo(if true then 1 else 0) + bar (if true then 1 else 0)`);
 
@@ -1778,7 +1777,7 @@ true and true and (
 )
 `;
 
-            const expected2: string = `true and true and ( if true then true else false )`;
+            const expected2: string = `true and true and (if true then true else false)`;
 
             const actual: string = await expectFormatV2(`true and true and (if true then true else false)`);
 
@@ -1802,7 +1801,7 @@ true and (
 and true
 `;
 
-            const expected2: string = `true and ( if true then true else false ) and true`;
+            const expected2: string = `true and (if true then true else false) and true`;
 
             const actual: string = await expectFormatV2(`true and (if true then true else false) and true`);
 
@@ -1826,7 +1825,7 @@ and true
 and true
 `;
 
-            const expected2: string = `( if true then true else false ) and true`;
+            const expected2: string = `(if true then true else false) and true`;
 
             const actual: string = await expectFormatV2(`(if true then true else false) and true`);
 
@@ -1878,7 +1877,7 @@ and true
 )
 `;
 
-            const expected2: string = `1 meta ( if 1 then 2 else 3 )`;
+            const expected2: string = `1 meta (if 1 then 2 else 3)`;
             const actual: string = await expectFormatV2(`1 meta (if 1 then 2 else 3)`);
             const actual2: string = await expectFormatV2(`1 meta (if 1 then 2 else 3)`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1893,7 +1892,7 @@ and true
 } as list
 `;
 
-            const expected2: string = `{ 1, 2 } as list`;
+            const expected2: string = `{1, 2} as list`;
             const actual: string = await expectFormatV2(`{1, 2} as list`);
             const actual2: string = await expectFormatV2(`{1, 2} as list`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1913,7 +1912,7 @@ and true
 )
 `;
 
-            const expected2: string = `{ 1, 2 } meta ( if 1 then 2 else 3 )`;
+            const expected2: string = `{1, 2} meta (if 1 then 2 else 3)`;
             const actual: string = await expectFormatV2(`{1, 2} meta (if 1 then 2 else 3)`);
             const actual2: string = await expectFormatV2(`{1, 2} meta (if 1 then 2 else 3)`, DefaultFormatSettings2);
             compareV2(expected, actual);
@@ -1934,7 +1933,7 @@ type table [
 ]
 `;
 
-            const expected2: string = `type table [ Foo = X(), Bar = Y() ]`;
+            const expected2: string = `type table [Foo = X(), Bar = Y()]`;
             const actual2: string = await expectFormatV2(`type table [ Foo = X(), Bar = Y() ]`, DefaultFormatSettings2);
             const actual: string = await expectFormatV2(`type table [ Foo = X(), Bar = Y() ]`);
             compareV2(expected, actual);
@@ -1949,7 +1948,7 @@ type table [
 ]
 `;
 
-            const expected2: string = `type table [ Date accessed = datetimezone ]`;
+            const expected2: string = `type table [Date accessed = datetimezone]`;
             const actual: string = await expectFormatV2(`type table [Date accessed=datetimezone]`);
 
             const actual2: string = await expectFormatV2(
@@ -2027,7 +2026,7 @@ type table [
 ]
 `;
 
-            const expected2: string = `[ foo = {}, bar = {} ]`;
+            const expected2: string = `[foo = {}, bar = {}]`;
 
             const actual: string = await expectFormatV2(`[foo={},bar={}]`);
             const actual2: string = await expectFormatV2(`[foo={},bar={}]`, DefaultFormatSettings2);
@@ -2051,7 +2050,7 @@ type table [
 ]
 `;
 
-            const expected2: string = `[ first = [ insideKey = insideValue, lst = { 1, 2, 3 }, emptyLst = {} ] ]`;
+            const expected2: string = `[first = [insideKey = insideValue, lst = {1, 2, 3}, emptyLst = {}]]`;
 
             const actual: string = await expectFormatV2(`[first=[insideKey=insideValue,lst={1,2,3},emptyLst={}]]`);
 

@@ -20,7 +20,7 @@ describe("section", () => {
 
         it("[] section name;", async () => {
             const expected: string = `
-[ ]
+[]
 section name;
 `;
 
@@ -30,7 +30,7 @@ section name;
 
         it("[] section;", async () => {
             const expected: string = `
-[ ]
+[]
 section;
 `;
 
@@ -40,7 +40,7 @@ section;
 
         it("[a = 1] section;", async () => {
             const expected: string = `
-[ a = 1 ]
+[a = 1]
 section;
 `;
 
@@ -50,7 +50,7 @@ section;
 
         it("[a = {}] section;", async () => {
             const expected: string = `
-[ a = {} ]
+[a = {}]
 section;
 `;
 
@@ -60,7 +60,7 @@ section;
 
         it("[a = 1, b = 2] section;", async () => {
             const expected: string = `
-[ a = 1, b = 2 ]
+[a = 1, b = 2]
 section;
 `;
 
@@ -70,7 +70,7 @@ section;
 
         it("[a = {}, b = {}] section;", async () => {
             const expected: string = `
-[ a = {}, b = {} ]
+[a = {}, b = {}]
 section;
 `;
 
@@ -80,7 +80,7 @@ section;
 
         it("[a = {1}, b = {2}] section;", async () => {
             const expected: string = `
-[ a = { 1 }, b = { 2 } ]
+[a = {1}, b = {2}]
 section;
 `;
 
@@ -90,7 +90,7 @@ section;
 
         it("[a = 1, b = [c = {2, 3, 4}], e = 5] section;", async () => {
             const expected: string = `
-[ a = 1, b = [ c = { 2, 3, 4 } ], e = 5 ]
+[a = 1, b = [c = {2, 3, 4}], e = 5]
 section;
 `;
 
@@ -130,7 +130,7 @@ section;
             const expected: string = `
 section;
 
-[ a = 1, b = 2 ] x = 1;
+[a = 1, b = 2] x = 1;
 `;
 
             const actual: string = await expectFormatV2(`section; [a=1, b=2] x = 1;`, DefaultFormatSettings2);
@@ -141,7 +141,7 @@ section;
             const expected: string = `
 section;
 
-[ a = 1, b = 2 ]
+[a = 1, b = 2]
 shared x = 1;
 `;
 
@@ -153,7 +153,7 @@ shared x = 1;
             const expected: string = `
 section;
 
-[ a = 1 ] x = 1;
+[a = 1] x = 1;
 `;
 
             const actual: string = await expectFormatV2(`section; [a = 1] x = 1;`, DefaultFormatSettings2);
@@ -164,7 +164,7 @@ section;
             const expected: string = `
 section;
 
-[ a = 1 ]
+[a = 1]
 shared x = 1;
 `;
 

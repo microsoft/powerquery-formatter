@@ -27,7 +27,9 @@ export type SerializeParameterV2 = Partial<{
     rightPadding: boolean;
     lineBreak: Offset;
     doubleLineBreak: Offset;
+    noWhitespaceAppended: boolean;
     clearTailingWhitespaceBeforeAppending: boolean;
+    clearTailingWhitespaceCarriageReturnBeforeAppending: boolean;
 }>;
 
 const StatementsContainers: NK[] = [
@@ -55,6 +57,10 @@ const ExpressionContainers: NK[] = [
     NK.GeneralizedIdentifierPairedExpression,
     NK.FieldSpecificationList,
     NK.FieldSpecification,
+    NK.RecordExpression,
+    NK.ListExpression,
+    NK.FieldSelector,
+    NK.FieldProjection,
 ];
 
 export const ContainerSet: ReadonlySet<NK> = new Set<NK>([...StatementsContainers, ...ExpressionContainers]);
@@ -101,7 +107,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             parameters: {
                 rightPadding: true,
                 contentDivider: "R",
-                clearTailingWhitespaceBeforeAppending: true,
+                clearTailingWhitespaceCarriageReturnBeforeAppending: true,
             },
         },
         {
@@ -113,6 +119,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             parameters: {
                 leftPadding: true,
                 blockOpener: "R",
+                noWhitespaceAppended: true,
             },
         },
         {
@@ -125,6 +132,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
                 rightPadding: true,
                 blockCloser: "L",
                 noWhiteSpaceBetweenWhenNoContentBetweenOpenerAndCloser: true,
+                clearTailingWhitespaceBeforeAppending: true,
             },
         },
         // each expressions
@@ -186,6 +194,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
                 blockCloser: "L",
                 // contentDivider: "R",
                 noWhiteSpaceBetweenWhenNoContentBetweenOpenerAndCloser: true,
+                clearTailingWhitespaceBeforeAppending: true,
             },
         },
         {
@@ -201,7 +210,8 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             parameters: {
                 leftPadding: true,
                 blockOpener: "R",
-                clearTailingWhitespaceBeforeAppending: true,
+                noWhitespaceAppended: true,
+                clearTailingWhitespaceCarriageReturnBeforeAppending: true,
             },
         },
         // InvokeExpression
@@ -209,9 +219,9 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             scope: [`${NK.InvokeExpression}> ${constKd2Str(WrapperConstant.LeftParenthesis)}`],
             parameters: {
                 leftPadding: true,
-                rightPadding: true,
                 blockOpener: "R",
-                clearTailingWhitespaceBeforeAppending: true,
+                noWhitespaceAppended: true,
+                clearTailingWhitespaceCarriageReturnBeforeAppending: true,
             },
         },
         // LetExpression
@@ -254,7 +264,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             parameters: {
                 leftPadding: false,
                 rightPadding: false,
-                clearTailingWhitespaceBeforeAppending: true,
+                clearTailingWhitespaceCarriageReturnBeforeAppending: true,
             },
         },
         // UnaryExpression
@@ -287,7 +297,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             parameters: {
                 lineBreak: "R",
                 rightPadding: true,
-                clearTailingWhitespaceBeforeAppending: true,
+                clearTailingWhitespaceCarriageReturnBeforeAppending: true,
             },
         },
         {
@@ -295,7 +305,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             parameters: {
                 doubleLineBreak: "R",
                 rightPadding: true,
-                clearTailingWhitespaceBeforeAppending: true,
+                clearTailingWhitespaceCarriageReturnBeforeAppending: true,
             },
         },
         {
@@ -303,13 +313,14 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             parameters: {
                 lineBreak: "R",
                 rightPadding: true,
-                clearTailingWhitespaceBeforeAppending: true,
+                clearTailingWhitespaceCarriageReturnBeforeAppending: true,
             },
         },
         {
             scope: [`${NK.Section}> ${NK.RecordLiteral}> ${constKd2Str(WrapperConstant.RightBracket)}`],
             parameters: {
                 lineBreak: "R",
+                clearTailingWhitespaceBeforeAppending: true,
             },
         },
         {
@@ -324,6 +335,28 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             parameters: {
                 rightPadding: true,
                 blockOpener: "R",
+            },
+        },
+        // FieldSelector & FieldProjection
+        {
+            scope: [
+                `${NK.RecursivePrimaryExpression}> ${NK.FieldSelector}> ${constKd2Str(WrapperConstant.LeftBracket)}`,
+                `${NK.ArrayWrapper}> ${NK.FieldSelector}> ${constKd2Str(WrapperConstant.LeftBracket)}`,
+                `${NK.ArrayWrapper}> ${NK.FieldProjection}> ${constKd2Str(WrapperConstant.LeftBracket)}`,
+            ],
+            parameters: {
+                blockOpener: "R",
+                noWhitespaceAppended: true,
+                clearTailingWhitespaceBeforeAppending: true,
+            },
+        },
+        {
+            scope: [
+                `${NK.FieldSelector}> ${constKd2Str(MiscConstant.QuestionMark)}`,
+                `${NK.FieldProjection}> ${constKd2Str(MiscConstant.QuestionMark)}`,
+            ],
+            parameters: {
+                clearTailingWhitespaceCarriageReturnBeforeAppending: true,
             },
         },
     ],

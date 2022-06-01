@@ -17,7 +17,7 @@ describe("comment serialize", () => {
 ]
 `;
 
-            const expected2: string = `[ /*foo*/ key1 = value1, key2 = value2 ]`;
+            const expected2: string = `[/*foo*/ key1 = value1, key2 = value2]`;
 
             const actual: string = await expectFormatV2("[ /*foo*/ key1=value1, key2=value2 ]");
 
@@ -38,7 +38,7 @@ describe("comment serialize", () => {
 ]
 `;
 
-            const expected2: string = `[ /*foo*/  /*bar*/ key1 = value1, key2 = value2 ]`;
+            const expected2: string = `[/*foo*/  /*bar*/ key1 = value1, key2 = value2]`;
 
             const actual: string = await expectFormatV2("[ /*foo*//*bar*/ key1=value1, key2=value2 ]");
 
@@ -59,7 +59,7 @@ describe("comment serialize", () => {
 ]
 `;
 
-            const expected2: string = `[ key1 = /*foo*/ value1, key2 = value2 ]
+            const expected2: string = `[key1 = /*foo*/ value1, key2 = value2]
 `;
 
             const actual: string = await expectFormatV2("[ key1=/*foo*/value1, key2=value2 ]");
@@ -79,7 +79,7 @@ describe("comment serialize", () => {
             const expected2: string = `
 [
 // foo
-key1 = value1 ]
+key1 = value1]
 `;
 
             const actual: string = await expectFormatV2("[ // foo\n key1=value1 ]");
@@ -101,7 +101,7 @@ key1 = value1 ]
 [
 // foo
 // bar
-key1 = value1 ]
+key1 = value1]
 `;
 
             const actual: string = await expectFormatV2("[ // foo\n // bar\n key1=value1 ]");
@@ -119,8 +119,8 @@ key1 = value1 ]
 `;
 
             const expected2: string = `
-[ /* foo */  // bar
-key1 = value1 ]
+[/* foo */  // bar
+key1 = value1]
 `;
 
             const actual: string = await expectFormatV2("[ /* foo */ // bar\n key1=value1 ]");
@@ -138,8 +138,8 @@ key1 = value1 ]
 `;
 
             const expected2: string = `
-[ /* foo */  // bar
-/* foobar */ key1 = value1 ]
+[/* foo */  // bar
+/* foobar */ key1 = value1]
 `;
 
             const actual: string = await expectFormatV2("[ /* foo */ // bar\n /* foobar */ key1=value1 ]");
@@ -163,9 +163,9 @@ key1 = value1 ]
 `;
 
             const expected2: string = `
-[ key1 =
+[key1 =
 // foo
-value1 ]
+value1]
 `;
 
             const actual: string = await expectFormatV2("[ key1 = // foo\n value1 ]");
@@ -184,9 +184,9 @@ value1 ]
 `;
 
             const expected2: string = `
-[ key1
+[key1
 // foo
-= value1 ]
+= value1]
 `;
 
             const actual: string = await expectFormatV2("[ key1 // foo\n = value1 ]");

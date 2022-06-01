@@ -56,6 +56,8 @@ interface SerializeState {
     indentationLevel: number;
     formatted: string;
     currentLine: string;
+    // lexical fields
+    isPseudoRightPadding: boolean;
     isPseudoLine: boolean;
     isPseudoLineJustCreated: boolean;
     // syntax fields
@@ -119,6 +121,8 @@ function stateFromSettings(settings: SerializeSettingsV2): SerializeState {
         indentationLevel: 0,
         formatted: "",
         currentLine: "",
+        // lexical fields
+        isPseudoRightPadding: false,
         isPseudoLine: false,
         isPseudoLineJustCreated: false,
         // syntax fields
@@ -137,7 +141,7 @@ interface InheritOptions {
 async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOptions: InheritOptions): Promise<void> {
     const nodeId: number = node.id;
 
-    // ad-hoc syntax handling for section members
+    // ad-hoc syntax handling for section members starting with the same namespace name
     if (node.kind === NodeKind.SectionMember) {
         const currentSectionMemberKeyLiteral: string = node.namePairedExpression.key.literal;
 
@@ -384,13 +388,17 @@ function visitIdentifierOrLiteral(
 }
 
 function serializeLiteral(state: SerializeState, str: string, parameter: SerializeParameterV2): void {
-    if (parameter.clearTailingWhitespaceBeforeAppending) {
+    if (parameter.clearTailingWhitespaceCarriageReturnBeforeAppending) {
         if (state.currentLine) {
             // new literal was appended to the formatted and currentLine together, thus we have to modify them together
             wipeOutTailingWhiteSpaces(state);
         } else {
             // clean up crlf by turning current empty line into a pseudo line
             markCurrentEmptyLinePseudo(state);
+        }
+    } else if (parameter.clearTailingWhitespaceBeforeAppending) {
+        if (state.currentLine) {
+            wipeOutTailingWhiteSpaces(state);
         }
     } else if (parameter.lineBreak || parameter.doubleLineBreak) {
         if (parameter.lineBreak === "L") {
@@ -427,6 +435,8 @@ function serializeLiteral(state: SerializeState, str: string, parameter: Seriali
             appendToFormatted(state, state.newlineLiteral);
             appendToFormatted(state, state.newlineLiteral);
         }
+    } else if (parameter.noWhitespaceAppended) {
+        state.isPseudoRightPadding = true;
     } else if (parameter.rightPadding) {
         appendToFormatted(state, " ");
     }
@@ -439,6 +449,12 @@ function maybePopulateIndented(state: SerializeState): void {
 }
 
 function appendToFormatted(state: SerializeState, str: string): void {
+    if (state.isPseudoRightPadding && str === " ") {
+        return;
+    }
+
+    state.isPseudoRightPadding = false;
+
     // do not pollute any tailing characters of the line before a just created pseudo-line
     if (str === state.newlineLiteral && !state.isPseudoLineJustCreated) {
         // remove any tailing whitespace or \t from the formatted
