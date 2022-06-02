@@ -200,7 +200,6 @@ value1]
 section foobar;
 
 x = 1;
-
 // lineComment
 y = 1;
 `;
@@ -209,7 +208,6 @@ y = 1;
 section foobar;
 
 x = 1;
-
 // lineComment
 y = 1;
 `;

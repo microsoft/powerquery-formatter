@@ -177,7 +177,6 @@ shared x = 1;
 section;
 
 x = 1;
-
 y = 2;
 `;
 

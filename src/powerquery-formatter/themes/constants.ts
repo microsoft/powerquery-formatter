@@ -8,32 +8,108 @@ import {
     WrapperConstant,
 } from "@microsoft/powerquery-parser/lib/powerquery-parser/language/constant/constant";
 
-import { constKd2Str } from "./scopeNameHelpers";
-import { IRawTheme } from "./types";
 import { NodeKind as NK } from "@microsoft/powerquery-parser/lib/powerquery-parser/language/ast/ast";
+
+import { IRawTheme } from "./types";
+import { scopeNameFromConstKd } from "./scopeNameHelpers";
 
 export type Offset = "L" | "R";
 
 export type SerializeParameterV2 = Partial<{
+    /**
+     * container, a boolean field defines whether the current ast node is a container of blocks
+     * - a container will persis the indent level unchanged before entering and after leaving it
+     */
     container: boolean;
+    /**
+     * dedentContainerConditionReg, a container field:
+     * a regex that will decrease the current indent level by one if the present formatted line matches it
+     */
     dedentContainerConditionReg: RegExp;
+    /**
+     * skipPostContainerNewLine, a container field:
+     * once set truthy, it would skip putting a new line when formatter leaving the container
+     */
     skipPostContainerNewLine: boolean;
+    /**
+     * ignoreInline, a container field:
+     * once set truthy, it will force the present container being formatted in the block mode when entering it,
+     * and ignoreInline is of lower-priority, when a nested container could be fit with the max-width,
+     * that nested container could still be formatted in the in-line mode.
+     */
     ignoreInline: boolean;
+    /**
+     * blockOpener, a block field:
+     * define an opener anchor relative to the current token, which could be either 'L' or 'R', which starts a block
+     * 'L' means the opener is on the left-hand side of the token, and 'R' for the right-hand side
+     */
     blockOpener: Offset;
+    /**
+     * blockOpenerActivatedMatcher, a block field:
+     * a regex that would only activate the block opener when it matches the text divided by the current token
+     *  when the blockOpener was set 'L', the regex should try to match the text on left-hand side of the token
+     *  when the blockOpener was set 'R', the regex should try to match the text on right-hand side of the token
+     */
     blockOpenerActivatedMatcher: RegExp;
+    /**
+     * blockOpener, a block field:
+     * define a closer anchor relative to the current token, which could be either 'L' or 'R', which ends the block
+     * 'L' means the closer is on the left-hand side of the token, and 'R' for the right-hand side
+     */
     blockCloser: Offset;
+    /**
+     * noWhiteSpaceBetweenWhenNoContentBetweenOpenerAndCloser, a block closer field:
+     * wipe out any white spaces only if there were no other tokens between current closer anchor and its opener
+     */
     noWhiteSpaceBetweenWhenNoContentBetweenOpenerAndCloser: boolean;
+    /**
+     * contentDivider, a block field:
+     * define a divide anchor relative to the current token, which could be either 'L' or 'R', which would divide tokens
+     * 'L' means the closer is on the left-hand side of the token, and 'R' for the right-hand side
+     *      In a block mode container, the divider would turn into a new line
+     *      In an in-line mode container, the divider should be either a space if it fits or empty instead
+     */
     contentDivider: Offset;
+    /**
+     * leftPadding, a token field:
+     * suggest there should be a padding white space on the left-hand side of the token
+     */
     leftPadding: boolean;
+    /**
+     * rightPadding, a token field:
+     * suggest there should be a padding white space on the right-hand side of the token
+     */
     rightPadding: boolean;
+    /**
+     * lineBreak, a token field:
+     * suggest append a new line on the right-hand side of the token
+     */
     lineBreak: Offset;
+    /**
+     * doubleLineBreak, a token field:
+     * suggest append two new lines on the right-hand side of the token
+     */
     doubleLineBreak: Offset;
+    /**
+     * noWhitespaceAppended, a token field:
+     * avoid appending any white spaces after the current token before another no-whitespace literal token appended
+     */
     noWhitespaceAppended: boolean;
+    /**
+     * clearTailingWhitespaceBeforeAppending, a token field:
+     * clean up any white spaces behind the previously appended non-whitespace literal token
+     * and then append the current token
+     */
     clearTailingWhitespaceBeforeAppending: boolean;
+    /**
+     * clearTailingWhitespaceCarriageReturnBeforeAppending, a token field:
+     * clean up any white spaces including crlf and lf behind the previously appended non-whitespace literal token
+     * and then append the current token
+     */
     clearTailingWhitespaceCarriageReturnBeforeAppending: boolean;
 }>;
 
-const StatementContainers: NK[] = [
+const StatementContainers: ReadonlyArray<NK> = [
     NK.IfExpression,
     NK.EachExpression,
     NK.ErrorHandlingExpression,
@@ -45,7 +121,7 @@ const StatementContainers: NK[] = [
     NK.RecordLiteral,
 ];
 
-const ExpressionContainers: NK[] = [
+const ExpressionContainers: ReadonlyArray<NK> = [
     NK.ArrayWrapper,
     NK.ArithmeticExpression,
     NK.AsExpression,
@@ -93,18 +169,17 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
         {
             scope: [
                 "constant.arithmetic-operator",
-                `${constKd2Str(KeywordConstant.As)}`,
-                `${constKd2Str(KeywordConstant.Meta)}`,
+                `${scopeNameFromConstKd(KeywordConstant.As)}`,
+                `${scopeNameFromConstKd(KeywordConstant.Meta)}`,
             ],
             parameters: {
                 leftPadding: true,
                 rightPadding: true,
-                // contentDivider: "L",
             },
         },
         // list & record blocks
         {
-            scope: `${constKd2Str(MiscConstant.Comma)}`,
+            scope: `${scopeNameFromConstKd(MiscConstant.Comma)}`,
             parameters: {
                 rightPadding: true,
                 contentDivider: "R",
@@ -113,9 +188,9 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
         },
         {
             scope: [
-                `${constKd2Str(WrapperConstant.LeftBrace)}`,
-                `${constKd2Str(WrapperConstant.LeftBracket)}`,
-                `${constKd2Str(WrapperConstant.LeftParenthesis)}`,
+                `${scopeNameFromConstKd(WrapperConstant.LeftBrace)}`,
+                `${scopeNameFromConstKd(WrapperConstant.LeftBracket)}`,
+                `${scopeNameFromConstKd(WrapperConstant.LeftParenthesis)}`,
             ],
             parameters: {
                 leftPadding: true,
@@ -125,9 +200,9 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
         },
         {
             scope: [
-                `${constKd2Str(WrapperConstant.RightBrace)}`,
-                `${constKd2Str(WrapperConstant.RightBracket)}`,
-                `${constKd2Str(WrapperConstant.RightParenthesis)}`,
+                `${scopeNameFromConstKd(WrapperConstant.RightBrace)}`,
+                `${scopeNameFromConstKd(WrapperConstant.RightBracket)}`,
+                `${scopeNameFromConstKd(WrapperConstant.RightParenthesis)}`,
             ],
             parameters: {
                 rightPadding: true,
@@ -138,7 +213,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
         },
         // each expressions
         {
-            scope: [`${constKd2Str(KeywordConstant.Each)}`],
+            scope: [`${scopeNameFromConstKd(KeywordConstant.Each)}`],
             parameters: {
                 blockOpener: "R",
             },
@@ -153,14 +228,14 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             },
         },
         {
-            scope: [`${constKd2Str(KeywordConstant.Then)}`],
+            scope: [`${scopeNameFromConstKd(KeywordConstant.Then)}`],
             parameters: {
                 leftPadding: true,
                 blockOpener: "R",
             },
         },
         {
-            scope: [`${constKd2Str(KeywordConstant.Else)}`],
+            scope: [`${scopeNameFromConstKd(KeywordConstant.Else)}`],
             parameters: {
                 blockCloser: "L",
                 blockOpener: "R",
@@ -168,21 +243,21 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
         },
         // try otherwise error
         {
-            scope: [`${constKd2Str(KeywordConstant.Try)}`],
+            scope: [`${scopeNameFromConstKd(KeywordConstant.Try)}`],
             parameters: {
                 leftPadding: true,
                 blockOpener: "R",
             },
         },
         {
-            scope: [`${constKd2Str(KeywordConstant.Otherwise)}`],
+            scope: [`${scopeNameFromConstKd(KeywordConstant.Otherwise)}`],
             parameters: {
                 blockCloser: "L",
                 blockOpener: "R",
             },
         },
         {
-            scope: [`${constKd2Str(KeywordConstant.Error)}`],
+            scope: [`${scopeNameFromConstKd(KeywordConstant.Error)}`],
             parameters: {
                 leftPadding: true,
                 blockOpener: "R",
@@ -190,24 +265,22 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
         },
         // function expression
         {
-            scope: [`${NK.ParameterList}> ${constKd2Str(WrapperConstant.RightParenthesis)}`],
+            scope: [`${NK.ParameterList}> ${scopeNameFromConstKd(WrapperConstant.RightParenthesis)}`],
             parameters: {
                 blockCloser: "L",
-                // contentDivider: "R",
                 noWhiteSpaceBetweenWhenNoContentBetweenOpenerAndCloser: true,
                 clearTailingWhitespaceBeforeAppending: true,
             },
         },
         {
-            scope: [`${constKd2Str(MiscConstant.FatArrow)}`],
+            scope: [`${scopeNameFromConstKd(MiscConstant.FatArrow)}`],
             parameters: {
-                // contentDivider: "L",
                 blockOpener: "R",
             },
         },
         // ItemAccessExpression
         {
-            scope: [`${NK.ItemAccessExpression}> ${constKd2Str(WrapperConstant.LeftBrace)}`],
+            scope: [`${NK.ItemAccessExpression}> ${scopeNameFromConstKd(WrapperConstant.LeftBrace)}`],
             parameters: {
                 leftPadding: true,
                 blockOpener: "R",
@@ -217,7 +290,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
         },
         // InvokeExpression
         {
-            scope: [`${NK.InvokeExpression}> ${constKd2Str(WrapperConstant.LeftParenthesis)}`],
+            scope: [`${NK.InvokeExpression}> ${scopeNameFromConstKd(WrapperConstant.LeftParenthesis)}`],
             parameters: {
                 leftPadding: true,
                 blockOpener: "R",
@@ -234,14 +307,14 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             },
         },
         {
-            scope: [`${constKd2Str(KeywordConstant.Let)}`],
+            scope: [`${scopeNameFromConstKd(KeywordConstant.Let)}`],
             parameters: {
                 leftPadding: true,
                 blockOpener: "R",
             },
         },
         {
-            scope: [`${constKd2Str(KeywordConstant.In)}`],
+            scope: [`${scopeNameFromConstKd(KeywordConstant.In)}`],
             parameters: {
                 leftPadding: true,
                 blockCloser: "L",
@@ -261,7 +334,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             },
         },
         {
-            scope: [`${NK.RangeExpression}> ${constKd2Str(MiscConstant.DotDot)}`],
+            scope: [`${NK.RangeExpression}> ${scopeNameFromConstKd(MiscConstant.DotDot)}`],
             parameters: {
                 leftPadding: false,
                 rightPadding: false,
@@ -283,7 +356,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
         // IdentifierExpression
         {
             scope: [
-                `${NK.IdentifierExpression}> ${constKd2Str(MiscConstant.AtSign)}`,
+                `${NK.IdentifierExpression}> ${scopeNameFromConstKd(MiscConstant.AtSign)}`,
                 `${NK.IdentifierExpression}> ${NK.Identifier}`,
             ],
             parameters: {
@@ -294,7 +367,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
         },
         // Session
         {
-            scope: `${constKd2Str(MiscConstant.Semicolon)}`,
+            scope: `${scopeNameFromConstKd(MiscConstant.Semicolon)}`,
             parameters: {
                 lineBreak: "R",
                 rightPadding: true,
@@ -302,7 +375,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             },
         },
         {
-            scope: `${NK.Section}> ${constKd2Str(MiscConstant.Semicolon)}`,
+            scope: `${NK.Section}> ${scopeNameFromConstKd(MiscConstant.Semicolon)}`,
             parameters: {
                 doubleLineBreak: "R",
                 rightPadding: true,
@@ -310,7 +383,9 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             },
         },
         {
-            scope: `${NK.Section}> ${NK.ArrayWrapper}> ${NK.SectionMember}> ${constKd2Str(MiscConstant.Semicolon)}`,
+            scope: `${NK.Section}> ${NK.ArrayWrapper}> ${NK.SectionMember}> ${scopeNameFromConstKd(
+                MiscConstant.Semicolon,
+            )}`,
             parameters: {
                 lineBreak: "R",
                 rightPadding: true,
@@ -318,21 +393,21 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             },
         },
         {
-            scope: [`${NK.Section}> ${NK.RecordLiteral}> ${constKd2Str(WrapperConstant.RightBracket)}`],
+            scope: [`${NK.Section}> ${NK.RecordLiteral}> ${scopeNameFromConstKd(WrapperConstant.RightBracket)}`],
             parameters: {
                 lineBreak: "R",
                 clearTailingWhitespaceBeforeAppending: true,
             },
         },
         {
-            scope: [`${NK.SectionMember}> ${constKd2Str(KeywordConstant.Shared)}`],
+            scope: [`${NK.SectionMember}> ${scopeNameFromConstKd(KeywordConstant.Shared)}`],
             parameters: {
                 lineBreak: "L",
             },
         },
         // IdentifierPairedExpression
         {
-            scope: [`${NK.IdentifierPairedExpression}> ${constKd2Str(EqualityOperator.EqualTo)}`],
+            scope: [`${NK.IdentifierPairedExpression}> ${scopeNameFromConstKd(EqualityOperator.EqualTo)}`],
             parameters: {
                 rightPadding: true,
                 blockOpener: "R",
@@ -342,9 +417,11 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
         // FieldSelector & FieldProjection
         {
             scope: [
-                `${NK.RecursivePrimaryExpression}> ${NK.FieldSelector}> ${constKd2Str(WrapperConstant.LeftBracket)}`,
-                `${NK.ArrayWrapper}> ${NK.FieldSelector}> ${constKd2Str(WrapperConstant.LeftBracket)}`,
-                `${NK.ArrayWrapper}> ${NK.FieldProjection}> ${constKd2Str(WrapperConstant.LeftBracket)}`,
+                `${NK.RecursivePrimaryExpression}> ${NK.FieldSelector}> ${scopeNameFromConstKd(
+                    WrapperConstant.LeftBracket,
+                )}`,
+                `${NK.ArrayWrapper}> ${NK.FieldSelector}> ${scopeNameFromConstKd(WrapperConstant.LeftBracket)}`,
+                `${NK.ArrayWrapper}> ${NK.FieldProjection}> ${scopeNameFromConstKd(WrapperConstant.LeftBracket)}`,
             ],
             parameters: {
                 blockOpener: "R",
@@ -354,8 +431,8 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
         },
         {
             scope: [
-                `${NK.FieldSelector}> ${constKd2Str(MiscConstant.QuestionMark)}`,
-                `${NK.FieldProjection}> ${constKd2Str(MiscConstant.QuestionMark)}`,
+                `${NK.FieldSelector}> ${scopeNameFromConstKd(MiscConstant.QuestionMark)}`,
+                `${NK.FieldProjection}> ${scopeNameFromConstKd(MiscConstant.QuestionMark)}`,
             ],
             parameters: {
                 clearTailingWhitespaceCarriageReturnBeforeAppending: true,

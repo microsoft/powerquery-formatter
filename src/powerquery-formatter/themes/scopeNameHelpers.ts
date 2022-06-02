@@ -16,7 +16,7 @@ import {
 } from "@microsoft/powerquery-parser/lib/powerquery-parser/language/constant/constant";
 import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
-export function constKd2Str(constantKind: TConstant): string {
+export function scopeNameFromConstKd(constantKind: TConstant): string {
     switch (constantKind) {
         case ArithmeticOperator.Multiplication:
             return "constant.arithmetic-operator.multiplication";
@@ -163,14 +163,10 @@ export function constKd2Str(constantKind: TConstant): string {
     }
 }
 
-export function nodeKd2Str(nodeKind: Ast.NodeKind): string {
-    return nodeKind;
-}
-
 export function getNodeScopeName(node: Ast.TNode): string {
     switch (node.kind) {
         case Ast.NodeKind.Constant:
-            return constKd2Str(node.constantKind);
+            return scopeNameFromConstKd(node.constantKind);
         default:
             return node.kind;
     }

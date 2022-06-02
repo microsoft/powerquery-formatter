@@ -3,8 +3,7 @@
 
 import { ThemeTrieElementRule } from "./themes";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type IParameters = Record<string, any>;
+export type IParameters = Record<string, unknown>;
 
 /**
  * A single theme setting.
@@ -23,8 +22,7 @@ export interface IRawThemeSetting<T extends IParameters = IParameters> {
      *      "scope1 scope2 scope3 scope4"
      *      "scope1> scope2 scope3 scope4"
      */
-    readonly scope?: string | string[];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    readonly scope?: string | ReadonlyArray<string>;
     readonly parameters: T;
 }
 
@@ -39,9 +37,9 @@ export interface IRawTheme<T extends IParameters = IParameters> {
 /**
  * Theme provider
  */
-export interface IThemeProvider {
-    themeMatch(scopeName: string): ThemeTrieElementRule[];
-    getDefaults(): ThemeTrieElementRule;
+export interface IThemeProvider<T extends IParameters = IParameters> {
+    themeMatch(scopeName: string): ThemeTrieElementRule<T>[];
+    getDefaults(): ThemeTrieElementRule<T>;
 }
 
 /**
@@ -49,5 +47,5 @@ export interface IThemeProvider {
  */
 export interface RegistryOptions<T extends IParameters = IParameters> {
     theme: IRawTheme<T>;
-    // we could add tracer over here
+    // we could add tracer over here if we want
 }

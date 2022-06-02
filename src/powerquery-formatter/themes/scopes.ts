@@ -1,37 +1,36 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
-import { IThemeProvider } from "./types";
+import * as PQP from "@microsoft/powerquery-parser";
 import { ThemeTrieElementRule } from "./themes";
+
+import { IParameters, IThemeProvider } from "./types";
 
 /**
  * The metadata containing the scopeName and matched theme rules of a scope name
  */
-export class ScopeMetadata {
-    constructor(public readonly scopeName: string, public readonly themeData: ThemeTrieElementRule[]) {}
+export class ScopeMetadata<T extends IParameters = IParameters> {
+    constructor(public readonly scopeName: string, public readonly themeData: ThemeTrieElementRule<T>[]) {}
 }
 
-export class ScopeMetadataProvider {
-    private static _NULL_SCOPE_METADATA: ScopeMetadata = new ScopeMetadata("", []);
+export class ScopeMetadataProvider<T extends IParameters = IParameters> {
+    private static _NULL_SCOPE_METADATA: ScopeMetadata = new ScopeMetadata<IParameters>("", []);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private _cache: Map<string, ScopeMetadata> = undefined as any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private _defaultMetaData: ScopeMetadata = undefined as any;
+    private _cache: Map<string, ScopeMetadata<T>> = undefined as unknown as Map<string, ScopeMetadata<T>>;
+    private _defaultMetaData: ScopeMetadata<T> = undefined as unknown as ScopeMetadata<T>;
 
-    private _doGetMetadataForScope(scopeName: string): ScopeMetadata {
-        const themeData: ThemeTrieElementRule[] = this._themeProvider.themeMatch(scopeName);
+    private _doGetMetadataForScope(scopeName: string): ScopeMetadata<T> {
+        const themeData: ThemeTrieElementRule<T>[] = this._themeProvider.themeMatch(scopeName);
 
-        return new ScopeMetadata(scopeName, themeData);
+        return new ScopeMetadata<T>(scopeName, themeData);
     }
-    public getMetadataForScope(scopeName: string | undefined): ScopeMetadata {
+    public getMetadataForScope(scopeName: string | undefined): ScopeMetadata<T> {
         // never hurts to be too careful
         if (scopeName === null || scopeName === undefined) {
-            return ScopeMetadataProvider._NULL_SCOPE_METADATA;
+            return ScopeMetadataProvider._NULL_SCOPE_METADATA as ScopeMetadata<T>;
         }
 
-        let value: ScopeMetadata | undefined = this._cache.get(scopeName);
+        let value: ScopeMetadata<T> | undefined = this._cache.get(scopeName);
 
         if (value) {
             return value;
@@ -43,35 +42,38 @@ export class ScopeMetadataProvider {
         return value;
     }
 
-    constructor(private readonly _themeProvider: IThemeProvider) {
+    constructor(private readonly _themeProvider: IThemeProvider<T>) {
         this.onDidChangeTheme();
     }
     public onDidChangeTheme(): void {
         this._cache = new Map();
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this._defaultMetaData = new ScopeMetadata("", [this._themeProvider.getDefaults()]) as any;
+        this._defaultMetaData = new ScopeMetadata<T>("", [this._themeProvider.getDefaults()]);
     }
 
-    public getDefaultMetadata(): ScopeMetadata {
+    public getDefaultMetadata(): ScopeMetadata<T> {
         return this._defaultMetaData;
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ScopeListElementParameters = Record<string, any>;
-export const EmptyScopeListElementParameters: ScopeListElementParameters = {};
+export const EmptyScopeListElementParameters: IParameters = {};
 
 /**
  * Immutable scope list element
  */
-export class ScopeListElement {
+export class ScopeListElement<T extends IParameters = IParameters> {
     constructor(
-        public readonly parent: ScopeListElement | undefined,
+        public readonly parent: ScopeListElement<T> | undefined,
         public readonly scope: string,
-        public readonly parameters: ScopeListElementParameters,
+        public readonly parameters: T,
     ) {}
 
-    private static _equals(a: ScopeListElement, b: ScopeListElement): boolean {
+    private static _equals<T extends IParameters = IParameters>(
+        l: ScopeListElement<T>,
+        r: ScopeListElement<T>,
+    ): boolean {
+        let a: ScopeListElement | undefined = l;
+        let b: ScopeListElement | undefined = r;
+
         do {
             if (a === b) {
                 return true;
@@ -82,10 +84,8 @@ export class ScopeListElement {
             }
 
             // Go to previous pair
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            a = a.parent as any;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            b = b.parent as any;
+            a = a.parent;
+            b = b.parent;
 
             // unsafe a, b might be null
 
@@ -103,7 +103,7 @@ export class ScopeListElement {
         } while (true);
     }
 
-    public equals(other: ScopeListElement): boolean {
+    public equals(other: ScopeListElement<T>): boolean {
         return ScopeListElement._equals(this, other);
     }
 
@@ -127,7 +127,10 @@ export class ScopeListElement {
         return selector === scope || scope.substring(0, selectorWithDot.length) === selectorWithDot;
     }
 
-    private static _matches(target: ScopeListElement | undefined, parentScopes: string[] | undefined): boolean {
+    private static _matches<T extends IParameters = IParameters>(
+        target: ScopeListElement<T> | undefined,
+        parentScopes: string[] | undefined,
+    ): boolean {
         if (!parentScopes) {
             return true;
         }
@@ -178,23 +181,21 @@ export class ScopeListElement {
      * @param source                the source ScopeMetadata holding the rule might be matched
      * @return mergedMetaData       the number of merged metadata
      */
-    public static mergeParameters(
-        parameters: ScopeListElementParameters,
-        scopesList: ScopeListElement | undefined,
-        source: ScopeMetadata | undefined,
-    ): ScopeListElementParameters {
+    public static mergeParameters<T extends IParameters = IParameters>(
+        parameters: T,
+        scopesList: ScopeListElement<T> | undefined,
+        source: ScopeMetadata<T> | undefined,
+    ): T {
         if (!source) {
             return parameters;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let assignedParameters: Record<string, any> | undefined = undefined;
+        let assignedParameters: T | undefined = undefined;
 
         if (source.themeData) {
             // Find the first themeData that matches
-            // eslint-disable-next-line no-plusplus
-            for (let i: number = 0; i < source.themeData.length; i++) {
-                const themeData: ThemeTrieElementRule = source.themeData[i];
+            for (let i: number = 0; i < source.themeData.length; i += 1) {
+                const themeData: ThemeTrieElementRule<T> = source.themeData[i];
 
                 if (this._matches(scopesList, themeData.parentScopes)) {
                     assignedParameters = themeData.parameters;
@@ -203,23 +204,18 @@ export class ScopeListElement {
             }
         }
 
-        return assignedParameters ?? EmptyScopeListElementParameters;
+        return assignedParameters ?? (EmptyScopeListElementParameters as T);
     }
-    private static _push(
-        target: ScopeListElement,
-        scopeMetadataProvider: ScopeMetadataProvider,
+    private static _push<T extends IParameters = IParameters>(
+        target: ScopeListElement<T>,
+        scopeMetadataProvider: ScopeMetadataProvider<T>,
         scopes: string[],
-    ): ScopeListElement {
-        // eslint-disable-next-line no-plusplus
-        for (let i: number = 0; i < scopes.length; i++) {
+    ): ScopeListElement<T> {
+        for (let i: number = 0; i < scopes.length; i += 1) {
             const scope: string = scopes[i];
-            const rawMetadata: ScopeMetadata = scopeMetadataProvider.getMetadataForScope(scope);
+            const rawMetadata: ScopeMetadata<T> = scopeMetadataProvider.getMetadataForScope(scope);
 
-            const parameters: ScopeListElementParameters = ScopeListElement.mergeParameters(
-                target.parameters,
-                target,
-                rawMetadata,
-            );
+            const parameters: T = ScopeListElement.mergeParameters(target.parameters, target, rawMetadata);
 
             target = new ScopeListElement(target, scope, parameters);
         }
@@ -233,7 +229,7 @@ export class ScopeListElement {
      * @param scopeMetadataProvider
      * @param scope     a single scopeName or multiple scopeName seperated by space
      */
-    public push(scopeMetadataProvider: ScopeMetadataProvider, scope: string | undefined): ScopeListElement {
+    public push(scopeMetadataProvider: ScopeMetadataProvider<T>, scope: string | undefined): ScopeListElement<T> {
         if (scope === null || scope === undefined) {
             // cannot push empty, return self
             return this;
@@ -248,14 +244,16 @@ export class ScopeListElement {
         return ScopeListElement._push(this, scopeMetadataProvider, [scope]);
     }
 
-    private static _generateScopes(scopesList: ScopeListElement | undefined): string[] {
+    private static _generateScopes<T extends IParameters = IParameters>(
+        scopesList: ScopeListElement<T> | undefined,
+    ): string[] {
         const result: string[] = [];
         let resultLen: number = 0;
 
         while (scopesList) {
-            // eslint-disable-next-line no-plusplus
-            result[resultLen++] = scopesList.scope;
+            result[resultLen] = scopesList.scope;
             scopesList = scopesList.parent;
+            resultLen += 1;
         }
 
         result.reverse();
@@ -274,16 +272,19 @@ export class ScopeListElement {
     }
 }
 
-export class StackElement {
+export class StackElement<T extends IParameters = IParameters> {
     /**
      * Ad-hoc singleton NULL stack element
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    public static NULL: StackElement = new StackElement(undefined, { id: -1 } as any, undefined as any);
+    public static NULL: StackElement = new StackElement<IParameters>(
+        undefined,
+        { id: -1 } as PQP.Language.Ast.TNode,
+        undefined as unknown as ScopeListElement,
+    );
     /**
      * The previous state on the stack (or null for the root state).
      */
-    public readonly parent?: StackElement;
+    public readonly parent?: StackElement<T>;
     /**
      * The depth of the stack.
      */
@@ -295,9 +296,9 @@ export class StackElement {
     /**
      * The list of scopes containing the "nodeType" for this state.
      */
-    public readonly scopeList: ScopeListElement;
+    public readonly scopeList: ScopeListElement<T>;
 
-    constructor(parent: StackElement | undefined, node: Ast.TNode, scopeList: ScopeListElement) {
+    constructor(parent: StackElement<T> | undefined, node: PQP.Language.Ast.TNode, scopeList: ScopeListElement<T>) {
         this.parent = parent;
         this.depth = this.parent ? this.parent.depth + 1 : 1;
         this.nodeId = node.id;
@@ -307,7 +308,13 @@ export class StackElement {
     /**
      * A structural equals check. Does not take into account `scopes`.
      */
-    private static _structuralEquals(a: StackElement, b: StackElement): boolean {
+    private static _structuralEquals<T extends IParameters = IParameters>(
+        l: StackElement<T>,
+        r: StackElement<T>,
+    ): boolean {
+        let a: StackElement | undefined = l;
+        let b: StackElement | undefined = r;
+
         do {
             if (a === b) {
                 return true;
@@ -318,10 +325,8 @@ export class StackElement {
             }
 
             // Go to previous pair
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            a = a.parent as any;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            b = b.parent as any;
+            a = a.parent;
+            b = b.parent;
 
             // unsafe a, b might be null
             if (!a && !b) {
@@ -338,7 +343,7 @@ export class StackElement {
         } while (true);
     }
 
-    private static _equals(a: StackElement, b: StackElement): boolean {
+    private static _equals<T extends IParameters = IParameters>(a: StackElement<T>, b: StackElement<T>): boolean {
         if (a === b) {
             return true;
         }
@@ -346,11 +351,11 @@ export class StackElement {
         return this._structuralEquals(a, b);
     }
 
-    public clone(): StackElement {
+    public clone(): StackElement<T> {
         return this;
     }
 
-    public equals(other: StackElement): boolean {
+    public equals(other: StackElement<T>): boolean {
         if (!other) {
             return false;
         }
@@ -358,14 +363,11 @@ export class StackElement {
         return StackElement._equals(this, other);
     }
 
-    public pop(): StackElement {
-        // cannot pop root stack
-        // todo make a handled assertion over here
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        return this.parent!;
+    public pop(): StackElement<T> {
+        return PQP.Assert.asDefined(this.parent);
     }
 
-    public safePop(): StackElement {
+    public safePop(): StackElement<T> {
         if (this.parent) {
             return this.parent;
         }
@@ -373,13 +375,13 @@ export class StackElement {
         return this;
     }
 
-    public push(node: Ast.TNode, scopeList?: ScopeListElement): StackElement {
+    public push(node: PQP.Language.Ast.TNode, scopeList?: ScopeListElement<T>): StackElement<T> {
         scopeList = scopeList ?? this.scopeList;
 
         return new StackElement(this, node, scopeList);
     }
 
-    public hasSameNodeAs(other: Ast.TNode): boolean {
+    public hasSameNodeAs(other: PQP.Language.Ast.TNode): boolean {
         return this.nodeId === other.id;
     }
 }

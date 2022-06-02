@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IRawTheme, IRawThemeSetting } from "./types";
+import { IParameters, IRawTheme, IRawThemeSetting } from "./types";
 import { strArrCmp, strcmp } from "./utils";
 
 /**
@@ -9,7 +9,7 @@ import { strArrCmp, strcmp } from "./utils";
  *  a scope list would be like:
  *    "scope1 scope2 scope3 scope4"
  */
-export class ParsedThemeRule {
+export class ParsedThemeRule<T extends IParameters = IParameters> {
     constructor(
         /**
          *  scope4 of a scope list: "scope1 scope2 scope3 scope4"
@@ -23,15 +23,14 @@ export class ParsedThemeRule {
         /**
          * parameters of the current parsed theme rule
          */
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        public readonly parameters?: Record<string, any>,
+        public readonly parameters?: T,
     ) {}
 }
 
 /**
  * Parse a raw theme into first-stage ParsedThemeRule.
  */
-export function parseTheme(source?: IRawTheme): ParsedThemeRule[] {
+export function parseTheme<T extends IParameters = IParameters>(source?: IRawTheme<T>): ParsedThemeRule<T>[] {
     if (!source) {
         return [];
     }
@@ -40,13 +39,12 @@ export function parseTheme(source?: IRawTheme): ParsedThemeRule[] {
         return [];
     }
 
-    const settings: IRawThemeSetting[] = source.settings;
-    const result: ParsedThemeRule[] = [];
+    const settings: IRawThemeSetting<T>[] = source.settings;
+    const result: ParsedThemeRule<T>[] = [];
     let resultLen: number = 0;
 
-    // eslint-disable-next-line no-plusplus
-    for (let i: number = 0; i < settings.length; i++) {
-        const entry: IRawThemeSetting = settings[i];
+    for (let i: number = 0; i < settings.length; i += 1) {
+        const entry: IRawThemeSetting<T> = settings[i];
 
         if (!entry.parameters) {
             continue;
@@ -70,15 +68,13 @@ export function parseTheme(source?: IRawTheme): ParsedThemeRule[] {
             scopes = [""];
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let parameters: Record<string, any> = {};
+        let parameters: T = {} as T;
 
         if (Boolean(entry.parameters) && typeof entry.parameters === "object") {
             parameters = entry.parameters;
         }
 
-        // eslint-disable-next-line no-plusplus
-        for (let j: number = 0; j < scopes.length; j++) {
+        for (let j: number = 0; j < scopes.length; j += 1) {
             const _scope: string = scopes[j].trim();
 
             const segments: string[] = _scope.split(" ");
@@ -91,8 +87,8 @@ export function parseTheme(source?: IRawTheme): ParsedThemeRule[] {
                 parentScopes.reverse();
             }
 
-            // eslint-disable-next-line no-plusplus
-            result[resultLen++] = new ParsedThemeRule(scope, parentScopes, i, parameters);
+            result[resultLen] = new ParsedThemeRule<T>(scope, parentScopes, i, parameters);
+            resultLen += 1;
         }
     }
 
@@ -102,7 +98,9 @@ export function parseTheme(source?: IRawTheme): ParsedThemeRule[] {
 /**
  * Resolve rules (i.e. inheritance).
  */
-function resolveParsedThemeRules(parsedThemeRules: ParsedThemeRule[]): Theme {
+function resolveParsedThemeRules<T extends IParameters = IParameters>(
+    parsedThemeRules: ParsedThemeRule<T>[],
+): Theme<T> {
     // Sort rules lexicographically, and then by index if necessary
     parsedThemeRules.sort((a: ParsedThemeRule, b: ParsedThemeRule) => {
         let r: number = strcmp(a.scope, b.scope);
@@ -121,8 +119,7 @@ function resolveParsedThemeRules(parsedThemeRules: ParsedThemeRule[]): Theme {
     });
 
     // Determine defaults
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let defaultParameters: Record<string, any> = {};
+    let defaultParameters: T = {} as T;
 
     // pop up any rules of empty scope names and apply them together
     while (parsedThemeRules.length >= 1 && parsedThemeRules[0].scope === "") {
@@ -140,18 +137,17 @@ function resolveParsedThemeRules(parsedThemeRules: ParsedThemeRule[]): Theme {
     }
 
     // create default tree element rule
-    const defaults: ThemeTrieElementRule = new ThemeTrieElementRule(0, undefined, defaultParameters);
+    const defaults: ThemeTrieElementRule<T> = new ThemeTrieElementRule<T>(0, undefined, defaultParameters);
 
     // create tree root element
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const root: ThemeTrieElement = new ThemeTrieElement(new ThemeTrieElementRule(0, undefined, undefined as any), []);
+    const root: ThemeTrieElement<T> = new ThemeTrieElement<T>(new ThemeTrieElementRule<T>(0, undefined, undefined), []);
 
     // append rules to the tree root
-    parsedThemeRules.forEach((rule: ParsedThemeRule) => {
+    parsedThemeRules.forEach((rule: ParsedThemeRule<T>) => {
         root.insert(0, rule.scope, rule.parentScopes, rule.parameters);
     });
 
-    return new Theme(defaults, root);
+    return new Theme<T>(defaults, root);
 }
 
 /**
@@ -159,28 +155,21 @@ function resolveParsedThemeRules(parsedThemeRules: ParsedThemeRule[]): Theme {
  *    parent scopes
  *    customized parameters record
  */
-export class ThemeTrieElementRule {
-    constructor(
-        public scopeDepth: number,
-        public readonly parentScopes: string[] | undefined,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        public parameters?: Record<string, any>,
-    ) {}
+export class ThemeTrieElementRule<T extends IParameters = IParameters> {
+    constructor(public scopeDepth: number, public readonly parentScopes: string[] | undefined, public parameters?: T) {}
 
-    public static cloneArr(arr: ThemeTrieElementRule[]): ThemeTrieElementRule[] {
-        return arr.map((r: ThemeTrieElementRule) => r.clone());
+    public static cloneArr<T extends IParameters = IParameters>(
+        arr: ThemeTrieElementRule<T>[],
+    ): ThemeTrieElementRule<T>[] {
+        return arr.map((r: ThemeTrieElementRule<T>) => r.clone());
     }
 
     // for copy assignment
-    public clone(): ThemeTrieElementRule {
+    public clone(): ThemeTrieElementRule<T> {
         return new ThemeTrieElementRule(this.scopeDepth, this.parentScopes, this.parameters);
     }
 
-    public acceptOverwrite(
-        scopeDepth: number,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        parameters?: Record<string, any>,
-    ): void {
+    public acceptOverwrite(scopeDepth: number, parameters?: T): void {
         if (this.scopeDepth > scopeDepth) {
             // todo maybe have to gracefully handle this err, as it might be cx errors
             console.error("[ThemeTrieElementRule::acceptOverwrite] should never reach over here");
@@ -198,23 +187,25 @@ export class ThemeTrieElementRule {
 /**
  * Theme tree element contains
  */
-export class ThemeTrieElement {
+export class ThemeTrieElement<T extends IParameters = IParameters> {
     constructor(
         /**
          * Current rule of the element
          */
-        private readonly _mainRule: ThemeTrieElementRule,
+        private readonly _mainRule: ThemeTrieElementRule<T>,
         /**
          * Other rules of sharing the same scope name of the element but bear with parent scopes
          */
-        private readonly _rulesWithParentScopes: ThemeTrieElementRule[] = [],
+        private readonly _rulesWithParentScopes: ThemeTrieElementRule<T>[] = [],
         /**
          * Children rules beneath current element
          */
-        private readonly _children: Map<string, ThemeTrieElement> = new Map(),
+        private readonly _children: Map<string, ThemeTrieElement<T>> = new Map(),
     ) {}
 
-    private static _sortBySpecificity(arr: ThemeTrieElementRule[]): ThemeTrieElementRule[] {
+    private static _sortBySpecificity<T extends IParameters = IParameters>(
+        arr: ThemeTrieElementRule<T>[],
+    ): ThemeTrieElementRule<T>[] {
         if (arr.length === 1) {
             return arr;
         }
@@ -224,7 +215,10 @@ export class ThemeTrieElement {
         return arr;
     }
 
-    private static _cmpBySpecificity(a: ThemeTrieElementRule, b: ThemeTrieElementRule): number {
+    private static _cmpBySpecificity<T extends IParameters = IParameters>(
+        a: ThemeTrieElementRule<T>,
+        b: ThemeTrieElementRule<T>,
+    ): number {
         if (a.scopeDepth === b.scopeDepth) {
             const aParentScopes: string[] | undefined = a.parentScopes;
             const bParentScopes: string[] | undefined = b.parentScopes;
@@ -232,8 +226,7 @@ export class ThemeTrieElement {
             const bParentScopesLen: number = !bParentScopes ? 0 : bParentScopes.length;
 
             if (aParentScopesLen === bParentScopesLen) {
-                // eslint-disable-next-line no-plusplus
-                for (let i: number = 0; i < aParentScopesLen; i++) {
+                for (let i: number = 0; i < aParentScopesLen; i += 1) {
                     // aParentScopes and bParentScopes cannot be empty as aParentScopesLen is larger than 0
                     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                     const aLen: number = aParentScopes![i].length;
@@ -268,12 +261,10 @@ export class ThemeTrieElement {
         return [head, tail];
     }
 
-    public match(scope: string): ThemeTrieElementRule[] {
+    public match(scope: string): ThemeTrieElementRule<T>[] {
         if (scope === "") {
             // hit the tree rule of an empty scope name
-            return ThemeTrieElement._sortBySpecificity(
-                ([] as ThemeTrieElementRule[]).concat(this._mainRule).concat(this._rulesWithParentScopes),
-            );
+            return ThemeTrieElement._sortBySpecificity([this._mainRule].concat(this._rulesWithParentScopes));
         }
 
         const [head, tail]: [string, string] = this.getScopeHeadTailPair(scope);
@@ -284,18 +275,10 @@ export class ThemeTrieElement {
         }
 
         // return current rules which should be the mostly matched
-        return ThemeTrieElement._sortBySpecificity(
-            ([] as ThemeTrieElementRule[]).concat(this._mainRule).concat(this._rulesWithParentScopes),
-        );
+        return ThemeTrieElement._sortBySpecificity([this._mainRule].concat(this._rulesWithParentScopes));
     }
 
-    public insert(
-        scopeDepth: number,
-        scope: string,
-        parentScopes: string[] | undefined,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        parameters?: Record<string, any>,
-    ): void {
+    public insert(scopeDepth: number, scope: string, parentScopes: string[] | undefined, parameters?: T): void {
         if (scope === "") {
             this._doInsertHere(scopeDepth, parentScopes, parameters);
 
@@ -304,13 +287,13 @@ export class ThemeTrieElement {
 
         const [head, tail]: [string, string] = this.getScopeHeadTailPair(scope);
 
-        let child: ThemeTrieElement;
+        let child: ThemeTrieElement<T>;
 
         if (this._children.has(head)) {
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             child = this._children.get(head)!;
         } else {
-            child = new ThemeTrieElement(
+            child = new ThemeTrieElement<T>(
                 this._mainRule.clone(),
                 ThemeTrieElementRule.cloneArr(this._rulesWithParentScopes),
             );
@@ -321,12 +304,7 @@ export class ThemeTrieElement {
         child.insert(scopeDepth + 1, tail, parentScopes, parameters);
     }
 
-    private _doInsertHere(
-        scopeDepth: number,
-        parentScopes: string[] | undefined,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        parameters?: Record<string, any>,
-    ): void {
+    private _doInsertHere(scopeDepth: number, parentScopes: string[] | undefined, parameters?: T): void {
         if (!parentScopes) {
             // merge into the main rule
             this._mainRule.acceptOverwrite(scopeDepth, parameters);
@@ -335,8 +313,7 @@ export class ThemeTrieElement {
         }
 
         // try to merge into existing one rule w/ parent scopes
-        // eslint-disable-next-line no-plusplus
-        for (let i: number = 0; i < this._rulesWithParentScopes.length; i++) {
+        for (let i: number = 0; i < this._rulesWithParentScopes.length; i += 1) {
             const rule: ThemeTrieElementRule = this._rulesWithParentScopes[i];
 
             if (strArrCmp(rule.parentScopes, parentScopes) === 0) {
@@ -355,22 +332,22 @@ export class ThemeTrieElement {
 /**
  * Theme object supports style tokens
  */
-export class Theme {
-    public static createFromRawTheme(source?: IRawTheme): Theme {
+export class Theme<T extends IParameters = IParameters> {
+    public static createFromRawTheme<T extends IParameters = IParameters>(source?: IRawTheme<T>): Theme<T> {
         return this.createFromParsedTheme(parseTheme(source));
     }
 
-    public static createFromParsedTheme(source: ParsedThemeRule[]): Theme {
+    public static createFromParsedTheme<T extends IParameters = IParameters>(source: ParsedThemeRule<T>[]): Theme<T> {
         return resolveParsedThemeRules(source);
     }
 
-    private readonly _cache: Map<string, ThemeTrieElementRule[]>;
+    private readonly _cache: Map<string, ThemeTrieElementRule<T>[]>;
 
-    constructor(private readonly _defaults: ThemeTrieElementRule, private readonly _root: ThemeTrieElement) {
+    constructor(private readonly _defaults: ThemeTrieElementRule<T>, private readonly _root: ThemeTrieElement<T>) {
         this._cache = new Map();
     }
 
-    public getDefaults(): ThemeTrieElementRule {
+    public getDefaults(): ThemeTrieElementRule<T> {
         return this._defaults;
     }
 
@@ -378,7 +355,7 @@ export class Theme {
      * Find the array of matched rules for the scope name
      * @param scopeName: a string like "segment1.segment2.segment3"
      */
-    public match(scopeName: string): ThemeTrieElementRule[] {
+    public match(scopeName: string): ThemeTrieElementRule<T>[] {
         if (!this._cache.has(scopeName)) {
             this._cache.set(scopeName, this._root.match(scopeName));
         }

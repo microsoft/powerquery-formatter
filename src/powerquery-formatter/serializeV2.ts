@@ -11,7 +11,6 @@ import { IndentationLiteral, NewlineLiteral, TriedSerialize } from "./serialize"
 import { getLinearLengthV2 } from "./passes/utils/linearLengthV2";
 import { NodeKind } from "@microsoft/powerquery-parser/lib/powerquery-parser/language/ast/ast";
 
-// const GLOBAL_HEADING_WHITE_SPACE_REG: RegExp = /^[ \t]+/g;
 const GLOBAL_TAILING_WHITE_SPACE_REG: RegExp = /[ \t]+$/g;
 const GLOBAL_TAILING_CRLF_REG: RegExp = /(\r\n|\n\r|\r|\n)*$/g;
 
@@ -35,8 +34,19 @@ export function trySerializeV2(settings: SerializeSettingsV2): Promise<TriedSeri
     return PQP.ResultUtils.ensureResultAsync(() => serializeV2(settings), settings.locale);
 }
 
-type LastTokenType = "Opener" | "Closer" | "Divider" | "SpanContent" | "Null" | "CommentsLine";
-type BlockStatus = "Block" | "InlineBlock";
+enum LastTokenType {
+    Opener = "Opener",
+    Closer = "Closer",
+    Divider = "Divider",
+    SpanContent = "SpanContent",
+    Null = "Null",
+    CommentsLine = "CommentsLine",
+}
+
+enum BlockStatus {
+    Block = "Block",
+    InlineBlock = "InlineBlock",
+}
 
 interface SerializeState {
     readonly node: Ast.TNode;
@@ -119,7 +129,7 @@ function stateFromSettings(settings: SerializeSettingsV2): SerializeState {
         indentationCache: [""],
         maxWidth,
         supportInlineBlock,
-        lastTokenType: "Null",
+        lastTokenType: LastTokenType.Null,
         blockStatusArray: [],
         indentationLevel: 0,
         formatted: "",
@@ -202,15 +212,9 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
             if (currentlySupportInlineBlock) {
                 parameter = {
                     ...parameter,
+                    leftPadding: parameter.blockOpener === "L",
+                    rightPadding: parameter.blockOpener === "R",
                 };
-
-                if (parameter.blockOpener === "R") {
-                    parameter.rightPadding = true;
-                }
-
-                if (parameter.blockOpener === "L") {
-                    parameter.leftPadding = true;
-                }
             }
         }
     }
@@ -227,9 +231,9 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
         // do not touch the indent for a default container block opener
         // and the pushed container block status would be wiped when we exist the container
         if (currentlySupportInlineBlock) {
-            state.blockStatusArray.push("InlineBlock");
+            state.blockStatusArray.push(BlockStatus.InlineBlock);
         } else {
-            state.blockStatusArray.push("Block");
+            state.blockStatusArray.push(BlockStatus.Block);
         }
     } else if (parameter.blockOpener === "L" || parameter.blockCloser === "L") {
         let activated: boolean = true;
@@ -244,12 +248,12 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
         if (parameter.blockCloser) {
             const curBlockStatus: BlockStatus | undefined = state.blockStatusArray.pop();
 
-            if (curBlockStatus === "Block") {
+            if (curBlockStatus === BlockStatus.Block) {
                 state.indentationLevel -= 1;
 
                 // new line flush out the
                 if (
-                    state.lastTokenType === "Opener" &&
+                    state.lastTokenType === LastTokenType.Opener &&
                     state.currentLine === "" &&
                     parameter.noWhiteSpaceBetweenWhenNoContentBetweenOpenerAndCloser
                 ) {
@@ -258,34 +262,32 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
                 } else if (state.currentLine !== "") {
                     appendToFormatted(state, state.newlineLiteral);
                 }
-            } else if (curBlockStatus === "InlineBlock" && state.lastTokenType === "Opener") {
+            } else if (curBlockStatus === BlockStatus.InlineBlock && state.lastTokenType === LastTokenType.Opener) {
                 wipeOutTailingWhiteSpaces(state);
                 // manually regard current line as a pseudo line
                 state.isPseudoLineJustCreated = true;
             }
 
-            state.lastTokenType = "Closer";
+            state.lastTokenType = LastTokenType.Closer;
         } else if (parameter.blockOpener && activated) {
-            // eslint-disable-next-line require-atomic-updates
-            state.lastTokenType = "Opener";
-
             if (currentlySupportInlineBlock) {
-                state.blockStatusArray.push("InlineBlock");
+                state.blockStatusArray.push(BlockStatus.InlineBlock);
             } else {
-                state.blockStatusArray.push("Block");
+                state.blockStatusArray.push(BlockStatus.Block);
                 state.indentationLevel += 1;
             }
+
+            state.lastTokenType = LastTokenType.Opener;
 
             if (state.currentLine !== "" && !currentlySupportInlineBlock) {
                 appendToFormatted(state, state.newlineLiteral);
             }
         }
-    } else if (parameter.contentDivider === "L" && state.lastTokenType !== "Divider") {
-        // eslint-disable-next-line require-atomic-updates
-        state.lastTokenType = "Divider";
+    } else if (parameter.contentDivider === "L" && state.lastTokenType !== LastTokenType.Divider) {
+        state.lastTokenType = LastTokenType.Divider;
         const curBlockStatus: BlockStatus | undefined = currentBlockStatus(state);
 
-        if (curBlockStatus === "Block") {
+        if (curBlockStatus === BlockStatus.Block) {
             appendToFormatted(state, state.newlineLiteral);
         }
     }
@@ -316,6 +318,7 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
             }
 
             for (const child of maybeChildren) {
+                // we need to await in this loop and ensure all ast were visited in sequences other than parallel
                 // eslint-disable-next-line no-await-in-loop
                 await serializeNode(state, child, { isParentInline: currentlySupportInlineBlock });
             }
@@ -333,32 +336,30 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
         }
 
         if (parameter.blockOpener && activated) {
-            // eslint-disable-next-line require-atomic-updates
-            state.lastTokenType = "Opener";
-
             if (currentlySupportInlineBlock) {
-                state.blockStatusArray.push("InlineBlock");
+                state.blockStatusArray.push(BlockStatus.InlineBlock);
+                state.lastTokenType = LastTokenType.Opener;
             } else {
-                state.blockStatusArray.push("Block");
+                state.blockStatusArray.push(BlockStatus.Block);
+                state.lastTokenType = LastTokenType.Opener;
                 appendToFormatted(state, state.newlineLiteral);
                 state.indentationLevel += 1;
             }
         } else if (parameter.blockCloser) {
             const curBlockStatus: BlockStatus | undefined = state.blockStatusArray.pop();
 
-            if (curBlockStatus === "Block") {
+            if (curBlockStatus === BlockStatus.Block) {
                 state.indentationLevel -= 1;
                 appendToFormatted(state, state.newlineLiteral);
             }
 
-            state.lastTokenType = "Closer";
+            state.lastTokenType = LastTokenType.Closer;
         }
-    } else if (parameter.contentDivider === "R" && state.lastTokenType !== "Divider") {
-        // eslint-disable-next-line require-atomic-updates
-        state.lastTokenType = "Divider";
+    } else if (parameter.contentDivider === "R" && state.lastTokenType !== LastTokenType.Divider) {
+        state.lastTokenType = LastTokenType.Divider;
         const curBlockStatus: BlockStatus | undefined = currentBlockStatus(state);
 
-        if (curBlockStatus === "Block") {
+        if (curBlockStatus === BlockStatus.Block) {
             appendToFormatted(state, state.newlineLiteral);
         }
     }
@@ -367,9 +368,8 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
     if (isContainer) {
         // false alarm: there should be no race problem since we serialize linearly,
         // we did not promise all at its caller
-        // eslint-disable-next-line require-atomic-updates
-        state.indentationLevel = currentIndentLevel;
         state.blockStatusArray = state.blockStatusArray.slice(0, currentBlockStatusArrLen);
+        state.indentationLevel = currentIndentLevel;
 
         if (!currentlySupportInlineBlock && state.currentLine !== "" && parameter.skipPostContainerNewLine !== true) {
             appendToFormatted(state, state.newlineLiteral);
@@ -383,8 +383,9 @@ function getSectionMemberLiteralTailPair(sectionLiteral: string): [string, strin
     let tail: string;
 
     if (dotIndex === -1) {
-        head = sectionLiteral;
-        tail = "";
+        // let's regard them beneath the adhoc empty string root namespace and should not break with each other
+        head = "";
+        tail = sectionLiteral;
     } else {
         head = sectionLiteral.substring(0, dotIndex);
         tail = sectionLiteral.substring(dotIndex + 1);
@@ -439,7 +440,7 @@ function serializeLiteral(state: SerializeState, str: string, parameter: Seriali
 
     if (
         state.supportInlineBlock &&
-        state.lastTokenType === "Divider" &&
+        state.lastTokenType === LastTokenType.Divider &&
         state.currentLine.length + str.length + 1 > state.maxWidth &&
         currentIndentation(state).length + str.length + 1 <= state.maxWidth
     ) {
@@ -490,7 +491,7 @@ function appendToFormatted(state: SerializeState, str: string): void {
         state.isPseudoLine = false;
     } else {
         state.currentLine += str;
-        state.lastTokenType = "SpanContent";
+        state.lastTokenType = LastTokenType.SpanContent;
         state.isPseudoLineJustCreated = false;
     }
 }
@@ -518,7 +519,7 @@ function visitComments(state: SerializeState, collection: CommentCollection): vo
         if (index === collection.prefixedComments.length - 1) {
             if (comment.containsNewline) {
                 appendToFormatted(state, state.newlineLiteral);
-                state.lastTokenType = "CommentsLine";
+                state.lastTokenType = LastTokenType.CommentsLine;
             }
         }
     });
@@ -539,7 +540,7 @@ function wipeOutTailingWhiteSpaces(state: SerializeState): void {
  * @param state
  */
 function markCurrentEmptyLinePseudo(state: SerializeState): void {
-    if (state.currentLine === "" && state.lastTokenType !== "CommentsLine") {
+    if (state.currentLine === "" && state.lastTokenType !== LastTokenType.CommentsLine) {
         // current line is empty and there were no literal appended yet
         // thus just directly remove CRLF and ending /s from the formatted if needed
         state.formatted = state.formatted.replace(GLOBAL_TAILING_CRLF_REG, "");

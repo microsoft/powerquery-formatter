@@ -9,24 +9,24 @@ import { CommentCollectionMap, SerializeParameterMapV2, SerializeParameterStateV
 import {
     getNodeScopeName,
     ScopeListElement,
-    ScopeListElementParameters,
     ScopeMetadata,
     ScopeMetadataProvider,
+    SerializeParameterV2,
     StackElement,
 } from "../themes";
 import { FormatTraceConstant } from "../trace";
 import { NodeIdMap } from "@microsoft/powerquery-parser/lib/powerquery-parser/parser";
 
 type RealSerializeParameterStateV2 = SerializeParameterStateV2 & {
-    currentScopeStack: StackElement;
-    scopeMetadataProvider: ScopeMetadataProvider;
+    currentScopeStack: StackElement<SerializeParameterV2>;
+    scopeMetadataProvider: ScopeMetadataProvider<SerializeParameterV2>;
 };
 
 export function tryTraverseSerializeParameterV2(
     ast: Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     commentCollectionMap: CommentCollectionMap,
-    scopeMetadataProvider: ScopeMetadataProvider,
+    scopeMetadataProvider: ScopeMetadataProvider<SerializeParameterV2>,
     locale: string,
     traceManager: TraceManager,
     maybeCorrelationId: number | undefined,
@@ -38,18 +38,27 @@ export function tryTraverseSerializeParameterV2(
         maybeCorrelationId,
     );
 
-    const defaultMeta: ScopeMetadata = scopeMetadataProvider.getDefaultMetadata();
+    const defaultMeta: ScopeMetadata<SerializeParameterV2> = scopeMetadataProvider.getDefaultMetadata();
     const rootScopeName: string = getNodeScopeName(ast);
-    const rawRootMeta: ScopeMetadata = scopeMetadataProvider.getMetadataForScope(rootScopeName);
+    const rawRootMeta: ScopeMetadata<SerializeParameterV2> = scopeMetadataProvider.getMetadataForScope(rootScopeName);
 
-    const rawRootParameter: ScopeListElementParameters = ScopeListElement.mergeParameters(
-        defaultMeta,
+    const rawRootParameter: SerializeParameterV2 = ScopeListElement.mergeParameters(
+        defaultMeta.themeData?.[0].parameters ?? {},
         undefined,
         rawRootMeta,
     );
 
-    const rootScopeList: ScopeListElement = new ScopeListElement(undefined, rootScopeName, rawRootParameter);
-    const rootState: StackElement = new StackElement(undefined, ast, rootScopeList);
+    const rootScopeList: ScopeListElement<SerializeParameterV2> = new ScopeListElement<SerializeParameterV2>(
+        undefined,
+        rootScopeName,
+        rawRootParameter,
+    );
+
+    const rootState: StackElement<SerializeParameterV2> = new StackElement<SerializeParameterV2>(
+        undefined,
+        ast,
+        rootScopeList,
+    );
 
     const state: RealSerializeParameterStateV2 = {
         locale,
@@ -86,7 +95,7 @@ async function doTraverseRecursion(
     node: Ast.TNode,
 ): Promise<void> {
     state.maybeCancellationToken?.throwIfCancelled();
-    const currentScopeStack: StackElement = state.currentScopeStack;
+    const currentScopeStack: StackElement<SerializeParameterV2> = state.currentScopeStack;
     state.result.parametersMap.set(node.id, currentScopeStack.scopeList.parameters);
 
     for (const child of await PQP.Traverse.assertGetAllAstChildren(state, node, nodeIdMapCollection)) {
