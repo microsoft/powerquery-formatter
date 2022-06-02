@@ -118,7 +118,6 @@ const StatementContainers: ReadonlyArray<NK> = [
     NK.LetExpression,
     NK.OtherwiseExpression,
     NK.ParenthesizedExpression,
-    NK.RecordLiteral,
 ];
 
 const ExpressionContainers: ReadonlyArray<NK> = [
@@ -136,6 +135,7 @@ const ExpressionContainers: ReadonlyArray<NK> = [
     NK.FieldSpecification,
     NK.RecordExpression,
     NK.ListExpression,
+    NK.RecordLiteral,
     NK.FieldSelector,
     NK.FieldProjection,
 ];
@@ -411,7 +411,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             parameters: {
                 rightPadding: true,
                 blockOpener: "R",
-                blockOpenerActivatedMatcher: /^[\s]*(if)/g,
+                blockOpenerActivatedMatcher: /^[\s]*(if|let)/g,
             },
         },
         // FieldSelector & FieldProjection
