@@ -3,13 +3,17 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
+import { NodeKind } from "@microsoft/powerquery-parser/lib/powerquery-parser/language/ast/ast";
 
-import { SerializeParameterV2 } from "./themes";
-
-import { CommentCollection, CommentCollectionMap, LinearLengthMap, SerializeParameterMapV2 } from "./passes";
+import {
+    CommentCollection,
+    CommentCollectionMap,
+    LinearLengthMap,
+    SerializeParameterMapV2,
+    SerializeParameterV2,
+} from "./passes";
 import { IndentationLiteral, NewlineLiteral, TriedSerialize } from "./serialize";
 import { getLinearLengthV2 } from "./passes/utils/linearLengthV2";
-import { NodeKind } from "@microsoft/powerquery-parser/lib/powerquery-parser/language/ast/ast";
 
 const GLOBAL_TAILING_WHITE_SPACE_REG: RegExp = /[ \t]+$/g;
 const GLOBAL_TAILING_CRLF_REG: RegExp = /(\r\n|\n\r|\r|\n)*$/g;
@@ -34,7 +38,7 @@ export function trySerializeV2(settings: SerializeSettingsV2): Promise<TriedSeri
     return PQP.ResultUtils.ensureResultAsync(() => serializeV2(settings), settings.locale);
 }
 
-enum LastTokenType {
+const enum LastTokenType {
     Opener = "Opener",
     Closer = "Closer",
     Divider = "Divider",
@@ -43,7 +47,7 @@ enum LastTokenType {
     CommentsLine = "CommentsLine",
 }
 
-enum BlockStatus {
+const enum BlockStatus {
     Block = "Block",
     InlineBlock = "InlineBlock",
 }
@@ -148,7 +152,7 @@ function stateFromSettings(settings: SerializeSettingsV2): SerializeState {
 }
 
 interface InheritOptions {
-    isParentInline: boolean;
+    readonly isParentInline: boolean;
 }
 
 async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOptions: InheritOptions): Promise<void> {

@@ -38,14 +38,14 @@ export interface IRawTheme<T extends IParameters = IParameters> {
  * Theme provider
  */
 export interface IThemeProvider<T extends IParameters = IParameters> {
-    themeMatch(scopeName: string): ThemeTrieElementRule<T>[];
-    getDefaults(): ThemeTrieElementRule<T>;
+    readonly themeMatch: (scopeName: string) => ThemeTrieElementRule<T>[];
+    readonly getDefaults: () => ThemeTrieElementRule<T>;
 }
 
 /**
  * Registry options
  */
 export interface RegistryOptions<T extends IParameters = IParameters> {
-    theme: IRawTheme<T>;
+    readonly theme: IRawTheme<T>;
     // we could add tracer over here if we want
 }

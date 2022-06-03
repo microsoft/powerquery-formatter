@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as PQP from "@microsoft/powerquery-parser";
+
 import { IParameters, IRawTheme, IRawThemeSetting } from "./types";
 import { strArrCmp, strcmp } from "./utils";
 
@@ -171,8 +173,7 @@ export class ThemeTrieElementRule<T extends IParameters = IParameters> {
 
     public acceptOverwrite(scopeDepth: number, parameters?: T): void {
         if (this.scopeDepth > scopeDepth) {
-            // todo maybe have to gracefully handle this err, as it might be cx errors
-            console.error("[ThemeTrieElementRule::acceptOverwrite] should never reach over here");
+            throw PQP.Assert.isNever(this as never);
         } else {
             this.scopeDepth = scopeDepth;
         }
@@ -269,9 +270,10 @@ export class ThemeTrieElement<T extends IParameters = IParameters> {
 
         const [head, tail]: [string, string] = this.getScopeHeadTailPair(scope);
 
-        if (this._children.has(head)) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            return this._children.get(head)!.match(tail);
+        const maybeOneChild: ThemeTrieElement<T> | undefined = this._children.get(head);
+
+        if (maybeOneChild) {
+            return maybeOneChild.match(tail);
         }
 
         // return current rules which should be the mostly matched
@@ -289,9 +291,10 @@ export class ThemeTrieElement<T extends IParameters = IParameters> {
 
         let child: ThemeTrieElement<T>;
 
-        if (this._children.has(head)) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            child = this._children.get(head)!;
+        const maybeOneChild: ThemeTrieElement<T> | undefined = this._children.get(head);
+
+        if (maybeOneChild) {
+            child = maybeOneChild;
         } else {
             child = new ThemeTrieElement<T>(
                 this._mainRule.clone(),
@@ -356,11 +359,16 @@ export class Theme<T extends IParameters = IParameters> {
      * @param scopeName: a string like "segment1.segment2.segment3"
      */
     public match(scopeName: string): ThemeTrieElementRule<T>[] {
-        if (!this._cache.has(scopeName)) {
-            this._cache.set(scopeName, this._root.match(scopeName));
+        let matchedRuleArr: ThemeTrieElementRule<T>[];
+        const maybeCachedMatchedRuleArr: ThemeTrieElementRule<T>[] | undefined = this._cache.get(scopeName);
+
+        if (maybeCachedMatchedRuleArr) {
+            matchedRuleArr = maybeCachedMatchedRuleArr;
+        } else {
+            matchedRuleArr = this._root.match(scopeName);
+            this._cache.set(scopeName, matchedRuleArr);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        return this._cache.get(scopeName)!;
+        return matchedRuleArr;
     }
 }

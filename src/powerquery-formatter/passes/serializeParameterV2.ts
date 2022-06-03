@@ -4,18 +4,16 @@
 import * as PQP from "@microsoft/powerquery-parser";
 import { Trace, TraceManager } from "@microsoft/powerquery-parser/lib/powerquery-parser/common/trace";
 import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
-
-import { CommentCollectionMap, SerializeParameterMapV2, SerializeParameterStateV2 } from "./commonTypes";
-import {
-    getNodeScopeName,
-    ScopeListElement,
-    ScopeMetadata,
-    ScopeMetadataProvider,
-    SerializeParameterV2,
-    StackElement,
-} from "../themes";
-import { FormatTraceConstant } from "../trace";
 import { NodeIdMap } from "@microsoft/powerquery-parser/lib/powerquery-parser/parser";
+
+import {
+    CommentCollectionMap,
+    SerializeParameterMapV2,
+    SerializeParameterStateV2,
+    SerializeParameterV2,
+} from "./commonTypes";
+import { getNodeScopeName, ScopeListElement, ScopeMetadata, ScopeMetadataProvider, StackElement } from "../themes";
+import { FormatTraceConstant } from "../trace";
 
 type RealSerializeParameterStateV2 = SerializeParameterStateV2 & {
     currentScopeStack: StackElement<SerializeParameterV2>;

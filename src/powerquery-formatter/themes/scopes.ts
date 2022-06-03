@@ -16,8 +16,8 @@ export class ScopeMetadata<T extends IParameters = IParameters> {
 export class ScopeMetadataProvider<T extends IParameters = IParameters> {
     private static _NULL_SCOPE_METADATA: ScopeMetadata = new ScopeMetadata<IParameters>("", []);
 
-    private _cache: Map<string, ScopeMetadata<T>> = undefined as unknown as Map<string, ScopeMetadata<T>>;
-    private _defaultMetaData: ScopeMetadata<T> = undefined as unknown as ScopeMetadata<T>;
+    private _cache: Map<string, ScopeMetadata<T>> = new Map<string, ScopeMetadata<T>>();
+    private _defaultMetaData: ScopeMetadata<T> = new ScopeMetadata<T>("", []);
 
     private _doGetMetadataForScope(scopeName: string): ScopeMetadata<T> {
         const themeData: ThemeTrieElementRule<T>[] = this._themeProvider.themeMatch(scopeName);
