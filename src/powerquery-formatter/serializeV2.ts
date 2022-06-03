@@ -15,9 +15,6 @@ import {
 import { IndentationLiteral, NewlineLiteral, TriedSerialize } from "./serialize";
 import { getLinearLengthV2 } from "./passes/utils/linearLengthV2";
 
-const GLOBAL_TAILING_WHITE_SPACE_REG: RegExp = /[ \t]+$/g;
-const GLOBAL_TAILING_CRLF_REG: RegExp = /(\r\n|\n\r|\r|\n)*$/g;
-
 export interface SerializeSettingsV2 extends PQP.CommonSettings {
     readonly ast: Ast.TNode;
     readonly text: string;
@@ -106,8 +103,8 @@ async function serializeV2(settings: SerializeSettingsV2): Promise<string> {
     await serializeNode(state, state.node, { isParentInline: isRootInline });
 
     // force cleaning whitespaces and appending crlf to the eof
-    state.formatted = state.formatted.replace(GLOBAL_TAILING_CRLF_REG, "");
-    state.formatted = state.formatted.replace(GLOBAL_TAILING_WHITE_SPACE_REG, "");
+    state.formatted = cleanUpTailingCrLfOfString(state.formatted);
+    state.formatted = cleanUpTailingWhitespacesOrTabsOfString(state.formatted);
     appendToFormatted(state, state.newlineLiteral);
 
     return state.formatted;
@@ -488,7 +485,7 @@ function appendToFormatted(state: SerializeState, str: string): void {
     // do not pollute any tailing characters of the line before a just created pseudo-line
     if (str === state.newlineLiteral && !state.isPseudoLineJustCreated) {
         // remove any tailing whitespace or \t from the formatted
-        state.formatted = state.formatted.replace(GLOBAL_TAILING_WHITE_SPACE_REG, "");
+        state.formatted = cleanUpTailingWhitespacesOrTabsOfString(state.formatted);
     }
 
     state.formatted += str;
@@ -538,8 +535,8 @@ function currentBlockStatus(state: SerializeState): BlockStatus | undefined {
 }
 
 function wipeOutTailingWhiteSpaces(state: SerializeState): void {
-    state.formatted = state.formatted.replace(GLOBAL_TAILING_WHITE_SPACE_REG, "");
-    state.currentLine = state.currentLine.replace(GLOBAL_TAILING_WHITE_SPACE_REG, "");
+    state.formatted = cleanUpTailingWhitespacesOrTabsOfString(state.formatted);
+    state.currentLine = cleanUpTailingWhitespacesOrTabsOfString(state.currentLine);
 }
 
 /**
@@ -551,9 +548,8 @@ function markCurrentEmptyLinePseudo(state: SerializeState): void {
     if (state.currentLine === "" && state.lastTokenType !== LastTokenType.CommentsLine) {
         // current line is empty and there were no literal appended yet
         // thus just directly remove CRLF and ending /s from the formatted if needed
-        state.formatted = state.formatted.replace(GLOBAL_TAILING_CRLF_REG, "");
-
-        state.formatted = state.formatted.replace(GLOBAL_TAILING_WHITE_SPACE_REG, "");
+        state.formatted = cleanUpTailingCrLfOfString(state.formatted);
+        state.formatted = cleanUpTailingWhitespacesOrTabsOfString(state.formatted);
         // since the current line has already been empty, no need to remove /s from it
 
         state.isPseudoLine = true;
@@ -594,4 +590,32 @@ function expandIndentationCache(state: SerializeState, level: number): string {
     }
 
     return state.indentationCache[state.indentationCache.length - 1];
+}
+
+function cleanUpTailingWhitespacesOrTabsOfString(input: string): string {
+    let endingIndex: number = input.length - 1;
+
+    while (input.charAt(endingIndex) === " " || input.charAt(endingIndex) === "\t") {
+        endingIndex -= 1;
+    }
+
+    if (endingIndex < input.length - 1) {
+        return input.slice(0, endingIndex + 1);
+    } else {
+        return input;
+    }
+}
+
+function cleanUpTailingCrLfOfString(input: string): string {
+    let endingIndex: number = input.length - 1;
+
+    while (input.charAt(endingIndex) === "\r" || input.charAt(endingIndex) === "\n") {
+        endingIndex -= 1;
+    }
+
+    if (endingIndex < input.length - 1) {
+        return input.slice(0, endingIndex + 1);
+    } else {
+        return input;
+    }
 }
