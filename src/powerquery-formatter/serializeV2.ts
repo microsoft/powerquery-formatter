@@ -235,7 +235,10 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
         } else {
             state.blockStatusArray.push(BlockStatus.Block);
         }
-    } else if (parameter.blockOpener === "L" || parameter.blockCloser === "L") {
+    }
+
+    // blockOpener/blockCloser/contentDivider could be an either token parameters or container parameter
+    if (parameter.blockOpener === "L" || parameter.blockCloser === "L") {
         let activated: boolean = true;
 
         if (parameter.blockOpenerActivatedMatcher) {
@@ -325,6 +328,7 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
         }
     }
 
+    // blockOpener/blockCloser/contentDivider could be an either token parameters or container parameter
     if (parameter.blockOpener === "R" || parameter.blockCloser === "R") {
         let activated: boolean = true;
 

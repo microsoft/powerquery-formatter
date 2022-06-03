@@ -1712,7 +1712,9 @@ aReallyReallyReallyReallyLongIdentifier * aReallyReallyReallyReallyLongIdentifie
         it(`let x = true and true`, async () => {
             const expected: string = `
 let
-    x = true and true
+    x =
+        true
+        and true
 in
     x
 `;
@@ -1728,7 +1730,9 @@ in
         it(`let x = 1 <> 2 and 3 <> 4 in x`, async () => {
             const expected: string = `
 let
-    x = 1 <> 2 and 3 <> 4
+    x =
+        1 <> 2
+        and 3 <> 4
 in
     x
 `;
@@ -1742,24 +1746,39 @@ in
         });
 
         it(`true or false and true or true`, async () => {
-            const expected: string = `true or false and true or true`;
+            const expected: string = `
+true
+or false
+and true
+or true
+`;
+
+            const expected2: string = `true or false and true or true`;
             const actual: string = await expectFormatV2(`true or false and true or true`);
             const actual2: string = await expectFormatV2(`true or false and true or true`, DefaultFormatSettings2);
             compareV2(expected, actual);
-            compareV2(expected, actual2);
+            compareV2(expected2, actual2);
         });
 
         it(`a = true and b = true and c = true`, async () => {
-            const expected: string = `a = true and b = true and c = true`;
+            const expected: string = `
+a = true
+and b = true
+and c = true
+`;
+
+            const expected2: string = `a = true and b = true and c = true`;
             const actual: string = await expectFormatV2(`a = true and b = true and c = true`);
             const actual2: string = await expectFormatV2(`a = true and b = true and c = true`, DefaultFormatSettings2);
             compareV2(expected, actual);
-            compareV2(expected, actual2);
+            compareV2(expected2, actual2);
         });
 
         it(`true and true and (if true then true else false)`, async () => {
             const expected: string = `
-true and true and (
+true
+and true
+and (
     if true then
         true
     else
@@ -1782,7 +1801,8 @@ true and true and (
 
         it(`true and (if true then true else false) and true`, async () => {
             const expected: string = `
-true and (
+true
+and (
     if true then
         true
     else

@@ -4,6 +4,7 @@
 import {
     EqualityOperator,
     KeywordConstant,
+    LogicalOperator,
     MiscConstant,
     WrapperConstant,
 } from "@microsoft/powerquery-parser/lib/powerquery-parser/language/constant/constant";
@@ -39,7 +40,7 @@ export type SerializeParameterV2 = Partial<{
      */
     ignoreInline: boolean;
     /**
-     * blockOpener, a block field:
+     * blockOpener, a block or container field:
      * define an opener anchor relative to the current token, which could be either 'L' or 'R', which starts a block
      * 'L' means the opener is on the left-hand side of the token, and 'R' for the right-hand side
      */
@@ -52,7 +53,7 @@ export type SerializeParameterV2 = Partial<{
      */
     blockOpenerActivatedMatcher: RegExp;
     /**
-     * blockOpener, a block field:
+     * blockOpener, a block or container field:
      * define a closer anchor relative to the current token, which could be either 'L' or 'R', which ends the block
      * 'L' means the closer is on the left-hand side of the token, and 'R' for the right-hand side
      */
@@ -63,7 +64,7 @@ export type SerializeParameterV2 = Partial<{
      */
     noWhiteSpaceBetweenWhenNoContentBetweenOpenerAndCloser: boolean;
     /**
-     * contentDivider, a block field:
+     * contentDivider, a block or container field:
      * define a divide anchor relative to the current token, which could be either 'L' or 'R', which would divide tokens
      * 'L' means the closer is on the left-hand side of the token, and 'R' for the right-hand side
      *      In a block mode container, the divider would turn into a new line
@@ -117,10 +118,10 @@ const StatementContainers: ReadonlyArray<NK> = [
     NK.FunctionExpression,
     NK.LetExpression,
     NK.OtherwiseExpression,
-    NK.ParenthesizedExpression,
 ];
 
 const ExpressionContainers: ReadonlyArray<NK> = [
+    NK.ParenthesizedExpression,
     NK.ArrayWrapper,
     NK.ArithmeticExpression,
     NK.AsExpression,
@@ -436,6 +437,41 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             ],
             parameters: {
                 clearTailingWhitespaceCarriageReturnBeforeAppending: true,
+            },
+        },
+        // LogicalExpression & EqualityExpression
+        {
+            scope: [`${scopeNameFromConstKd(LogicalOperator.And)}`, `${scopeNameFromConstKd(LogicalOperator.Or)}`],
+            parameters: {
+                contentDivider: "L",
+                leftPadding: true,
+                rightPadding: true,
+            },
+        },
+        {
+            scope: [
+                `${NK.LogicalExpression}> ${NK.LogicalExpression}`,
+                `${NK.EqualityExpression}> ${NK.LogicalExpression}`,
+                `${NK.EqualityExpression}> ${NK.EqualityExpression}`,
+                `${NK.LogicalExpression}> ${NK.EqualityExpression}`,
+            ],
+            parameters: {
+                container: true,
+                skipPostContainerNewLine: true,
+                ignoreInline: true,
+            },
+        },
+        {
+            scope: [
+                `${NK.IdentifierPairedExpression}> ${NK.LogicalExpression}`,
+                `${NK.IdentifierPairedExpression}> ${NK.EqualityExpression}`,
+                `${NK.IfExpression}> ${NK.LogicalExpression}`,
+                `${NK.IfExpression}> ${NK.EqualityExpression}`,
+            ],
+            parameters: {
+                container: true,
+                skipPostContainerNewLine: true,
+                blockOpener: "L",
             },
         },
     ],
