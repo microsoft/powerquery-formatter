@@ -8,13 +8,11 @@ import {
     MiscConstant,
     WrapperConstant,
 } from "@microsoft/powerquery-parser/lib/powerquery-parser/language/constant/constant";
-
 import { NodeKind as NK } from "@microsoft/powerquery-parser/lib/powerquery-parser/language/ast/ast";
-
-import { SerializeParameterV2 } from "../passes";
 
 import { IRawTheme } from "./types";
 import { scopeNameFromConstKd } from "./scopeNameHelpers";
+import { SerializeParameterV2 } from "../passes";
 
 const StatementContainers: ReadonlyArray<NK> = [
     NK.IfExpression,

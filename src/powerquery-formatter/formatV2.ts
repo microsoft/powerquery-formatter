@@ -14,7 +14,6 @@ import {
 } from "./passes";
 import { FormatSettings, TriedFormat } from "./format";
 import { SerializePassthroughMapsV2, SerializeSettingsV2, trySerializeV2 } from "./serializeV2";
-
 import { FormatTraceConstant } from "./trace";
 import { SyncThemeRegistry } from "./themes";
 import { TriedSerialize } from "./serialize";

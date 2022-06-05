@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
-import { ThemeTrieElementRule } from "./themes";
 
 import { IParameters, IThemeProvider } from "./types";
+import { ThemeTrieElementRule } from "./themes";
 
 /**
  * The metadata containing the scopeName and matched theme rules of a scope name

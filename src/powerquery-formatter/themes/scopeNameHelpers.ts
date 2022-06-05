@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import * as PQP from "@microsoft/powerquery-parser";
 import {
     ArithmeticOperator,
     EqualityOperator,
@@ -158,16 +159,14 @@ export function scopeNameFromConstKd(constantKind: TConstant): string {
             return "constant.wrapper.right-bracket";
         case WrapperConstant.RightParenthesis:
             return "constant.wrapper.right-parenthesis";
-        default:
-            return "constant.unknown";
+
+        default: {
+            // comment one of the cases above to see a ts compile time never covariance error
+            throw PQP.Assert.isNever(constantKind);
+        }
     }
 }
 
 export function getNodeScopeName(node: Ast.TNode): string {
-    switch (node.kind) {
-        case Ast.NodeKind.Constant:
-            return scopeNameFromConstKd(node.constantKind);
-        default:
-            return node.kind;
-    }
+    return node.kind === Ast.NodeKind.Constant ? scopeNameFromConstKd(node.constantKind) : node.kind;
 }

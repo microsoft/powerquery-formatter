@@ -3,11 +3,10 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
-import { ContainerSet } from "../themes";
-
 import { TraceManager } from "@microsoft/powerquery-parser/lib/powerquery-parser/common/trace";
 
 import { CommentCollection, CommentCollectionMap, CommentResultV2, CommentStateV2 } from "./commonTypes";
+import { ContainerSet } from "../themes";
 
 const containerNodeKindSet: ReadonlySet<PQP.Language.Ast.NodeKind> = ContainerSet;
 

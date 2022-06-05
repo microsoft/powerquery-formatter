@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { SerializeParameterV2 } from "../passes";
-
 import { IRawTheme, IThemeProvider, RegistryOptions } from "./types";
 import { Theme, ThemeTrieElementRule } from "./themes";
-
 import { defaultTheme } from "./constants";
 import { ScopeMetadataProvider } from "./scopes";
+import { SerializeParameterV2 } from "../passes";
 
 const DEFAULT_OPTIONS: RegistryOptions<SerializeParameterV2> = {
     theme: defaultTheme,
