@@ -69,7 +69,8 @@ export interface SerializeParameterState extends PQP.Traverse.ITraversalState<Se
 
 export interface CommentResultV2 {
     readonly commentCollectionMap: CommentCollectionMap;
-    readonly containerIdHavingComments: Set<number>;
+    readonly containerIdHavingCommentsChildCount: Map<number, number>;
+    readonly parentContainerIdOfNodeId: Map<number, number>;
 }
 
 export interface CommentStateV2 extends PQP.Traverse.ITraversalState<CommentResultV2> {
@@ -91,6 +92,11 @@ export type SerializeParameterV2 = Partial<{
      * - a container will persis the indent level unchanged before entering and after leaving it
      */
     container: boolean;
+    /**
+     * indentContainerOnEnter, a container field:
+     * indent the container when entering the container in block mode
+     */
+    indentContainerOnEnter: boolean;
     /**
      * dedentContainerConditionReg, a container field:
      * a regex that will decrease the current indent level by one if the present formatted line matches it

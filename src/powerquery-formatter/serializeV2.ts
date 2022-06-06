@@ -158,10 +158,16 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
     // ad-hoc syntax handling for section members starting with the same namespace name
     if (node.kind === NodeKind.SectionMember) {
         const currentSectionMemberKeyLiteral: string = node.namePairedExpression.key.literal;
+        const currentSectionMemberHasLiteralAttributes: boolean = Boolean(node.maybeLiteralAttributes);
 
         if (
             state.currentSectionMemberKeyLiteral &&
-            shouldBreakAwayFromLastSectionMember(state.currentSectionMemberKeyLiteral, currentSectionMemberKeyLiteral)
+            // if we got literal attribute for current section, force appending a new line after it
+            (currentSectionMemberHasLiteralAttributes ||
+                shouldBreakAwayFromLastSectionMember(
+                    state.currentSectionMemberKeyLiteral,
+                    currentSectionMemberKeyLiteral,
+                ))
         ) {
             appendToFormatted(state, state.newlineLiteral);
         }
@@ -238,6 +244,12 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
         }
     }
 
+    // on entering the container
+    if (isContainer && !currentlySupportInlineBlock && parameter.indentContainerOnEnter) {
+        state.blockStatusArray.push(BlockStatus.Block);
+        state.indentationLevel += 1;
+    }
+
     // blockOpener/blockCloser/contentDivider could be an either token parameters or container parameter
     if (parameter.blockOpener === "L" || parameter.blockCloser === "L") {
         let activated: boolean = true;
@@ -287,7 +299,11 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
                 appendToFormatted(state, state.newlineLiteral);
             }
         }
-    } else if (parameter.contentDivider === "L" && state.lastTokenType !== LastTokenType.Divider) {
+    } else if (
+        parameter.contentDivider === "L" &&
+        state.lastTokenType !== LastTokenType.Divider &&
+        state.lastTokenType !== LastTokenType.CommentsLine
+    ) {
         state.lastTokenType = LastTokenType.Divider;
         const curBlockStatus: BlockStatus | undefined = currentBlockStatus(state);
 

@@ -46,7 +46,7 @@ export async function tryFormatV2(formatSettings: FormatSettings, text: string):
     const maybeCancellationToken: PQP.ICancellationToken | undefined = formatSettings.maybeCancellationToken;
 
     let commentCollectionMap: CommentCollectionMap = new Map();
-    let containerIdHavingComments: Set<number> = new Set();
+    const containerIdHavingComments: Set<number> = new Set();
 
     if (comments.length) {
         const triedCommentPass: PQP.Traverse.TriedTraverse<CommentResultV2> = await tryTraverseCommentV2(
@@ -64,7 +64,46 @@ export async function tryFormatV2(formatSettings: FormatSettings, text: string):
         }
 
         commentCollectionMap = triedCommentPass.value.commentCollectionMap;
-        containerIdHavingComments = triedCommentPass.value.containerIdHavingComments;
+
+        const containerIdHavingCommentsChildCount: Map<number, number> =
+            triedCommentPass.value.containerIdHavingCommentsChildCount;
+
+        const parentContainerIdOfNodeId: Map<number, number> = triedCommentPass.value.parentContainerIdOfNodeId;
+
+        for (const [nodeId, commentCollection] of commentCollectionMap) {
+            const isLastCommentContainingNewLine: boolean = commentCollection.prefixedComments.length
+                ? commentCollection.prefixedComments[commentCollection.prefixedComments.length - 1].containsNewline
+                : false;
+
+            const parentContainerId: number = parentContainerIdOfNodeId.get(nodeId) ?? 0;
+
+            const currentChildIds: ReadonlyArray<number> = parentContainerId
+                ? nodeIdMapCollection.childIdsById.get(parentContainerId) ?? []
+                : [];
+
+            // if the last comment contained a new line, we definitely gonna append a new line after it
+            // therefore, if the current literal token were first child of the closet container,
+            // we could render the container in in-line mode
+            if (
+                isLastCommentContainingNewLine &&
+                parentContainerId &&
+                currentChildIds.length &&
+                currentChildIds[0] === nodeId
+            ) {
+                // we found one first literal token of matched comments right beneath the container,
+                // thus we need to decrease parent's comment child count by one of that container
+                let currentChildCount: number = containerIdHavingCommentsChildCount.get(parentContainerId) ?? 1;
+                currentChildCount -= 1;
+                containerIdHavingCommentsChildCount.set(parentContainerId, currentChildCount);
+            }
+        }
+
+        // therefore, we only need to populate containerIdHavingComments of child comment greater than zero
+        for (const [containerId, childCommentCounts] of containerIdHavingCommentsChildCount) {
+            if (childCommentCounts > 0) {
+                containerIdHavingComments.add(containerId);
+            }
+        }
     }
 
     // move its static as a singleton instant for now

@@ -133,6 +133,14 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             },
         },
         {
+            scope: [`${NK.IfExpression}> ${NK.EqualityExpression}`, `${NK.IfExpression}> ${NK.LogicalExpression}`],
+            parameters: {
+                container: true,
+                skipPostContainerNewLine: false,
+                contentDivider: "R",
+            },
+        },
+        {
             scope: [`${scopeNameFromConstKd(KeywordConstant.Then)}`],
             parameters: {
                 leftPadding: true,
@@ -300,7 +308,10 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
         {
             scope: [`${NK.Section}> ${NK.RecordLiteral}> ${scopeNameFromConstKd(WrapperConstant.RightBracket)}`],
             parameters: {
+                rightPadding: true,
+                blockCloser: "L",
                 lineBreak: "R",
+                noWhiteSpaceBetweenWhenNoContentBetweenOpenerAndCloser: true,
                 clearTailingWhitespaceBeforeAppending: true,
             },
         },
@@ -316,7 +327,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
             parameters: {
                 rightPadding: true,
                 blockOpener: "R",
-                blockOpenerActivatedMatcher: /^[\s]*(if|let)/g,
+                blockOpenerActivatedMatcher: /^[\s]*(if|let|try)/g,
             },
         },
         // FieldSelector & FieldProjection

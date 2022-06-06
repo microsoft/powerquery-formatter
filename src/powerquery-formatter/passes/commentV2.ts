@@ -26,7 +26,8 @@ export function tryTraverseCommentV2(
         maybeInitialCorrelationId: maybeCorrelationId,
         result: {
             commentCollectionMap: new Map(),
-            containerIdHavingComments: new Set(),
+            containerIdHavingCommentsChildCount: new Map(),
+            parentContainerIdOfNodeId: new Map(),
         },
         nodeIdMapCollection,
         comments,
@@ -69,7 +70,8 @@ async function visitNode(state: CommentStateV2, node: Ast.TNode): Promise<void> 
     let maybeCurrentComment: PQP.Language.Comment.TComment | undefined = state.maybeCurrentComment;
     const leafIdsOfItsContainerFound: Set<number> = state.leafIdsOfItsContainerFound;
     const commentMap: CommentCollectionMap = state.result.commentCollectionMap;
-    const containerIdHavingComments: Set<number> = state.result.containerIdHavingComments;
+    const containerIdHavingCommentsChildCount: Map<number, number> = state.result.containerIdHavingCommentsChildCount;
+    const parentContainerIdOfNodeId: Map<number, number> = state.result.parentContainerIdOfNodeId;
     const nodeId: number = node.id;
 
     while (maybeCurrentComment && maybeCurrentComment.positionStart.codeUnit < node.tokenRange.positionStart.codeUnit) {
@@ -105,7 +107,11 @@ async function visitNode(state: CommentStateV2, node: Ast.TNode): Promise<void> 
                 const parent: PQP.Language.Ast.TNode | undefined = nodeIdMapCollection.astNodeById.get(parentId);
 
                 if (parent?.kind && containerNodeKindSet.has(parent?.kind)) {
-                    containerIdHavingComments.add(parentId);
+                    let currentChildCount: number = containerIdHavingCommentsChildCount.get(parentId) ?? 0;
+                    currentChildCount += 1;
+                    containerIdHavingCommentsChildCount.set(parentId, currentChildCount);
+                    parentContainerIdOfNodeId.set(nodeId, parentId);
+                    leafIdsOfItsContainerFound.add(nodeId);
                     break;
                 }
 
