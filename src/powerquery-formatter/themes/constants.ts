@@ -354,11 +354,19 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
                 clearTailingWhitespaceCarriageReturnBeforeAppending: true,
             },
         },
-        // LogicalExpression & EqualityExpression
+        // LogicalExpression & EqualityExpression & ArithmeticExpression
         {
             scope: [`${scopeNameFromConstKd(LogicalOperator.And)}`, `${scopeNameFromConstKd(LogicalOperator.Or)}`],
             parameters: {
                 contentDivider: "L",
+                leftPadding: true,
+                rightPadding: true,
+            },
+        },
+        {
+            scope: [`${scopeNameFromConstKd(MiscConstant.Ampersand)}`],
+            parameters: {
+                blockOpener: "L",
                 leftPadding: true,
                 rightPadding: true,
             },
@@ -369,6 +377,7 @@ export const defaultTheme: IRawTheme<SerializeParameterV2> = {
                 `${NK.EqualityExpression}> ${NK.LogicalExpression}`,
                 `${NK.EqualityExpression}> ${NK.EqualityExpression}`,
                 `${NK.LogicalExpression}> ${NK.EqualityExpression}`,
+                `${NK.ArithmeticExpression}> ${NK.ArithmeticExpression}`,
             ],
             parameters: {
                 container: true,

@@ -15,6 +15,8 @@ import {
 import { IndentationLiteral, NewlineLiteral, TriedSerialize } from "./serialize";
 import { getLinearLengthV2 } from "./passes/utils/linearLengthV2";
 
+const ALL_WHITESPACES: RegExp = /^(\s)*$/g;
+
 export interface SerializeSettingsV2 extends PQP.CommonSettings {
     readonly ast: Ast.TNode;
     readonly text: string;
@@ -74,7 +76,7 @@ interface SerializeState {
     isPseudoLine: boolean;
     isPseudoLineJustCreated: boolean;
     // syntax fields
-    currentSectionMemberKeyLiteral: string;
+    currentSectionMember: Ast.SectionMember | undefined;
 }
 
 async function serializeV2(settings: SerializeSettingsV2): Promise<string> {
@@ -140,7 +142,7 @@ function stateFromSettings(settings: SerializeSettingsV2): SerializeState {
         isPseudoLine: false,
         isPseudoLineJustCreated: false,
         // syntax fields
-        currentSectionMemberKeyLiteral: "",
+        currentSectionMember: undefined,
     };
 
     expandIndentationCache(state, 10);
@@ -158,21 +160,31 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
     // ad-hoc syntax handling for section members starting with the same namespace name
     if (node.kind === NodeKind.SectionMember) {
         const currentSectionMemberKeyLiteral: string = node.namePairedExpression.key.literal;
-        const currentSectionMemberHasLiteralAttributes: boolean = Boolean(node.maybeLiteralAttributes);
+        const currentStaringLineNumber: number = node.tokenRange.positionStart.lineNumber;
 
-        if (
-            state.currentSectionMemberKeyLiteral &&
-            // if we got literal attribute for current section, force appending a new line after it
-            (currentSectionMemberHasLiteralAttributes ||
+        if (state.currentSectionMember) {
+            const currentStartingOffset: number = node.tokenRange.positionStart.codeUnit;
+            const previousEndingOffset: number = state.currentSectionMember.tokenRange.positionEnd.codeUnit;
+
+            const textBetweenTwoSectionMembers: string = state.text.substring(
+                previousEndingOffset,
+                currentStartingOffset,
+            );
+
+            if (
+                // if cx originally put extra white lines b/w section members, we gonna append a new line after it
+                (currentStaringLineNumber - state.currentSectionMember.tokenRange.positionEnd.lineNumber > 1 &&
+                    textBetweenTwoSectionMembers.match(ALL_WHITESPACES)) ||
                 shouldBreakAwayFromLastSectionMember(
-                    state.currentSectionMemberKeyLiteral,
+                    state.currentSectionMember.namePairedExpression.key.literal,
                     currentSectionMemberKeyLiteral,
-                ))
-        ) {
-            appendToFormatted(state, state.newlineLiteral);
+                )
+            ) {
+                appendToFormatted(state, state.newlineLiteral);
+            }
         }
 
-        state.currentSectionMemberKeyLiteral = currentSectionMemberKeyLiteral;
+        state.currentSectionMember = node;
     }
 
     let parameter: SerializeParameterV2 = state.passthroughMaps.serializeParameterMap.parametersMap.get(nodeId) ?? {};
@@ -307,7 +319,7 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
         state.lastTokenType = LastTokenType.Divider;
         const curBlockStatus: BlockStatus | undefined = currentBlockStatus(state);
 
-        if (curBlockStatus === BlockStatus.Block) {
+        if (curBlockStatus === BlockStatus.Block && !endingWithNewline(state)) {
             appendToFormatted(state, state.newlineLiteral);
         }
     }
@@ -444,10 +456,13 @@ function serializeLiteral(state: SerializeState, str: string, parameter: Seriali
             wipeOutTailingWhiteSpaces(state);
         }
     } else if (parameter.lineBreak || parameter.doubleLineBreak) {
-        if (parameter.lineBreak === "L") {
+        if (parameter.lineBreak === "L" && !endingWithNewline(state)) {
             appendToFormatted(state, state.newlineLiteral);
         } else if (parameter.doubleLineBreak === "L") {
-            appendToFormatted(state, state.newlineLiteral);
+            if (!endingWithNewline(state)) {
+                appendToFormatted(state, state.newlineLiteral);
+            }
+
             appendToFormatted(state, state.newlineLiteral);
         }
     } else if (parameter.leftPadding && state.currentLine) {
@@ -597,6 +612,15 @@ function currentIndentation(state: SerializeState): string {
     } else {
         return maybeIndentationLiteral;
     }
+}
+
+function endingWithNewline(state: SerializeState): boolean {
+    const currentEnding: string = state.formatted.substring(
+        state.formatted.length - state.newlineLiteral.length,
+        state.formatted.length,
+    );
+
+    return currentEnding === state.newlineLiteral && state.currentLine === "";
 }
 
 function expandIndentationCache(state: SerializeState, level: number): string {
