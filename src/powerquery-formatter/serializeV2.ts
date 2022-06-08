@@ -157,7 +157,7 @@ interface InheritOptions {
 async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOptions: InheritOptions): Promise<void> {
     const nodeId: number = node.id;
 
-    // ad-hoc syntax handling for section members starting with the same namespace name
+    // ad-hoc syntax handling for section members: figure out whether we should put a new line b/w em
     if (node.kind === NodeKind.SectionMember) {
         const currentSectionMemberKeyLiteral: string = node.namePairedExpression.key.literal;
         const currentStaringLineNumber: number = node.tokenRange.positionStart.lineNumber;
@@ -172,9 +172,10 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
             );
 
             if (
-                // if cx originally put extra white lines b/w section members, we gonna append a new line after it
+                // if cx originally put intentional extra white lines b/w section members,
+                // we gonna append a new line after it
                 (currentStaringLineNumber - state.currentSectionMember.tokenRange.positionEnd.lineNumber > 1 &&
-                    textBetweenTwoSectionMembers.match(ALL_WHITESPACES)) ||
+                    countOfLfOnTheEdgeOfTheString(textBetweenTwoSectionMembers) > 1) ||
                 shouldBreakAwayFromLastSectionMember(
                     state.currentSectionMember.namePairedExpression.key.literal,
                     currentSectionMemberKeyLiteral,
@@ -658,4 +659,41 @@ function cleanUpTailingCrLfOfString(input: string): string {
     } else {
         return input;
     }
+}
+
+function countOfLfOnTheEdgeOfTheString(str: string): number {
+    let currentIndex: number = 0;
+    let totalLfCount: number = 0;
+
+    const isStringAllWhiteSpaces: boolean = Boolean(str.match(ALL_WHITESPACES));
+
+    // calc the count of the LFs beginning at the string
+    while ((str.charAt(currentIndex) === "\r" || str.charAt(currentIndex) === "\n") && currentIndex < str.length) {
+        if (str.charAt(currentIndex) === "\n") {
+            totalLfCount += 1;
+        }
+
+        currentIndex += 1;
+    }
+
+    // calc the count of the LFs ending at the string if needed
+    if (currentIndex < str.length) {
+        const lastScannedIndex: number = currentIndex;
+        currentIndex = str.length - 1;
+
+        while (
+            (str.charAt(currentIndex) === "\r" || str.charAt(currentIndex) === "\n") &&
+            currentIndex > lastScannedIndex
+        ) {
+            if (str.charAt(currentIndex) === "\n") {
+                totalLfCount += 1;
+            }
+
+            currentIndex -= 1;
+        }
+    }
+
+    // if there were non-white-space within the string, there definitely be one LF collected for those non-white-space
+    // thus we need to minus it by one
+    return !isStringAllWhiteSpaces && totalLfCount > 0 ? totalLfCount - 1 : totalLfCount;
 }
