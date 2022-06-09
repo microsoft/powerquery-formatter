@@ -102,6 +102,7 @@ async function visitNode(
         // TPairedConstant
         case Ast.NodeKind.AsNullablePrimitiveType:
         case Ast.NodeKind.AsType:
+        case Ast.NodeKind.CatchExpression:
         case Ast.NodeKind.EachExpression:
         case Ast.NodeKind.ErrorRaisingExpression:
         case Ast.NodeKind.IsNullablePrimitiveType:
@@ -155,7 +156,7 @@ async function visitNode(
         case Ast.NodeKind.ErrorHandlingExpression: {
             let initialLength: number = 1;
 
-            if (node.maybeOtherwiseExpression) {
+            if (node.maybeHandler) {
                 initialLength += 2;
             }
 
@@ -165,7 +166,7 @@ async function visitNode(
                 initialLength,
                 node.tryConstant,
                 node.protectedExpression,
-                node.maybeOtherwiseExpression,
+                node.maybeHandler,
             );
 
             break;

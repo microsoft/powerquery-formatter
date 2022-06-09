@@ -7,7 +7,7 @@ import { propagateWriteKind, setWorkspace } from "./visitNodeUtils";
 import { SerializeParameterState, SerializeWriteKind } from "../commonTypes";
 import { expectGetIsMultiline } from "../isMultiline/common";
 
-export function visitErrorHandlingExpression(state: SerializeParameterState, node: Ast.ErrorHandlingExpression): void {
+export function visitErrorHandlingExpression(state: SerializeParameterState, node: Ast.TErrorHandlingExpression): void {
     const isMultiline: boolean = expectGetIsMultiline(state.isMultilineMap, node);
     propagateWriteKind(state, node, node.tryConstant);
 
@@ -22,8 +22,8 @@ export function visitErrorHandlingExpression(state: SerializeParameterState, nod
         setWorkspace(state, node.protectedExpression, { maybeWriteKind: SerializeWriteKind.PaddedLeft });
     }
 
-    if (node.maybeOtherwiseExpression) {
-        const otherwiseExpression: Ast.OtherwiseExpression = node.maybeOtherwiseExpression;
+    if (node.maybeHandler) {
+        const handler: Ast.CatchExpression | Ast.OtherwiseExpression = node.maybeHandler;
 
         let otherwiseWriteKind: SerializeWriteKind;
 
@@ -33,6 +33,6 @@ export function visitErrorHandlingExpression(state: SerializeParameterState, nod
             otherwiseWriteKind = SerializeWriteKind.PaddedLeft;
         }
 
-        setWorkspace(state, otherwiseExpression, { maybeWriteKind: otherwiseWriteKind });
+        setWorkspace(state, handler, { maybeWriteKind: otherwiseWriteKind });
     }
 }

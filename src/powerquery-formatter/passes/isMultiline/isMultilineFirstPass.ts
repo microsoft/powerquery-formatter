@@ -79,6 +79,7 @@ async function visitNode(
         // TPairedConstant
         case Ast.NodeKind.AsNullablePrimitiveType:
         case Ast.NodeKind.AsType:
+        case Ast.NodeKind.CatchExpression:
         case Ast.NodeKind.EachExpression:
         case Ast.NodeKind.ErrorRaisingExpression:
         case Ast.NodeKind.IsNullablePrimitiveType:
@@ -125,12 +126,7 @@ async function visitNode(
             break;
 
         case Ast.NodeKind.ErrorHandlingExpression:
-            isMultiline = isAnyMultiline(
-                isMultilineMap,
-                node.tryConstant,
-                node.protectedExpression,
-                node.maybeOtherwiseExpression,
-            );
+            isMultiline = isAnyMultiline(isMultilineMap, node.tryConstant, node.protectedExpression, node.maybeHandler);
 
             break;
 
