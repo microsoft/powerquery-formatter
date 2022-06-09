@@ -33,6 +33,7 @@ export type TFormatError =
 export interface FormatSettings extends PQP.Settings {
     readonly indentationLiteral: IndentationLiteral;
     readonly newlineLiteral: NewlineLiteral;
+    readonly maxWidth?: number;
 }
 
 export const DefaultSettings: FormatSettings = {
