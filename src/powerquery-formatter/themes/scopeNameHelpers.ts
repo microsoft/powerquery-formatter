@@ -67,6 +67,8 @@ export function scopeNameFromConstKd(constantKind: TConstant): string {
             return "constant.keyword.try";
         case KeywordConstant.Type:
             return "constant.keyword.type";
+        case LanguageConstant.Catch:
+            return "constant.language.catch";
         case LanguageConstant.Nullable:
             return "constant.language.nullable";
         case LanguageConstant.Optional:

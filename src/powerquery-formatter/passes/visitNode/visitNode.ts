@@ -61,6 +61,7 @@ export async function visitNode(
         // TPairedConstant
         case Ast.NodeKind.AsNullablePrimitiveType:
         case Ast.NodeKind.AsType:
+        case Ast.NodeKind.CatchExpression:
         case Ast.NodeKind.EachExpression:
         case Ast.NodeKind.IsNullablePrimitiveType:
         case Ast.NodeKind.NullablePrimitiveType:
