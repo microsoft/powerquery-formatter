@@ -15,7 +15,12 @@ export interface CommentCollection {
     prefixedCommentsContainsNewline: boolean;
 }
 
-export interface CommentState extends PQP.Traverse.ITraversalState<CommentCollectionMap> {
+export interface CommentResult {
+    readonly commentCollectionMap: CommentCollectionMap;
+    readonly eofCommentCollection: CommentCollection;
+}
+
+export interface CommentState extends PQP.Traverse.ITraversalState<CommentResult> {
     readonly comments: ReadonlyArray<PQP.Language.Comment.TComment>;
     commentsIndex: number;
     maybeCurrentComment: PQP.Language.Comment.TComment | undefined;
@@ -71,6 +76,7 @@ export interface CommentResultV2 {
     readonly commentCollectionMap: CommentCollectionMap;
     readonly containerIdHavingCommentsChildCount: Map<number, number>;
     readonly parentContainerIdOfNodeId: Map<number, number>;
+    readonly eofCommentCollection: CommentCollection;
 }
 
 export interface CommentStateV2 extends PQP.Traverse.ITraversalState<CommentResultV2> {

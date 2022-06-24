@@ -11,6 +11,34 @@ import {
     SerializeWriteKind,
 } from "../commonTypes";
 
+export function populateSerializeCommentParameter(
+    commentParameters: SerializeCommentParameter[],
+    comments: ReadonlyArray<PQP.Language.Comment.TComment>,
+    maybeWriteKind: SerializeWriteKind | undefined = undefined,
+): void {
+    for (let index: number = 0; index < comments.length; index += 1) {
+        const comment: PQP.Language.Comment.TComment = comments[index];
+        const previousComment: PQP.Language.Comment.TComment | undefined = comments[index - 1];
+
+        let writeKind: SerializeWriteKind;
+
+        if (index === 0) {
+            writeKind = maybeWriteKind || SerializeWriteKind.Any;
+        } else if (comment.containsNewline) {
+            writeKind = SerializeWriteKind.Indented;
+        } else if (previousComment && previousComment.containsNewline) {
+            writeKind = SerializeWriteKind.Indented;
+        } else {
+            writeKind = SerializeWriteKind.Any;
+        }
+
+        commentParameters.push({
+            literal: comment.data,
+            writeKind,
+        });
+    }
+}
+
 // serves three purposes:
 //  * propagates the TNode's writeKind to the first comment
 //  * assigns writeKind for all comments attached to the TNode
@@ -41,27 +69,7 @@ export function visitComments(
         return maybeWriteKind;
     }
 
-    for (let index: number = 0; index < numComments; index += 1) {
-        const comment: PQP.Language.Comment.TComment = comments[index];
-        const previousComment: PQP.Language.Comment.TComment | undefined = comments[index - 1];
-
-        let writeKind: SerializeWriteKind;
-
-        if (index === 0) {
-            writeKind = maybeWriteKind || SerializeWriteKind.Any;
-        } else if (comment.containsNewline) {
-            writeKind = SerializeWriteKind.Indented;
-        } else if (previousComment && previousComment.containsNewline) {
-            writeKind = SerializeWriteKind.Indented;
-        } else {
-            writeKind = SerializeWriteKind.Any;
-        }
-
-        commentParameters.push({
-            literal: comment.data,
-            writeKind,
-        });
-    }
+    populateSerializeCommentParameter(commentParameters, comments, maybeWriteKind);
 
     state.result.comments.set(nodeId, commentParameters);
 

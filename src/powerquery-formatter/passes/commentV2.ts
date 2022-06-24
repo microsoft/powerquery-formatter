@@ -10,7 +10,7 @@ import { ContainerSet } from "../themes";
 
 const containerNodeKindSet: ReadonlySet<PQP.Language.Ast.NodeKind> = ContainerSet;
 
-export function tryTraverseCommentV2(
+export async function tryTraverseCommentV2(
     root: Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     comments: ReadonlyArray<PQP.Language.Comment.TComment>,
@@ -28,6 +28,10 @@ export function tryTraverseCommentV2(
             commentCollectionMap: new Map(),
             containerIdHavingCommentsChildCount: new Map(),
             parentContainerIdOfNodeId: new Map(),
+            eofCommentCollection: {
+                prefixedComments: [],
+                prefixedCommentsContainsNewline: false,
+            },
         },
         nodeIdMapCollection,
         comments,
@@ -36,7 +40,10 @@ export function tryTraverseCommentV2(
         maybeCurrentComment: comments[0],
     };
 
-    return PQP.Traverse.tryTraverseAst<CommentStateV2, CommentResultV2>(
+    const triedCommentPass: PQP.Traverse.TriedTraverse<CommentResultV2> = await PQP.Traverse.tryTraverseAst<
+        CommentStateV2,
+        CommentResultV2
+    >(
         state,
         nodeIdMapCollection,
         root,
@@ -45,6 +52,24 @@ export function tryTraverseCommentV2(
         PQP.Traverse.assertGetAllAstChildren,
         earlyExit,
     );
+
+    // check whether we got any comment prefixed to the EOF
+    if (!PQP.ResultUtils.isError(triedCommentPass) && state.commentsIndex < state.comments.length) {
+        const result: CommentResultV2 = triedCommentPass.value;
+        let prefixedCommentsContainsNewline: boolean = false;
+        result.eofCommentCollection.prefixedComments.length = 0;
+
+        state.comments
+            .slice(state.commentsIndex, state.comments.length)
+            .forEach((comment: PQP.Language.Comment.TComment) => {
+                result.eofCommentCollection.prefixedComments.push(comment);
+                prefixedCommentsContainsNewline = prefixedCommentsContainsNewline || comment.containsNewline;
+            });
+
+        result.eofCommentCollection.prefixedCommentsContainsNewline = prefixedCommentsContainsNewline;
+    }
+
+    return triedCommentPass;
 }
 
 // eslint-disable-next-line require-await

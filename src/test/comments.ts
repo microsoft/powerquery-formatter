@@ -125,5 +125,29 @@ y = 1;`.trim();
             const actual: string = await expectFormat("section foobar; x = 1; // lineComment\n y = 1;");
             compare(expected, actual);
         });
+
+        it("let y = 1 in y // stuff", async () => {
+            const expected: string = `
+let
+    y = 1
+in
+    y
+// stuff`.trim();
+
+            const actual: string = await expectFormat("let y = 1 in y // stuff");
+            compare(expected, actual);
+        });
+
+        it("let y = 1 in y /* foo */", async () => {
+            const expected: string = `
+let
+    y = 1
+in
+    y
+/* foo */`.trim();
+
+            const actual: string = await expectFormat("let y = 1 in y /* foo */");
+            compare(expected, actual);
+        });
     });
 });
