@@ -6,7 +6,9 @@ import { Trace, TraceManager } from "@microsoft/powerquery-parser/lib/powerquery
 import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import {
+    CommentCollection,
     CommentCollectionMap,
+    CommentResult,
     IsMultilineMap,
     SerializeParameterMap,
     tryTraverseComment,
@@ -71,8 +73,13 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
 
     let commentCollectionMap: CommentCollectionMap = new Map();
 
+    let eofCommentCollection: CommentCollection = {
+        prefixedComments: [],
+        prefixedCommentsContainsNewline: false,
+    };
+
     if (comments.length) {
-        const triedCommentPass: PQP.Traverse.TriedTraverse<CommentCollectionMap> = await tryTraverseComment(
+        const triedCommentPass: PQP.Traverse.TriedTraverse<CommentResult> = await tryTraverseComment(
             ast,
             nodeIdMapCollection,
             comments,
@@ -86,7 +93,8 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
             return triedCommentPass;
         }
 
-        commentCollectionMap = triedCommentPass.value;
+        commentCollectionMap = triedCommentPass.value.commentCollectionMap;
+        eofCommentCollection = triedCommentPass.value.eofCommentCollection;
     }
 
     const triedIsMultilineMap: PQP.Traverse.TriedTraverse<IsMultilineMap> = await tryTraverseIsMultiline(
@@ -125,6 +133,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
 
     const passthroughMaps: SerializePassthroughMaps = {
         commentCollectionMap,
+        eofCommentCollection,
         serializeParameterMap,
     };
 

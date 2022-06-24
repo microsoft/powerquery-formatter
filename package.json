@@ -1,6 +1,6 @@
 {
     "name": "@microsoft/powerquery-formatter",
-    "version": "0.1.6",
+    "version": "0.1.7",
     "author": "Microsoft",
     "license": "MIT",
     "scripts": {

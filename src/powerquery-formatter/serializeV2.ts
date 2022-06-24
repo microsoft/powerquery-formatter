@@ -29,6 +29,7 @@ export interface SerializeSettingsV2 extends PQP.CommonSettings {
 
 export interface SerializePassthroughMapsV2 {
     readonly commentCollectionMap: CommentCollectionMap;
+    readonly eofCommentCollection: CommentCollection;
     readonly containerIdHavingComments: Set<number>;
     readonly serializeParameterMap: SerializeParameterMapV2;
 }
@@ -103,6 +104,7 @@ async function serializeV2(settings: SerializeSettingsV2): Promise<string> {
 
     // eslint-disable-next-line @typescript-eslint/await-thenable
     await serializeNode(state, state.node, { isParentInline: isRootInline });
+    visitComments(state, settings.passthroughMaps.eofCommentCollection);
 
     // force cleaning whitespaces and appending crlf to the eof
     state.formatted = cleanUpTailingCrLfOfString(state.formatted);

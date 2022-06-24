@@ -5,12 +5,14 @@ import * as PQP from "@microsoft/powerquery-parser";
 import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import {
+    CommentCollection,
     CommentCollectionMap,
     IndentationChange,
     SerializeCommentParameter,
     SerializeParameterMap,
     SerializeWriteKind,
 } from "./passes";
+import { populateSerializeCommentParameter } from "./passes/visitNode/visitComments";
 
 export const enum IndentationLiteral {
     SpaceX4 = "    ",
@@ -34,6 +36,7 @@ export interface SerializeSettings extends PQP.CommonSettings {
 
 export interface SerializePassthroughMaps {
     readonly commentCollectionMap: CommentCollectionMap;
+    readonly eofCommentCollection: CommentCollection;
     readonly serializeParameterMap: SerializeParameterMap;
 }
 
@@ -56,6 +59,14 @@ interface SerializeState {
 function serialize(settings: SerializeSettings): string {
     const state: SerializeState = stateFromSettings(settings);
     serializeNode(state, state.node);
+    const commentParameters: SerializeCommentParameter[] = [];
+
+    const comments: ReadonlyArray<PQP.Language.Comment.TComment> =
+        state.passthroughMaps.eofCommentCollection.prefixedComments;
+
+    populateSerializeCommentParameter(commentParameters, comments, SerializeWriteKind.Indented);
+
+    visitComments(state, commentParameters);
 
     return state.formatted;
 }

@@ -5,11 +5,11 @@ import * as PQP from "@microsoft/powerquery-parser";
 import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 import { TraceManager } from "@microsoft/powerquery-parser/lib/powerquery-parser/common/trace";
 
-import { CommentCollection, CommentCollectionMap, CommentState } from "./commonTypes";
+import { CommentCollection, CommentCollectionMap, CommentResult, CommentState } from "./commonTypes";
 
 // TODO pass in leafIds instead for a big speed boost.
 // Returns a Map<leafId, an array of comments attached to the leafId>.
-export function tryTraverseComment(
+export async function tryTraverseComment(
     root: Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     comments: ReadonlyArray<PQP.Language.Comment.TComment>,
@@ -17,19 +17,28 @@ export function tryTraverseComment(
     traceManager: TraceManager,
     maybeCorrelationId: number | undefined,
     maybeCancellationToken: PQP.ICancellationToken | undefined,
-): Promise<PQP.Traverse.TriedTraverse<CommentCollectionMap>> {
+): Promise<PQP.Traverse.TriedTraverse<CommentResult>> {
     const state: CommentState = {
         locale,
         traceManager,
         maybeCancellationToken,
         maybeInitialCorrelationId: maybeCorrelationId,
-        result: new Map(),
+        result: {
+            commentCollectionMap: new Map(),
+            eofCommentCollection: {
+                prefixedComments: [],
+                prefixedCommentsContainsNewline: false,
+            },
+        },
         comments,
         commentsIndex: 0,
         maybeCurrentComment: comments[0],
     };
 
-    return PQP.Traverse.tryTraverseAst<CommentState, CommentCollectionMap>(
+    const triedCommentPass: PQP.Traverse.TriedTraverse<CommentResult> = await PQP.Traverse.tryTraverseAst<
+        CommentState,
+        CommentResult
+    >(
         state,
         nodeIdMapCollection,
         root,
@@ -38,6 +47,24 @@ export function tryTraverseComment(
         PQP.Traverse.assertGetAllAstChildren,
         earlyExit,
     );
+
+    // check whether we got any comment prefixed to the EOF
+    if (!PQP.ResultUtils.isError(triedCommentPass) && state.commentsIndex < state.comments.length) {
+        const result: CommentResult = triedCommentPass.value;
+        let prefixedCommentsContainsNewline: boolean = false;
+        result.eofCommentCollection.prefixedComments.length = 0;
+
+        state.comments
+            .slice(state.commentsIndex, state.comments.length)
+            .forEach((comment: PQP.Language.Comment.TComment) => {
+                result.eofCommentCollection.prefixedComments.push(comment);
+                prefixedCommentsContainsNewline = prefixedCommentsContainsNewline || comment.containsNewline;
+            });
+
+        result.eofCommentCollection.prefixedCommentsContainsNewline = prefixedCommentsContainsNewline;
+    }
+
+    return triedCommentPass;
 }
 
 // eslint-disable-next-line require-await
@@ -63,7 +90,7 @@ async function visitNode(state: CommentState, node: Ast.TNode): Promise<void> {
 
     while (maybeCurrentComment && maybeCurrentComment.positionStart.codeUnit < node.tokenRange.positionStart.codeUnit) {
         const currentComment: PQP.Language.Comment.TComment = maybeCurrentComment;
-        const commentMap: CommentCollectionMap = state.result;
+        const commentMap: CommentCollectionMap = state.result.commentCollectionMap;
         const nodeId: number = node.id;
         const maybeCommentCollection: CommentCollection | undefined = commentMap.get(nodeId);
 

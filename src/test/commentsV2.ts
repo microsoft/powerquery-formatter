@@ -222,5 +222,48 @@ y = 1;
             compareV2(expected, actual);
             compareV2(expected2, actual2);
         });
+
+        it("let y = 1 in y // stuff", async () => {
+            const expected: string = `
+let
+    y = 1
+in
+    y
+// stuff
+`;
+
+            const expected2: string = `
+let y = 1 in y
+// stuff
+`;
+
+            const actual: string = await expectFormatV2("let y = 1 in y // stuff");
+
+            const actual2: string = await expectFormatV2("let y = 1 in y // stuff", DefaultFormatSettings2);
+
+            compareV2(expected, actual);
+            compareV2(expected2, actual2);
+        });
+
+        it("let y = 1 in y /* foo */ ", async () => {
+            const expected: string = `
+let
+    y = 1
+in
+    y
+/* foo */
+`;
+
+            const expected2: string = `
+let y = 1 in y/* foo */
+`;
+
+            const actual: string = await expectFormatV2("let y = 1 in y /* foo */ ");
+
+            const actual2: string = await expectFormatV2("let y = 1 in y /* foo */", DefaultFormatSettings2);
+
+            compareV2(expected, actual);
+            compareV2(expected2, actual2);
+        });
     });
 });

@@ -6,6 +6,7 @@ import { Trace, TraceManager } from "@microsoft/powerquery-parser/lib/powerquery
 import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 
 import {
+    CommentCollection,
     CommentCollectionMap,
     CommentResultV2,
     SerializeParameterMapV2,
@@ -46,6 +47,12 @@ export async function tryFormatV2(formatSettings: FormatSettings, text: string):
     const maybeCancellationToken: PQP.ICancellationToken | undefined = formatSettings.maybeCancellationToken;
 
     let commentCollectionMap: CommentCollectionMap = new Map();
+
+    let eofCommentCollection: CommentCollection = {
+        prefixedComments: [],
+        prefixedCommentsContainsNewline: false,
+    };
+
     const containerIdHavingComments: Set<number> = new Set();
 
     if (comments.length) {
@@ -64,6 +71,7 @@ export async function tryFormatV2(formatSettings: FormatSettings, text: string):
         }
 
         commentCollectionMap = triedCommentPass.value.commentCollectionMap;
+        eofCommentCollection = triedCommentPass.value.eofCommentCollection;
 
         const containerIdHavingCommentsChildCount: Map<number, number> =
             triedCommentPass.value.containerIdHavingCommentsChildCount;
@@ -129,6 +137,7 @@ export async function tryFormatV2(formatSettings: FormatSettings, text: string):
 
     const passthroughMaps: SerializePassthroughMapsV2 = {
         commentCollectionMap,
+        eofCommentCollection,
         containerIdHavingComments,
         serializeParameterMap,
     };
