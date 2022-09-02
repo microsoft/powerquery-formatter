@@ -499,7 +499,7 @@ function serializeLiteral(state: SerializeState, str: string, parameter: Seriali
         appendToFormatted(state, state.newlineLiteral);
     }
 
-    maybePopulateIndented(state);
+    populateIndented(state);
     appendToFormatted(state, str);
 
     if (parameter.lineBreak || parameter.doubleLineBreak) {
@@ -516,7 +516,7 @@ function serializeLiteral(state: SerializeState, str: string, parameter: Seriali
     }
 }
 
-function maybePopulateIndented(state: SerializeState): void {
+function populateIndented(state: SerializeState): void {
     if (state.currentLine === "" && !state.isPseudoLine) {
         appendToFormatted(state, currentIndentation(state));
     }
@@ -621,13 +621,11 @@ function dedentContainer(state: SerializeState, parameter: SerializeParameter): 
 }
 
 function currentIndentation(state: SerializeState): string {
-    const maybeIndentationLiteral: string | undefined = state.indentationCache[state.indentationLevel];
+    const indentationLiteral: string | undefined = state.indentationCache[state.indentationLevel];
 
-    if (maybeIndentationLiteral === undefined) {
-        return expandIndentationCache(state, state.indentationLevel);
-    } else {
-        return maybeIndentationLiteral;
-    }
+    return indentationLiteral !== undefined
+        ? indentationLiteral
+        : expandIndentationCache(state, state.indentationLevel);
 }
 
 function endingWithNewline(state: SerializeState): boolean {

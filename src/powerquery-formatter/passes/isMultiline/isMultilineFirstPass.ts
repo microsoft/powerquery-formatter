@@ -22,14 +22,14 @@ export function tryTraverseIsMultilineFirstPass(
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     locale: string,
     traceManager: TraceManager,
-    maybeCorrelationId: number | undefined,
+    correlationId: number | undefined,
     cancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<PQP.Traverse.TriedTraverse<IsMultilineMap>> {
     const state: IsMultilineFirstPassState = {
         locale,
         traceManager,
         cancellationToken,
-        initialCorrelationId: maybeCorrelationId,
+        initialCorrelationId: correlationId,
         commentCollectionMap,
         linearLengthMap: new Map(),
         nodeIdMapCollection,
@@ -60,12 +60,12 @@ const InvokeExpressionLinearLengthThreshold: number = 40;
 async function visitNode(
     state: IsMultilineFirstPassState,
     node: Ast.TNode,
-    maybeCorrelationId: number | undefined,
+    correlationId: number | undefined,
 ): Promise<void> {
     const trace: Trace = state.traceManager.entry(
         FormatTraceConstant.IsMultilinePhase1,
         visitNode.name,
-        maybeCorrelationId,
+        correlationId,
         {
             nodeId: node.id,
             nodeKind: node.kind,
@@ -206,32 +206,28 @@ async function visitNode(
                     state.cancellationToken,
                 );
 
-                const maybeArrayWrapper: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.parentAst(
+                const arrayWrapper: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.parentAst(
                     nodeIdMapCollection,
                     node.id,
                 );
 
-                if (maybeArrayWrapper === undefined || maybeArrayWrapper.kind !== Ast.NodeKind.ArrayWrapper) {
+                if (arrayWrapper === undefined || arrayWrapper.kind !== Ast.NodeKind.ArrayWrapper) {
                     throw new PQP.CommonError.InvariantError("InvokeExpression must have ArrayWrapper as a parent");
                 }
 
-                const arrayWrapper: Ast.IArrayWrapper<Ast.TNode> = maybeArrayWrapper;
-
-                const maybeRecursivePrimaryExpression: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.parentAst(
+                const recursivePrimaryExpression: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.parentAst(
                     nodeIdMapCollection,
                     arrayWrapper.id,
                 );
 
                 if (
-                    maybeRecursivePrimaryExpression === undefined ||
-                    maybeRecursivePrimaryExpression.kind !== Ast.NodeKind.RecursivePrimaryExpression
+                    recursivePrimaryExpression === undefined ||
+                    recursivePrimaryExpression.kind !== Ast.NodeKind.RecursivePrimaryExpression
                 ) {
                     throw new PQP.CommonError.InvariantError(
                         "ArrayWrapper must have RecursivePrimaryExpression as a parent",
                     );
                 }
-
-                const recursivePrimaryExpression: Ast.RecursivePrimaryExpression = maybeRecursivePrimaryExpression;
 
                 const headLinearLength: number = await getLinearLength(
                     nodeIdMapCollection,
@@ -248,11 +244,11 @@ async function visitNode(
                 // if it's beyond the threshold check if it's a long literal
                 // ex. `#datetimezone(2013,02,26, 09,15,00, 09,00)`
                 if (compositeLinearLength > InvokeExpressionLinearLengthThreshold) {
-                    const maybeIdentifierLiteral: string | undefined =
+                    const identifierLiteral: string | undefined =
                         PQP.Parser.NodeIdMapUtils.invokeExpressionIdentifierLiteral(nodeIdMapCollection, node.id);
 
-                    if (maybeIdentifierLiteral) {
-                        const name: string = maybeIdentifierLiteral;
+                    if (identifierLiteral) {
+                        const name: string = identifierLiteral;
                         isMultiline = InvokeExpressionIdentifierLinearLengthExclusions.indexOf(name) === -1;
                     }
 
@@ -479,9 +475,9 @@ function isAnyListOrRecord(nodes: ReadonlyArray<Ast.TNode>): boolean {
     return false;
 }
 
-function isAnyMultiline(isMultilineMap: IsMultilineMap, ...maybeNodes: (Ast.TNode | undefined)[]): boolean {
-    for (const maybeNode of maybeNodes) {
-        if (maybeNode && expectGetIsMultiline(isMultilineMap, maybeNode)) {
+function isAnyMultiline(isMultilineMap: IsMultilineMap, ...nodes: (Ast.TNode | undefined)[]): boolean {
+    for (const node of nodes) {
+        if (node && expectGetIsMultiline(isMultilineMap, node)) {
             return true;
         }
     }
@@ -498,10 +494,10 @@ function setIsMultilineWithCommentCheck(state: IsMultilineFirstPassState, node: 
 }
 
 function precededByMultilineComment(state: IsMultilineFirstPassState, node: Ast.TNode): boolean {
-    const maybeCommentCollection: CommentCollection | undefined = state.commentCollectionMap.get(node.id);
+    const commentCollection: CommentCollection | undefined = state.commentCollectionMap.get(node.id);
 
-    if (maybeCommentCollection) {
-        return maybeCommentCollection.prefixedCommentsContainsNewline;
+    if (commentCollection) {
+        return commentCollection.prefixedCommentsContainsNewline;
     } else {
         return false;
     }

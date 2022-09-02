@@ -27,13 +27,13 @@ export function tryTraverseSerializeParameter(
     scopeMetadataProvider: ScopeMetadataProvider<SerializeParameter>,
     locale: string,
     traceManager: TraceManager,
-    maybeCorrelationId: number | undefined,
+    correlationId: number | undefined,
     cancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<PQP.Traverse.TriedTraverse<SerializeParameterMap>> {
     const trace: Trace = traceManager.entry(
         FormatTraceConstant.SerializeParameter,
         tryTraverseSerializeParameter.name,
-        maybeCorrelationId,
+        correlationId,
     );
 
     const defaultMeta: ScopeMetadata<SerializeParameter> = scopeMetadataProvider.getDefaultMetadata();

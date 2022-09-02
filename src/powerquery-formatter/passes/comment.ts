@@ -16,14 +16,14 @@ export async function tryTraverseComment(
     comments: ReadonlyArray<PQP.Language.Comment.TComment>,
     locale: string,
     traceManager: TraceManager,
-    maybeCorrelationId: number | undefined,
+    correlationId: number | undefined,
     cancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<PQP.Traverse.TriedTraverse<CommentResult>> {
     const state: CommentState = {
         locale,
         traceManager,
         cancellationToken,
-        initialCorrelationId: maybeCorrelationId,
+        initialCorrelationId: correlationId,
         result: {
             commentCollectionMap: new Map(),
             containerIdHavingCommentsChildCount: new Map(),
@@ -37,7 +37,7 @@ export async function tryTraverseComment(
         comments,
         leafIdsOfItsContainerFound: new Set(),
         commentsIndex: 0,
-        maybeCurrentComment: comments[0],
+        currentComment: comments[0],
     };
 
     const triedCommentPass: PQP.Traverse.TriedTraverse<CommentResult> = await PQP.Traverse.tryTraverseAst<
@@ -74,11 +74,11 @@ export async function tryTraverseComment(
 
 // eslint-disable-next-line require-await
 async function earlyExit(state: CommentState, node: Ast.TNode): Promise<boolean> {
-    const maybeCurrentComment: PQP.Language.Comment.TComment | undefined = state.maybeCurrentComment;
+    const currentComment: PQP.Language.Comment.TComment | undefined = state.currentComment;
 
-    if (maybeCurrentComment === undefined) {
+    if (currentComment === undefined) {
         return true;
-    } else if (node.tokenRange.positionEnd.codeUnit < maybeCurrentComment.positionStart.codeUnit) {
+    } else if (node.tokenRange.positionEnd.codeUnit < currentComment.positionStart.codeUnit) {
         return true;
     } else {
         return false;
@@ -92,7 +92,7 @@ async function visitNode(state: CommentState, node: Ast.TNode): Promise<void> {
     }
 
     const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = state.nodeIdMapCollection;
-    let currentComment: PQP.Language.Comment.TComment | undefined = state.maybeCurrentComment;
+    let currentComment: PQP.Language.Comment.TComment | undefined = state.currentComment;
     const leafIdsOfItsContainerFound: Set<number> = state.leafIdsOfItsContainerFound;
     const commentMap: CommentCollectionMap = state.result.commentCollectionMap;
     const containerIdHavingCommentsChildCount: Map<number, number> = state.result.containerIdHavingCommentsChildCount;
@@ -145,5 +145,5 @@ async function visitNode(state: CommentState, node: Ast.TNode): Promise<void> {
         currentComment = state.comments[state.commentsIndex];
     }
 
-    state.maybeCurrentComment = currentComment;
+    state.currentComment = currentComment;
 }

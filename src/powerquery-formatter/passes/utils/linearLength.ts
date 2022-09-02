@@ -20,20 +20,20 @@ export async function getLinearLength(
     node: Ast.TNode,
     locale: string,
     traceManager: TraceManager,
-    maybeCorrelationId: number | undefined,
+    correlationId: number | undefined,
     cancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<number> {
     const nodeId: number = node.id;
-    const maybeLinearLength: number | undefined = linearLengthMap.get(nodeId);
+    const linearLength: number | undefined = linearLengthMap.get(nodeId);
 
-    if (maybeLinearLength === undefined) {
+    if (linearLength === undefined) {
         const linearLength: number = await calculateLinearLength(
             nodeIdMapCollection,
             linearLengthMap,
             node,
             locale,
             traceManager,
-            maybeCorrelationId,
+            correlationId,
             cancellationToken,
         );
 
@@ -41,7 +41,7 @@ export async function getLinearLength(
 
         return linearLength;
     } else {
-        return maybeLinearLength;
+        return linearLength;
     }
 }
 
@@ -51,14 +51,14 @@ async function calculateLinearLength(
     node: Ast.TNode,
     locale: string,
     traceManager: TraceManager,
-    maybeCorrelationId: number | undefined,
+    correlationId: number | undefined,
     cancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<number> {
     const state: LinearLengthState = {
         locale,
         traceManager,
         cancellationToken,
-        initialCorrelationId: maybeCorrelationId,
+        initialCorrelationId: correlationId,
         linearLengthMap,
         nodeIdMapCollection,
         result: 0,
@@ -81,20 +81,11 @@ async function calculateLinearLength(
     }
 }
 
-async function visitNode(
-    state: LinearLengthState,
-    node: Ast.TNode,
-    maybeCorrelationId: number | undefined,
-): Promise<void> {
-    const trace: Trace = state.traceManager.entry(
-        FormatTraceConstant.LinearLength,
-        visitNode.name,
-        maybeCorrelationId,
-        {
-            nodeId: node.id,
-            nodeKind: node.kind,
-        },
-    );
+async function visitNode(state: LinearLengthState, node: Ast.TNode, correlationId: number | undefined): Promise<void> {
+    const trace: Trace = state.traceManager.entry(FormatTraceConstant.LinearLength, visitNode.name, correlationId, {
+        nodeId: node.id,
+        nodeKind: node.kind,
+    });
 
     let linearLength: number;
 
@@ -467,11 +458,11 @@ async function visitNode(
 async function visitBinOpExpressionNode(
     state: LinearLengthState,
     node: Ast.TBinOpExpression,
-    maybeCorrelationId: number | undefined,
+    correlationId: number | undefined,
 ): Promise<number> {
     return sumLinearLengths(
         state,
-        maybeCorrelationId,
+        correlationId,
         node.operatorConstant.constantKind.length,
         node.left,
         node.operatorConstant,
@@ -488,14 +479,14 @@ function visitWrappedCsvArray(
         | Ast.TParameterList
         | Ast.RecordExpression
         | Ast.RecordLiteral,
-    maybeCorrelationId: number | undefined,
+    correlationId: number | undefined,
 ): Promise<number> {
     const elements: ReadonlyArray<Ast.TCsv> = node.content.elements;
     const numElements: number = elements.length;
 
     return sumLinearLengths(
         state,
-        maybeCorrelationId,
+        correlationId,
         numElements ? numElements - 1 : 0,
         node.openWrapperConstant,
         node.closeWrapperConstant,
@@ -505,21 +496,21 @@ function visitWrappedCsvArray(
 
 async function sumLinearLengths(
     state: LinearLengthState,
-    maybeCorrelationId: number | undefined,
+    correlationId: number | undefined,
     initialLength: number,
-    ...maybeNodes: (Ast.TNode | undefined)[]
+    ...nodes: (Ast.TNode | undefined)[]
 ): Promise<number> {
     const trace: Trace = state.traceManager.entry(
         FormatTraceConstant.LinearLength,
         sumLinearLengths.name,
-        maybeCorrelationId,
+        correlationId,
     );
 
-    const nodes: Ast.TNode[] = maybeNodes.filter(
+    const filteredNodes: Ast.TNode[] = nodes.filter(
         (value: Ast.TNode | undefined): value is Ast.TNode => value !== undefined,
     );
 
-    const linearLengths: ReadonlyArray<number> = await PQP.ArrayUtils.mapAsync(nodes, (node: Ast.TNode) =>
+    const linearLengths: ReadonlyArray<number> = await PQP.ArrayUtils.mapAsync(filteredNodes, (node: Ast.TNode) =>
         getLinearLength(
             state.nodeIdMapCollection,
             state.linearLengthMap,

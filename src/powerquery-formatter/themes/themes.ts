@@ -269,11 +269,10 @@ export class ThemeTrieElement<T extends IParameters = IParameters> {
         }
 
         const [head, tail]: [string, string] = this.getScopeHeadTailPair(scope);
+        const oneChild: ThemeTrieElement<T> | undefined = this._children.get(head);
 
-        const maybeOneChild: ThemeTrieElement<T> | undefined = this._children.get(head);
-
-        if (maybeOneChild) {
-            return maybeOneChild.match(tail);
+        if (oneChild) {
+            return oneChild.match(tail);
         }
 
         // return current rules which should be the mostly matched
@@ -288,13 +287,12 @@ export class ThemeTrieElement<T extends IParameters = IParameters> {
         }
 
         const [head, tail]: [string, string] = this.getScopeHeadTailPair(scope);
-
         let child: ThemeTrieElement<T>;
 
-        const maybeOneChild: ThemeTrieElement<T> | undefined = this._children.get(head);
+        const oneChild: ThemeTrieElement<T> | undefined = this._children.get(head);
 
-        if (maybeOneChild) {
-            child = maybeOneChild;
+        if (oneChild) {
+            child = oneChild;
         } else {
             child = new ThemeTrieElement<T>(
                 this._mainRule.clone(),
@@ -360,10 +358,10 @@ export class Theme<T extends IParameters = IParameters> {
      */
     public match(scopeName: string): ThemeTrieElementRule<T>[] {
         let matchedRuleArr: ThemeTrieElementRule<T>[];
-        const maybeCachedMatchedRuleArr: ThemeTrieElementRule<T>[] | undefined = this._cache.get(scopeName);
+        const cachedMatchedRuleArr: ThemeTrieElementRule<T>[] | undefined = this._cache.get(scopeName);
 
-        if (maybeCachedMatchedRuleArr) {
-            matchedRuleArr = maybeCachedMatchedRuleArr;
+        if (cachedMatchedRuleArr) {
+            matchedRuleArr = cachedMatchedRuleArr;
         } else {
             matchedRuleArr = this._root.match(scopeName);
             this._cache.set(scopeName, matchedRuleArr);
