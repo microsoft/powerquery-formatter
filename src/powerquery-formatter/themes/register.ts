@@ -5,13 +5,13 @@ import { IRawTheme, IThemeProvider, RegistryOptions } from "./types";
 import { Theme, ThemeTrieElementRule } from "./themes";
 import { defaultTheme } from "./constants";
 import { ScopeMetadataProvider } from "./scopes";
-import { SerializeParameterV2 } from "../passes";
+import { SerializeParameter } from "../passes";
 
-const DEFAULT_OPTIONS: RegistryOptions<SerializeParameterV2> = {
+const DEFAULT_OPTIONS: RegistryOptions<SerializeParameter> = {
     theme: defaultTheme,
 };
 
-export class SyncThemeRegistry implements IThemeProvider<SerializeParameterV2> {
+export class SyncThemeRegistry implements IThemeProvider<SerializeParameter> {
     static defaultInstance: SyncThemeRegistry = new SyncThemeRegistry();
 
     private _theme: Theme;
@@ -25,7 +25,7 @@ export class SyncThemeRegistry implements IThemeProvider<SerializeParameterV2> {
      * Update the theme
      * @param theme new theme
      */
-    public setTheme(theme: IRawTheme<SerializeParameterV2>): void {
+    public setTheme(theme: IRawTheme<SerializeParameter>): void {
         this._theme = Theme.createFromRawTheme(theme);
         this.scopeMetaProvider.onDidChangeTheme();
     }
@@ -33,14 +33,14 @@ export class SyncThemeRegistry implements IThemeProvider<SerializeParameterV2> {
     /**
      * Get the default theme settings
      */
-    public getDefaults(): ThemeTrieElementRule<SerializeParameterV2> {
+    public getDefaults(): ThemeTrieElementRule<SerializeParameter> {
         return this._theme.getDefaults();
     }
 
     /**
      * Match a scope in the theme.
      */
-    public themeMatch(scopeName: string): ThemeTrieElementRule<SerializeParameterV2>[] {
+    public themeMatch(scopeName: string): ThemeTrieElementRule<SerializeParameter>[] {
         return this._theme.match(scopeName);
     }
 }

@@ -9,7 +9,6 @@ import {
     CommentCollection,
     CommentCollectionMap,
     CommentResult,
-    IsMultilineMap,
     SerializeParameterMap,
     tryTraverseComment,
     tryTraverseSerializeParameter,
@@ -23,7 +22,7 @@ import {
     trySerialize,
 } from "./serialize";
 import { FormatTraceConstant } from "./trace";
-import { tryTraverseIsMultiline } from "./passes/isMultiline/isMultiline";
+import { SyncThemeRegistry } from "./themes";
 
 export type TriedFormat = PQP.Result<string, TFormatError>;
 
@@ -78,6 +77,8 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
         prefixedCommentsContainsNewline: false,
     };
 
+    const containerIdHavingComments: Set<number> = new Set();
+
     if (comments.length) {
         const triedCommentPass: PQP.Traverse.TriedTraverse<CommentResult> = await tryTraverseComment(
             ast,
@@ -95,30 +96,57 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
 
         commentCollectionMap = triedCommentPass.value.commentCollectionMap;
         eofCommentCollection = triedCommentPass.value.eofCommentCollection;
+
+        const containerIdHavingCommentsChildCount: Map<number, number> =
+            triedCommentPass.value.containerIdHavingCommentsChildCount;
+
+        const parentContainerIdOfNodeId: Map<number, number> = triedCommentPass.value.parentContainerIdOfNodeId;
+
+        for (const [nodeId, commentCollection] of commentCollectionMap) {
+            const isLastCommentContainingNewLine: boolean = commentCollection.prefixedComments.length
+                ? commentCollection.prefixedComments[commentCollection.prefixedComments.length - 1].containsNewline
+                : false;
+
+            const parentContainerId: number = parentContainerIdOfNodeId.get(nodeId) ?? 0;
+
+            const currentChildIds: ReadonlyArray<number> = parentContainerId
+                ? nodeIdMapCollection.childIdsById.get(parentContainerId) ?? []
+                : [];
+
+            // if the last comment contained a new line, we definitely gonna append a new line after it
+            // therefore, if the current literal token were first child of the closet container,
+            // we could render the container in in-line mode
+            if (
+                isLastCommentContainingNewLine &&
+                parentContainerId &&
+                currentChildIds.length &&
+                currentChildIds[0] === nodeId
+            ) {
+                // we found one first literal token of matched comments right beneath the container,
+                // thus we need to decrease parent's comment child count by one of that container
+                let currentChildCount: number = containerIdHavingCommentsChildCount.get(parentContainerId) ?? 1;
+                currentChildCount -= 1;
+                containerIdHavingCommentsChildCount.set(parentContainerId, currentChildCount);
+            }
+        }
+
+        // therefore, we only need to populate containerIdHavingComments of child comment greater than zero
+        for (const [containerId, childCommentCounts] of containerIdHavingCommentsChildCount) {
+            if (childCommentCounts > 0) {
+                containerIdHavingComments.add(containerId);
+            }
+        }
     }
 
-    const triedIsMultilineMap: PQP.Traverse.TriedTraverse<IsMultilineMap> = await tryTraverseIsMultiline(
-        ast,
-        commentCollectionMap,
-        nodeIdMapCollection,
-        locale,
-        formatSettings.traceManager,
-        trace.id,
-        maybeCancellationToken,
-    );
-
-    if (PQP.ResultUtils.isError(triedIsMultilineMap)) {
-        return triedIsMultilineMap;
-    }
-
-    const isMultilineMap: IsMultilineMap = triedIsMultilineMap.value;
+    // move its static as a singleton instant for now
+    const newRegistry: SyncThemeRegistry = SyncThemeRegistry.defaultInstance;
 
     const triedSerializeParameter: PQP.Traverse.TriedTraverse<SerializeParameterMap> =
         await tryTraverseSerializeParameter(
             ast,
             nodeIdMapCollection,
             commentCollectionMap,
-            isMultilineMap,
+            newRegistry.scopeMetaProvider,
             locale,
             formatSettings.traceManager,
             trace.id,
@@ -134,12 +162,14 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
     const passthroughMaps: SerializePassthroughMaps = {
         commentCollectionMap,
         eofCommentCollection,
+        containerIdHavingComments,
         serializeParameterMap,
     };
 
     const serializeRequest: SerializeSettings = {
         locale,
         ast,
+        text,
         nodeIdMapCollection,
         passthroughMaps,
         indentationLiteral: formatSettings.indentationLiteral,
@@ -147,9 +177,10 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
         newlineLiteral: formatSettings.newlineLiteral,
         maybeCancellationToken: undefined,
         maybeInitialCorrelationId: trace.id,
+        maxWidth: formatSettings.maxWidth,
     };
 
-    const triedSerialize: TriedSerialize = trySerialize(serializeRequest);
+    const triedSerialize: TriedSerialize = await trySerialize(serializeRequest);
     trace.exit();
 
     return triedSerialize;

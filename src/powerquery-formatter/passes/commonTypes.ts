@@ -54,32 +54,14 @@ export interface SerializeCommentParameter {
     readonly writeKind: SerializeWriteKind;
 }
 
-export interface SerializeParameter {
-    readonly maybeIndentationChange?: IndentationChange;
-    readonly maybeWriteKind?: SerializeWriteKind;
-}
-
-export interface SerializeParameterMap {
-    readonly indentationChange: Map<number, IndentationChange>;
-    readonly writeKind: Map<number, SerializeWriteKind>;
-    readonly comments: Map<number, ReadonlyArray<SerializeCommentParameter>>;
-}
-
-export interface SerializeParameterState extends PQP.Traverse.ITraversalState<SerializeParameterMap> {
-    readonly commentCollectionMap: CommentCollectionMap;
-    readonly isMultilineMap: IsMultilineMap;
-    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
-    readonly workspaceMap: Map<number, SerializeParameter>;
-}
-
-export interface CommentResultV2 {
+export interface CommentResult {
     readonly commentCollectionMap: CommentCollectionMap;
     readonly containerIdHavingCommentsChildCount: Map<number, number>;
     readonly parentContainerIdOfNodeId: Map<number, number>;
     readonly eofCommentCollection: CommentCollection;
 }
 
-export interface CommentStateV2 extends PQP.Traverse.ITraversalState<CommentResultV2> {
+export interface CommentState extends PQP.Traverse.ITraversalState<CommentResult> {
     readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly comments: ReadonlyArray<PQP.Language.Comment.TComment>;
     /**
@@ -92,7 +74,7 @@ export interface CommentStateV2 extends PQP.Traverse.ITraversalState<CommentResu
 
 export type Offset = "L" | "R";
 
-export type SerializeParameterV2 = Partial<{
+export type SerializeParameter = Partial<{
     /**
      * container, a boolean field defines whether the current ast node is a container of blocks
      * - a container will persis the indent level unchanged before entering and after leaving it
@@ -191,17 +173,11 @@ export type SerializeParameterV2 = Partial<{
     clearTailingWhitespaceCarriageReturnBeforeAppending: boolean;
 }>;
 
-export interface SerializeParameterMapV2 {
-    readonly parametersMap: Map<number, SerializeParameterV2>;
+export interface SerializeParameterMap {
+    readonly parametersMap: Map<number, SerializeParameter>;
 }
 
-export interface SerializeParameterStateV2 extends PQP.Traverse.ITraversalState<SerializeParameterMapV2> {
+export interface SerializeParameterState extends PQP.Traverse.ITraversalState<SerializeParameterMap> {
     readonly commentCollectionMap: CommentCollectionMap;
     readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
-    readonly workspaceMap: Map<number, SerializeParameter>;
 }
-
-export const DefaultSerializeParameter: SerializeParameter = {
-    maybeWriteKind: SerializeWriteKind.Any,
-    maybeIndentationChange: undefined,
-};

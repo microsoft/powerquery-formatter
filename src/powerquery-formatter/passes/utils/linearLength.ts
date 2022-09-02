@@ -14,7 +14,7 @@ import { FormatTraceConstant } from "../../trace";
 // Eg. the linear length of `{1, 2, 3}` as an Ast would give 9.
 //
 // Some nodes are always multiline, such as IfExpression, and will return NaN.
-export async function getLinearLengthV2(
+export async function getLinearLength(
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     linearLengthMap: LinearLengthMap,
     node: Ast.TNode,
@@ -87,7 +87,7 @@ async function visitNode(
     maybeCorrelationId: number | undefined,
 ): Promise<void> {
     const trace: Trace = state.traceManager.entry(
-        FormatTraceConstant.LinearLengthV2,
+        FormatTraceConstant.LinearLength,
         visitNode.name,
         maybeCorrelationId,
         {
@@ -520,7 +520,7 @@ async function sumLinearLengths(
     );
 
     const linearLengths: ReadonlyArray<number> = await PQP.ArrayUtils.mapAsync(nodes, (node: Ast.TNode) =>
-        getLinearLengthV2(
+        getLinearLength(
             state.nodeIdMapCollection,
             state.linearLengthMap,
             node,

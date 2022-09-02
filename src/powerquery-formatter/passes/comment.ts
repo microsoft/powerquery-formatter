@@ -6,9 +6,10 @@ import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language
 import { TraceManager } from "@microsoft/powerquery-parser/lib/powerquery-parser/common/trace";
 
 import { CommentCollection, CommentCollectionMap, CommentResult, CommentState } from "./commonTypes";
+import { ContainerSet } from "../themes";
 
-// TODO pass in leafIds instead for a big speed boost.
-// Returns a Map<leafId, an array of comments attached to the leafId>.
+const containerNodeKindSet: ReadonlySet<PQP.Language.Ast.NodeKind> = ContainerSet;
+
 export async function tryTraverseComment(
     root: Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
@@ -25,12 +26,16 @@ export async function tryTraverseComment(
         maybeInitialCorrelationId: maybeCorrelationId,
         result: {
             commentCollectionMap: new Map(),
+            containerIdHavingCommentsChildCount: new Map(),
+            parentContainerIdOfNodeId: new Map(),
             eofCommentCollection: {
                 prefixedComments: [],
                 prefixedCommentsContainsNewline: false,
             },
         },
+        nodeIdMapCollection,
         comments,
+        leafIdsOfItsContainerFound: new Set(),
         commentsIndex: 0,
         maybeCurrentComment: comments[0],
     };
@@ -86,12 +91,16 @@ async function visitNode(state: CommentState, node: Ast.TNode): Promise<void> {
         return;
     }
 
+    const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = state.nodeIdMapCollection;
     let maybeCurrentComment: PQP.Language.Comment.TComment | undefined = state.maybeCurrentComment;
+    const leafIdsOfItsContainerFound: Set<number> = state.leafIdsOfItsContainerFound;
+    const commentMap: CommentCollectionMap = state.result.commentCollectionMap;
+    const containerIdHavingCommentsChildCount: Map<number, number> = state.result.containerIdHavingCommentsChildCount;
+    const parentContainerIdOfNodeId: Map<number, number> = state.result.parentContainerIdOfNodeId;
+    const nodeId: number = node.id;
 
     while (maybeCurrentComment && maybeCurrentComment.positionStart.codeUnit < node.tokenRange.positionStart.codeUnit) {
         const currentComment: PQP.Language.Comment.TComment = maybeCurrentComment;
-        const commentMap: CommentCollectionMap = state.result.commentCollectionMap;
-        const nodeId: number = node.id;
         const maybeCommentCollection: CommentCollection | undefined = commentMap.get(nodeId);
 
         // It's the first comment for the TNode
@@ -110,6 +119,28 @@ async function visitNode(state: CommentState, node: Ast.TNode): Promise<void> {
 
             if (currentComment.containsNewline) {
                 commentCollection.prefixedCommentsContainsNewline = true;
+            }
+        }
+
+        // alright we got a leaf node having comments
+        if (!leafIdsOfItsContainerFound.has(nodeId)) {
+            // trace up to find it the closest ancestry and mark it at containIdsHavingComments
+            let maybeParentId: number | undefined = nodeIdMapCollection.parentIdById.get(nodeId);
+
+            while (maybeParentId) {
+                const parentId: number = maybeParentId;
+                const parent: PQP.Language.Ast.TNode | undefined = nodeIdMapCollection.astNodeById.get(parentId);
+
+                if (parent?.kind && containerNodeKindSet.has(parent?.kind)) {
+                    let currentChildCount: number = containerIdHavingCommentsChildCount.get(parentId) ?? 0;
+                    currentChildCount += 1;
+                    containerIdHavingCommentsChildCount.set(parentId, currentChildCount);
+                    parentContainerIdOfNodeId.set(nodeId, parentId);
+                    leafIdsOfItsContainerFound.add(nodeId);
+                    break;
+                }
+
+                maybeParentId = nodeIdMapCollection.parentIdById.get(parentId);
             }
         }
 
