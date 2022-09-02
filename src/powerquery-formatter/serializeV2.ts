@@ -12,7 +12,6 @@ import {
     SerializeParameterMapV2,
     SerializeParameterV2,
 } from "./passes";
-import { IndentationLiteral, NewlineLiteral, TriedSerialize } from "./serialize";
 import { getLinearLengthV2 } from "./passes/utils/linearLengthV2";
 
 const ALL_WHITESPACES: RegExp = /^(\s)*$/g;
@@ -33,6 +32,18 @@ export interface SerializePassthroughMapsV2 {
     readonly containerIdHavingComments: Set<number>;
     readonly serializeParameterMap: SerializeParameterMapV2;
 }
+
+export const enum IndentationLiteral {
+    SpaceX4 = "    ",
+    Tab = "\t",
+}
+
+export const enum NewlineLiteral {
+    Unix = "\n",
+    Windows = "\r\n",
+}
+
+export type TriedSerialize = PQP.Result<string, PQP.CommonError.CommonError>;
 
 export function trySerializeV2(settings: SerializeSettingsV2): Promise<TriedSerialize> {
     return PQP.ResultUtils.ensureResultAsync(() => serializeV2(settings), settings.locale);

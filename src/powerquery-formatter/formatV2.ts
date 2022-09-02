@@ -13,11 +13,35 @@ import {
     tryTraverseCommentV2,
     tryTraverseSerializeParameterV2,
 } from "./passes";
-import { FormatSettings, TriedFormat } from "./format";
-import { SerializePassthroughMapsV2, SerializeSettingsV2, trySerializeV2 } from "./serializeV2";
+import {
+    IndentationLiteral,
+    NewlineLiteral,
+    SerializePassthroughMapsV2,
+    SerializeSettingsV2,
+    TriedSerialize,
+    trySerializeV2,
+} from "./serializeV2";
 import { FormatTraceConstant } from "./trace";
 import { SyncThemeRegistry } from "./themes";
-import { TriedSerialize } from "./serialize";
+
+export type TriedFormat = PQP.Result<string, TFormatError>;
+
+export type TFormatError =
+    | PQP.CommonError.CommonError
+    | PQP.Lexer.LexError.TLexError
+    | PQP.Parser.ParseError.TParseError;
+
+export interface FormatSettings extends PQP.Settings {
+    readonly indentationLiteral: IndentationLiteral;
+    readonly newlineLiteral: NewlineLiteral;
+    readonly maxWidth?: number;
+}
+
+export const DefaultSettings: FormatSettings = {
+    ...PQP.DefaultSettings,
+    indentationLiteral: IndentationLiteral.SpaceX4,
+    newlineLiteral: NewlineLiteral.Windows,
+};
 
 export async function tryFormatV2(formatSettings: FormatSettings, text: string): Promise<TriedFormat> {
     const trace: Trace = formatSettings.traceManager.entry(

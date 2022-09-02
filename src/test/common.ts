@@ -5,7 +5,7 @@ import "mocha";
 import * as PQP from "@microsoft/powerquery-parser";
 import { expect } from "chai";
 
-import { FormatSettings, IndentationLiteral, NewlineLiteral, TriedFormat, tryFormat, tryFormatV2 } from "..";
+import { FormatSettings, IndentationLiteral, NewlineLiteral, TriedFormat, tryFormatV2 } from "..";
 
 const DefaultFormatSettings: FormatSettings = {
     ...PQP.DefaultSettings,
@@ -97,7 +97,7 @@ export async function expectFormat(
     formatSettings: FormatSettings = DefaultFormatSettings,
 ): Promise<string> {
     text = text.trim();
-    const firstTriedFormat: TriedFormat = await tryFormat(formatSettings, text);
+    const firstTriedFormat: TriedFormat = await tryFormatV2(formatSettings, text);
 
     if (PQP.ResultUtils.isError(firstTriedFormat)) {
         throw firstTriedFormat.error;
@@ -105,7 +105,7 @@ export async function expectFormat(
 
     const firstOk: string = firstTriedFormat.value;
 
-    const secondTriedFormat: TriedFormat = await tryFormat(formatSettings, firstOk);
+    const secondTriedFormat: TriedFormat = await tryFormatV2(formatSettings, firstOk);
 
     if (PQP.ResultUtils.isError(secondTriedFormat)) {
         throw secondTriedFormat.error;

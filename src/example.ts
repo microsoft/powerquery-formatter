@@ -5,7 +5,7 @@
 
 import * as PQP from "@microsoft/powerquery-parser";
 
-import { FormatSettings, IndentationLiteral, NewlineLiteral, TriedFormat, tryFormat } from ".";
+import { FormatSettings, IndentationLiteral, NewlineLiteral, TriedFormat, tryFormatV2 } from ".";
 
 const text: string = `1 as number`;
 
@@ -15,7 +15,7 @@ const settings: FormatSettings = {
     newlineLiteral: NewlineLiteral.Unix,
 };
 
-tryFormat(settings, text)
+tryFormatV2(settings, text)
     .then((triedFormat: TriedFormat) => {
         if (PQP.ResultUtils.isOk(triedFormat)) {
             console.log("Your input was formatted as the following:");
