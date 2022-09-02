@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import { compareV2, DefaultFormatSettings2, expectFormatV2 } from "./common";
+import { compare, DefaultFormatSettingsWithMaxWidth, expectFormat } from "./common";
 
 describe("comment serialize", () => {
     // --------------------------------------
@@ -19,15 +19,15 @@ describe("comment serialize", () => {
 
             const expected2: string = `[/*foo*/ key1 = value1, key2 = value2]`;
 
-            const actual: string = await expectFormatV2("[ /*foo*/ key1=value1, key2=value2 ]");
+            const actual: string = await expectFormat("[ /*foo*/ key1=value1, key2=value2 ]");
 
-            const actual2: string = await expectFormatV2(
+            const actual2: string = await expectFormat(
                 "[ /*foo*/ key1=value1, key2=value2 ]",
-                DefaultFormatSettings2,
+                DefaultFormatSettingsWithMaxWidth,
             );
 
-            compareV2(expected, actual);
-            compareV2(expected2, actual2);
+            compare(expected, actual);
+            compare(expected2, actual2);
         });
 
         it("[ /*foo*//*bar*/ key1=value1, key2=value2 ]", async () => {
@@ -40,15 +40,15 @@ describe("comment serialize", () => {
 
             const expected2: string = `[/*foo*/  /*bar*/ key1 = value1, key2 = value2]`;
 
-            const actual: string = await expectFormatV2("[ /*foo*//*bar*/ key1=value1, key2=value2 ]");
+            const actual: string = await expectFormat("[ /*foo*//*bar*/ key1=value1, key2=value2 ]");
 
-            const actual2: string = await expectFormatV2(
+            const actual2: string = await expectFormat(
                 "[ /*foo*//*bar*/ key1=value1, key2=value2 ]",
-                DefaultFormatSettings2,
+                DefaultFormatSettingsWithMaxWidth,
             );
 
-            compareV2(expected, actual);
-            compareV2(expected2, actual2);
+            compare(expected, actual);
+            compare(expected2, actual2);
         });
 
         it("[ key1=/*foo*/value1, key2=value2 ]", async () => {
@@ -62,10 +62,15 @@ describe("comment serialize", () => {
             const expected2: string = `[key1 = /*foo*/ value1, key2 = value2]
 `;
 
-            const actual: string = await expectFormatV2("[ key1=/*foo*/value1, key2=value2 ]");
-            const actual2: string = await expectFormatV2("[ key1=/*foo*/value1, key2=value2 ]", DefaultFormatSettings2);
-            compareV2(expected, actual);
-            compareV2(expected2, actual2);
+            const actual: string = await expectFormat("[ key1=/*foo*/value1, key2=value2 ]");
+
+            const actual2: string = await expectFormat(
+                "[ key1=/*foo*/value1, key2=value2 ]",
+                DefaultFormatSettingsWithMaxWidth,
+            );
+
+            compare(expected, actual);
+            compare(expected2, actual2);
         });
 
         it("[ // foo\\n key1=value1 ]", async () => {
@@ -82,10 +87,10 @@ describe("comment serialize", () => {
 key1 = value1]
 `;
 
-            const actual: string = await expectFormatV2("[ // foo\n key1=value1 ]");
-            const actual2: string = await expectFormatV2("[ // foo\n key1=value1 ]", DefaultFormatSettings2);
-            compareV2(expected, actual);
-            compareV2(expected2, actual2);
+            const actual: string = await expectFormat("[ // foo\n key1=value1 ]");
+            const actual2: string = await expectFormat("[ // foo\n key1=value1 ]", DefaultFormatSettingsWithMaxWidth);
+            compare(expected, actual);
+            compare(expected2, actual2);
         });
 
         it("[ // foo\\n // bar \\n key1=value1 ]", async () => {
@@ -104,10 +109,15 @@ key1 = value1]
 key1 = value1]
 `;
 
-            const actual: string = await expectFormatV2("[ // foo\n // bar\n key1=value1 ]");
-            const actual2: string = await expectFormatV2("[ // foo\n // bar\n key1=value1 ]", DefaultFormatSettings2);
-            compareV2(expected, actual);
-            compareV2(expected2, actual2);
+            const actual: string = await expectFormat("[ // foo\n // bar\n key1=value1 ]");
+
+            const actual2: string = await expectFormat(
+                "[ // foo\n // bar\n key1=value1 ]",
+                DefaultFormatSettingsWithMaxWidth,
+            );
+
+            compare(expected, actual);
+            compare(expected2, actual2);
         });
 
         it("[ /* foo */ // bar\\n key1=value1 ]", async () => {
@@ -123,10 +133,15 @@ key1 = value1]
 key1 = value1]
 `;
 
-            const actual: string = await expectFormatV2("[ /* foo */ // bar\n key1=value1 ]");
-            const actual2: string = await expectFormatV2("[ /* foo */ // bar\n key1=value1 ]", DefaultFormatSettings2);
-            compareV2(expected, actual);
-            compareV2(expected2, actual2);
+            const actual: string = await expectFormat("[ /* foo */ // bar\n key1=value1 ]");
+
+            const actual2: string = await expectFormat(
+                "[ /* foo */ // bar\n key1=value1 ]",
+                DefaultFormatSettingsWithMaxWidth,
+            );
+
+            compare(expected, actual);
+            compare(expected2, actual2);
         });
 
         it("[ /* foo */ // bar\\n /* foobar */ key1=value1 ]", async () => {
@@ -142,15 +157,15 @@ key1 = value1]
 /* foobar */ key1 = value1]
 `;
 
-            const actual: string = await expectFormatV2("[ /* foo */ // bar\n /* foobar */ key1=value1 ]");
+            const actual: string = await expectFormat("[ /* foo */ // bar\n /* foobar */ key1=value1 ]");
 
-            const actual2: string = await expectFormatV2(
+            const actual2: string = await expectFormat(
                 "[ /* foo */ // bar\n /* foobar */ key1=value1 ]",
-                DefaultFormatSettings2,
+                DefaultFormatSettingsWithMaxWidth,
             );
 
-            compareV2(expected, actual);
-            compareV2(expected2, actual2);
+            compare(expected, actual);
+            compare(expected2, actual2);
         });
 
         it("[ key1 = // foo\\n value1 ]", async () => {
@@ -168,10 +183,10 @@ key1 = value1]
 value1]
 `;
 
-            const actual: string = await expectFormatV2("[ key1 = // foo\n value1 ]");
-            const actual2: string = await expectFormatV2("[ key1 = // foo\n value1 ]", DefaultFormatSettings2);
-            compareV2(expected, actual);
-            compareV2(expected2, actual2);
+            const actual: string = await expectFormat("[ key1 = // foo\n value1 ]");
+            const actual2: string = await expectFormat("[ key1 = // foo\n value1 ]", DefaultFormatSettingsWithMaxWidth);
+            compare(expected, actual);
+            compare(expected2, actual2);
         });
 
         it("[ key1 // foo\\n = value1 ]", async () => {
@@ -189,10 +204,10 @@ value1]
 = value1]
 `;
 
-            const actual: string = await expectFormatV2("[ key1 // foo\n = value1 ]");
-            const actual2: string = await expectFormatV2("[ key1 // foo\n = value1 ]", DefaultFormatSettings2);
-            compareV2(expected, actual);
-            compareV2(expected2, actual2);
+            const actual: string = await expectFormat("[ key1 // foo\n = value1 ]");
+            const actual2: string = await expectFormat("[ key1 // foo\n = value1 ]", DefaultFormatSettingsWithMaxWidth);
+            compare(expected, actual);
+            compare(expected2, actual2);
         });
 
         it("section foobar; x = 1; // lineComment\n y = 1;", async () => {
@@ -212,15 +227,15 @@ x = 1;
 y = 1;
 `;
 
-            const actual: string = await expectFormatV2("section foobar; x = 1; // lineComment\n y = 1;");
+            const actual: string = await expectFormat("section foobar; x = 1; // lineComment\n y = 1;");
 
-            const actual2: string = await expectFormatV2(
+            const actual2: string = await expectFormat(
                 "section foobar; x = 1; // lineComment\n y = 1;",
-                DefaultFormatSettings2,
+                DefaultFormatSettingsWithMaxWidth,
             );
 
-            compareV2(expected, actual);
-            compareV2(expected2, actual2);
+            compare(expected, actual);
+            compare(expected2, actual2);
         });
 
         it("let y = 1 in y // stuff", async () => {
@@ -237,12 +252,12 @@ let y = 1 in y
 // stuff
 `;
 
-            const actual: string = await expectFormatV2("let y = 1 in y // stuff");
+            const actual: string = await expectFormat("let y = 1 in y // stuff");
 
-            const actual2: string = await expectFormatV2("let y = 1 in y // stuff", DefaultFormatSettings2);
+            const actual2: string = await expectFormat("let y = 1 in y // stuff", DefaultFormatSettingsWithMaxWidth);
 
-            compareV2(expected, actual);
-            compareV2(expected2, actual2);
+            compare(expected, actual);
+            compare(expected2, actual2);
         });
 
         it("let y = 1 in y /* foo */ ", async () => {
@@ -258,12 +273,12 @@ in
 let y = 1 in y/* foo */
 `;
 
-            const actual: string = await expectFormatV2("let y = 1 in y /* foo */ ");
+            const actual: string = await expectFormat("let y = 1 in y /* foo */ ");
 
-            const actual2: string = await expectFormatV2("let y = 1 in y /* foo */", DefaultFormatSettings2);
+            const actual2: string = await expectFormat("let y = 1 in y /* foo */", DefaultFormatSettingsWithMaxWidth);
 
-            compareV2(expected, actual);
-            compareV2(expected2, actual2);
+            compare(expected, actual);
+            compare(expected2, actual2);
         });
     });
 });

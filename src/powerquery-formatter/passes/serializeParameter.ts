@@ -20,7 +20,7 @@ type RealSerializeParameterStateV2 = SerializeParameterStateV2 & {
     scopeMetadataProvider: ScopeMetadataProvider<SerializeParameterV2>;
 };
 
-export function tryTraverseSerializeParameterV2(
+export function tryTraverseSerializeParameter(
     ast: Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     commentCollectionMap: CommentCollectionMap,
@@ -32,7 +32,7 @@ export function tryTraverseSerializeParameterV2(
 ): Promise<PQP.Traverse.TriedTraverse<SerializeParameterMapV2>> {
     const trace: Trace = traceManager.entry(
         FormatTraceConstant.SerializeParameterV2,
-        tryTraverseSerializeParameterV2.name,
+        tryTraverseSerializeParameter.name,
         maybeCorrelationId,
     );
 

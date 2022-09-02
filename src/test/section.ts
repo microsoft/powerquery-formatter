@@ -2,20 +2,20 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import { compareV2, DefaultFormatSettings2, expectFormatV2 } from "./common";
+import { compare, DefaultFormatSettingsWithMaxWidth, expectFormat } from "./common";
 
 describe("section", () => {
     describe("Section", () => {
         it("section;", async () => {
             const expected: string = `section;`;
-            const actual: string = await expectFormatV2(`section;`, DefaultFormatSettings2);
-            compareV2(expected, actual);
+            const actual: string = await expectFormat(`section;`, DefaultFormatSettingsWithMaxWidth);
+            compare(expected, actual);
         });
 
         it("section name;", async () => {
             const expected: string = `section name;`;
-            const actual: string = await expectFormatV2(`section name;`, DefaultFormatSettings2);
-            compareV2(expected, actual);
+            const actual: string = await expectFormat(`section name;`, DefaultFormatSettingsWithMaxWidth);
+            compare(expected, actual);
         });
 
         it("[] section name;", async () => {
@@ -24,8 +24,8 @@ describe("section", () => {
 section name;
 `;
 
-            const actual: string = await expectFormatV2(`[] section name;`, DefaultFormatSettings2);
-            compareV2(expected, actual);
+            const actual: string = await expectFormat(`[] section name;`, DefaultFormatSettingsWithMaxWidth);
+            compare(expected, actual);
         });
 
         it("[] section;", async () => {
@@ -34,8 +34,8 @@ section name;
 section;
 `;
 
-            const actual: string = await expectFormatV2(`[] section;`, DefaultFormatSettings2);
-            compareV2(expected, actual);
+            const actual: string = await expectFormat(`[] section;`, DefaultFormatSettingsWithMaxWidth);
+            compare(expected, actual);
         });
 
         it("[a = 1] section;", async () => {
@@ -44,8 +44,8 @@ section;
 section;
 `;
 
-            const actual: string = await expectFormatV2(`[a = 1] section;`, DefaultFormatSettings2);
-            compareV2(expected, actual);
+            const actual: string = await expectFormat(`[a = 1] section;`, DefaultFormatSettingsWithMaxWidth);
+            compare(expected, actual);
         });
 
         it("[a = {}] section;", async () => {
@@ -54,8 +54,8 @@ section;
 section;
 `;
 
-            const actual: string = await expectFormatV2(`[a = {}] section;`, DefaultFormatSettings2);
-            compareV2(expected, actual);
+            const actual: string = await expectFormat(`[a = {}] section;`, DefaultFormatSettingsWithMaxWidth);
+            compare(expected, actual);
         });
 
         it("[a = 1, b = 2] section;", async () => {
@@ -64,8 +64,8 @@ section;
 section;
 `;
 
-            const actual: string = await expectFormatV2(`[a=1, b=2] section;`, DefaultFormatSettings2);
-            compareV2(expected, actual);
+            const actual: string = await expectFormat(`[a=1, b=2] section;`, DefaultFormatSettingsWithMaxWidth);
+            compare(expected, actual);
         });
 
         it("[a = {}, b = {}] section;", async () => {
@@ -74,8 +74,8 @@ section;
 section;
 `;
 
-            const actual: string = await expectFormatV2(`[a = {}, b = {}] section;`, DefaultFormatSettings2);
-            compareV2(expected, actual);
+            const actual: string = await expectFormat(`[a = {}, b = {}] section;`, DefaultFormatSettingsWithMaxWidth);
+            compare(expected, actual);
         });
 
         it("[a = {1}, b = {2}] section;", async () => {
@@ -84,8 +84,8 @@ section;
 section;
 `;
 
-            const actual: string = await expectFormatV2(`[a = {1}, b = {2}] section;`, DefaultFormatSettings2);
-            compareV2(expected, actual);
+            const actual: string = await expectFormat(`[a = {1}, b = {2}] section;`, DefaultFormatSettingsWithMaxWidth);
+            compare(expected, actual);
         });
 
         it("[a = 1, b = [c = {2, 3, 4}], e = 5] section;", async () => {
@@ -94,12 +94,12 @@ section;
 section;
 `;
 
-            const actual: string = await expectFormatV2(
+            const actual: string = await expectFormat(
                 `[a = 1, b = [c = {2, 3, 4}], e = 5] section;`,
-                DefaultFormatSettings2,
+                DefaultFormatSettingsWithMaxWidth,
             );
 
-            compareV2(expected, actual);
+            compare(expected, actual);
         });
     });
 
@@ -111,8 +111,8 @@ section;
 x = 1;
 `;
 
-            const actual: string = await expectFormatV2(`section; x = 1;`, DefaultFormatSettings2);
-            compareV2(expected, actual);
+            const actual: string = await expectFormat(`section; x = 1;`, DefaultFormatSettingsWithMaxWidth);
+            compare(expected, actual);
         });
 
         it("section; [] x = 1;", async () => {
@@ -122,8 +122,8 @@ section;
 [] x = 1;
 `;
 
-            const actual: string = await expectFormatV2(`section; [] x = 1;`, DefaultFormatSettings2);
-            compareV2(expected, actual);
+            const actual: string = await expectFormat(`section; [] x = 1;`, DefaultFormatSettingsWithMaxWidth);
+            compare(expected, actual);
         });
 
         it("section; [a=1, b=2] x = 1;", async () => {
@@ -133,8 +133,8 @@ section;
 [a = 1, b = 2] x = 1;
 `;
 
-            const actual: string = await expectFormatV2(`section; [a=1, b=2] x = 1;`, DefaultFormatSettings2);
-            compareV2(expected, actual);
+            const actual: string = await expectFormat(`section; [a=1, b=2] x = 1;`, DefaultFormatSettingsWithMaxWidth);
+            compare(expected, actual);
         });
 
         it("section; [a=1, b=2] shared x = 1;", async () => {
@@ -145,8 +145,12 @@ section;
 shared x = 1;
 `;
 
-            const actual: string = await expectFormatV2(`section; [a=1, b=2] shared x = 1;`, DefaultFormatSettings2);
-            compareV2(expected, actual);
+            const actual: string = await expectFormat(
+                `section; [a=1, b=2] shared x = 1;`,
+                DefaultFormatSettingsWithMaxWidth,
+            );
+
+            compare(expected, actual);
         });
 
         it("section; [a = 1] x = 1;", async () => {
@@ -156,8 +160,8 @@ section;
 [a = 1] x = 1;
 `;
 
-            const actual: string = await expectFormatV2(`section; [a = 1] x = 1;`, DefaultFormatSettings2);
-            compareV2(expected, actual);
+            const actual: string = await expectFormat(`section; [a = 1] x = 1;`, DefaultFormatSettingsWithMaxWidth);
+            compare(expected, actual);
         });
 
         it("section; [a = 1] shared x = 1;", async () => {
@@ -168,8 +172,12 @@ section;
 shared x = 1;
 `;
 
-            const actual: string = await expectFormatV2(`section; [a = 1] shared x = 1;`, DefaultFormatSettings2);
-            compareV2(expected, actual);
+            const actual: string = await expectFormat(
+                `section; [a = 1] shared x = 1;`,
+                DefaultFormatSettingsWithMaxWidth,
+            );
+
+            compare(expected, actual);
         });
 
         it("section; x = 1; y = 2;", async () => {
@@ -180,8 +188,8 @@ x = 1;
 y = 2;
 `;
 
-            const actual: string = await expectFormatV2(`section; x = 1; y = 2;`, DefaultFormatSettings2);
-            compareV2(expected, actual);
+            const actual: string = await expectFormat(`section; x = 1; y = 2;`, DefaultFormatSettingsWithMaxWidth);
+            compare(expected, actual);
         });
 
         it("section; Other = 3; Constant.Alpha = 1; Constant.Beta = 2; Other = 3;", async () => {
@@ -196,12 +204,12 @@ Constant.Beta = 2;
 Other = 3;
 `;
 
-            const actual: string = await expectFormatV2(
+            const actual: string = await expectFormat(
                 `section; Other = 3; Constant.Alpha = 1; Constant.Beta = 2; Other = 3;`,
-                DefaultFormatSettings2,
+                DefaultFormatSettingsWithMaxWidth,
             );
 
-            compareV2(expected, actual);
+            compare(expected, actual);
         });
     });
 });

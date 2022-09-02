@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-export { tryTraverseSerializeParameterV2 } from "./serializeParameterV2";
-export { tryTraverseCommentV2 } from "./commentV2";
+export { tryTraverseSerializeParameter as tryTraverseSerializeParameterV2 } from "./serializeParameter";
+export { tryTraverseCommentV2 } from "./comment";
 export * from "./commonTypes";

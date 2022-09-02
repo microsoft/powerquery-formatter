@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import { compareV2, DefaultFormatSettings2, expectFormatV2 } from "./common";
+import { compare, DefaultFormatSettingsWithMaxWidth, expectFormat } from "./common";
 
 describe(`small programs V2`, () => {
     it(`fastPow`, async () => {
@@ -38,7 +38,7 @@ in
     fastPow(2, 8)
 `;
 
-        const actual: string = await expectFormatV2(
+        const actual: string = await expectFormat(
             `
 // taken from: https://en.wikipedia.org/wiki/Exponentiation_by_squaring
 // removed negative powers, sure to have bugs
@@ -72,11 +72,11 @@ let
 in
     fastPow(2, 8)`,
             {
-                ...DefaultFormatSettings2,
+                ...DefaultFormatSettingsWithMaxWidth,
                 maxWidth: 120,
             },
         );
 
-        compareV2(expected, actual);
+        compare(expected, actual);
     });
 });

@@ -5,7 +5,7 @@ import * as PQP from "@microsoft/powerquery-parser";
 import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
 import { TraceManager } from "@microsoft/powerquery-parser/lib/powerquery-parser/common/trace";
 
-import { CommentCollection, CommentCollectionMap, CommentResultV2, CommentStateV2 } from "./commonTypes";
+import { CommentCollection, CommentCollectionMap, CommentResult, CommentState } from "./commonTypes";
 import { ContainerSet } from "../themes";
 
 const containerNodeKindSet: ReadonlySet<PQP.Language.Ast.NodeKind> = ContainerSet;
@@ -18,8 +18,8 @@ export async function tryTraverseCommentV2(
     traceManager: TraceManager,
     maybeCorrelationId: number | undefined,
     maybeCancellationToken: PQP.ICancellationToken | undefined,
-): Promise<PQP.Traverse.TriedTraverse<CommentResultV2>> {
-    const state: CommentStateV2 = {
+): Promise<PQP.Traverse.TriedTraverse<CommentResult>> {
+    const state: CommentState = {
         locale,
         traceManager,
         maybeCancellationToken,
@@ -40,9 +40,9 @@ export async function tryTraverseCommentV2(
         maybeCurrentComment: comments[0],
     };
 
-    const triedCommentPass: PQP.Traverse.TriedTraverse<CommentResultV2> = await PQP.Traverse.tryTraverseAst<
-        CommentStateV2,
-        CommentResultV2
+    const triedCommentPass: PQP.Traverse.TriedTraverse<CommentResult> = await PQP.Traverse.tryTraverseAst<
+        CommentState,
+        CommentResult
     >(
         state,
         nodeIdMapCollection,
@@ -55,7 +55,7 @@ export async function tryTraverseCommentV2(
 
     // check whether we got any comment prefixed to the EOF
     if (!PQP.ResultUtils.isError(triedCommentPass) && state.commentsIndex < state.comments.length) {
-        const result: CommentResultV2 = triedCommentPass.value;
+        const result: CommentResult = triedCommentPass.value;
         let prefixedCommentsContainsNewline: boolean = false;
         result.eofCommentCollection.prefixedComments.length = 0;
 
@@ -73,7 +73,7 @@ export async function tryTraverseCommentV2(
 }
 
 // eslint-disable-next-line require-await
-async function earlyExit(state: CommentStateV2, node: Ast.TNode): Promise<boolean> {
+async function earlyExit(state: CommentState, node: Ast.TNode): Promise<boolean> {
     const maybeCurrentComment: PQP.Language.Comment.TComment | undefined = state.maybeCurrentComment;
 
     if (maybeCurrentComment === undefined) {
@@ -86,7 +86,7 @@ async function earlyExit(state: CommentStateV2, node: Ast.TNode): Promise<boolea
 }
 
 // eslint-disable-next-line require-await
-async function visitNode(state: CommentStateV2, node: Ast.TNode): Promise<void> {
+async function visitNode(state: CommentState, node: Ast.TNode): Promise<void> {
     if (!node.isLeaf) {
         return;
     }

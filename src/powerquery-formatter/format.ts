@@ -8,7 +8,7 @@ import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language
 import {
     CommentCollection,
     CommentCollectionMap,
-    CommentResultV2,
+    CommentResult,
     SerializeParameterMapV2,
     tryTraverseCommentV2,
     tryTraverseSerializeParameterV2,
@@ -20,7 +20,7 @@ import {
     SerializeSettingsV2,
     TriedSerialize,
     trySerializeV2,
-} from "./serializeV2";
+} from "./serialize";
 import { FormatTraceConstant } from "./trace";
 import { SyncThemeRegistry } from "./themes";
 
@@ -43,10 +43,10 @@ export const DefaultSettings: FormatSettings = {
     newlineLiteral: NewlineLiteral.Windows,
 };
 
-export async function tryFormatV2(formatSettings: FormatSettings, text: string): Promise<TriedFormat> {
+export async function tryFormat(formatSettings: FormatSettings, text: string): Promise<TriedFormat> {
     const trace: Trace = formatSettings.traceManager.entry(
         FormatTraceConstant.FormatV2,
-        tryFormatV2.name,
+        tryFormat.name,
         formatSettings.maybeInitialCorrelationId,
     );
 
@@ -80,7 +80,7 @@ export async function tryFormatV2(formatSettings: FormatSettings, text: string):
     const containerIdHavingComments: Set<number> = new Set();
 
     if (comments.length) {
-        const triedCommentPass: PQP.Traverse.TriedTraverse<CommentResultV2> = await tryTraverseCommentV2(
+        const triedCommentPass: PQP.Traverse.TriedTraverse<CommentResult> = await tryTraverseCommentV2(
             ast,
             nodeIdMapCollection,
             comments,

@@ -12,7 +12,7 @@ import {
     SerializeParameterMapV2,
     SerializeParameterV2,
 } from "./passes";
-import { getLinearLengthV2 } from "./passes/utils/linearLengthV2";
+import { getLinearLength } from "./passes/utils/linearLength";
 
 const ALL_WHITESPACES: RegExp = /^(\s)*$/g;
 
@@ -98,7 +98,7 @@ async function serializeV2(settings: SerializeSettingsV2): Promise<string> {
 
     if (state.supportInlineBlock) {
         // calc whether we are in line at the entry
-        const currentEstLen: number = await getLinearLengthV2(
+        const currentEstLen: number = await getLinearLength(
             state.nodeIdMapCollection,
             state.linearLengthMap,
             state.node,
@@ -223,7 +223,7 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
         !currentlySupportInlineBlock
     ) {
         // we are a block opener and also could support inline-block, thus calc the line to check it fits or not
-        let currentEstLen: number = await getLinearLengthV2(
+        let currentEstLen: number = await getLinearLength(
             state.nodeIdMapCollection,
             state.linearLengthMap,
             node,

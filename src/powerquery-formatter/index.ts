@@ -1,5 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-export * from "./formatV2";
-export * from "./serializeV2";
+export * from "./format";
+export * from "./serialize";

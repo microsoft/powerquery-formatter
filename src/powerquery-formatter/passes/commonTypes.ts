@@ -72,14 +72,14 @@ export interface SerializeParameterState extends PQP.Traverse.ITraversalState<Se
     readonly workspaceMap: Map<number, SerializeParameter>;
 }
 
-export interface CommentResultV2 {
+export interface CommentResult {
     readonly commentCollectionMap: CommentCollectionMap;
     readonly containerIdHavingCommentsChildCount: Map<number, number>;
     readonly parentContainerIdOfNodeId: Map<number, number>;
     readonly eofCommentCollection: CommentCollection;
 }
 
-export interface CommentStateV2 extends PQP.Traverse.ITraversalState<CommentResultV2> {
+export interface CommentState extends PQP.Traverse.ITraversalState<CommentResult> {
     readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly comments: ReadonlyArray<PQP.Language.Comment.TComment>;
     /**
