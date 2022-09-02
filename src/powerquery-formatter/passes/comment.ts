@@ -10,7 +10,7 @@ import { ContainerSet } from "../themes";
 
 const containerNodeKindSet: ReadonlySet<PQP.Language.Ast.NodeKind> = ContainerSet;
 
-export async function tryTraverseCommentV2(
+export async function tryTraverseComment(
     root: Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     comments: ReadonlyArray<PQP.Language.Comment.TComment>,

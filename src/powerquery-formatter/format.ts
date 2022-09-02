@@ -10,8 +10,8 @@ import {
     CommentCollectionMap,
     CommentResult,
     SerializeParameterMapV2,
-    tryTraverseCommentV2,
-    tryTraverseSerializeParameterV2,
+    tryTraverseComment,
+    tryTraverseSerializeParameter,
 } from "./passes";
 import {
     IndentationLiteral,
@@ -80,7 +80,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
     const containerIdHavingComments: Set<number> = new Set();
 
     if (comments.length) {
-        const triedCommentPass: PQP.Traverse.TriedTraverse<CommentResult> = await tryTraverseCommentV2(
+        const triedCommentPass: PQP.Traverse.TriedTraverse<CommentResult> = await tryTraverseComment(
             ast,
             nodeIdMapCollection,
             comments,
@@ -142,7 +142,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
     const newRegistry: SyncThemeRegistry = SyncThemeRegistry.defaultInstance;
 
     const triedSerializeParameter: PQP.Traverse.TriedTraverse<SerializeParameterMapV2> =
-        await tryTraverseSerializeParameterV2(
+        await tryTraverseSerializeParameter(
             ast,
             nodeIdMapCollection,
             commentCollectionMap,
