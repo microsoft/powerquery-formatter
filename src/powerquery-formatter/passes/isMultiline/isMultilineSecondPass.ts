@@ -15,14 +15,14 @@ export function tryTraverseIsMultilineSecondPass(
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     locale: string,
     traceManager: TraceManager,
-    maybeCorrelationId: number | undefined,
-    maybeCancellationToken: PQP.ICancellationToken | undefined,
+    correlationId: number | undefined,
+    cancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<PQP.Traverse.TriedTraverse<IsMultilineMap>> {
     const state: IsMultilineSecondPassState = {
         locale,
         traceManager,
-        maybeCancellationToken,
-        maybeInitialCorrelationId: maybeCorrelationId,
+        cancellationToken,
+        initialCorrelationId: correlationId,
         nodeIdMapCollection,
         result: isMultilineMap,
     };
@@ -42,12 +42,12 @@ export function tryTraverseIsMultilineSecondPass(
 async function visitNode(
     state: IsMultilineSecondPassState,
     node: Ast.TNode,
-    maybeCorrelationId: number | undefined,
+    correlationId: number | undefined,
 ): Promise<void> {
     const trace: Trace = state.traceManager.entry(
         FormatTraceConstant.IsMultilinePhase2,
         visitNode.name,
-        maybeCorrelationId,
+        correlationId,
         {
             nodeId: node.id,
             nodeKind: node.kind,
@@ -80,13 +80,9 @@ async function visitNode(
 
 function visitBinOpExpression(state: IsMultilineSecondPassState, node: Ast.TNode, trace: Trace): void {
     const isMultilineMap: IsMultilineMap = state.result;
+    const parent: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.parentAst(state.nodeIdMapCollection, node.id);
 
-    const maybeParent: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(
-        state.nodeIdMapCollection,
-        node.id,
-    );
-
-    if (maybeParent && AstUtils.isTBinOpExpression(maybeParent) && expectGetIsMultiline(isMultilineMap, maybeParent)) {
+    if (parent && AstUtils.isTBinOpExpression(parent) && expectGetIsMultiline(isMultilineMap, parent)) {
         trace.trace("Updating isMultiline for nested BinOp", { nodeId: node.id, nodeKind: node.kind });
 
         setIsMultiline(isMultilineMap, node, true);
@@ -103,24 +99,21 @@ function visitListOrRecord(
 
         const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = state.nodeIdMapCollection;
 
-        let maybeParent: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, node.id);
+        let parent: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.parentAst(nodeIdMapCollection, node.id);
+        let csv: Ast.TCsv | undefined;
+        let arrayWrapper: Ast.TArrayWrapper | undefined;
 
-        let maybeCsv: Ast.TCsv | undefined;
-        let maybeArrayWrapper: Ast.TArrayWrapper | undefined;
-
-        if (maybeParent && maybeParent.kind === Ast.NodeKind.Csv) {
-            maybeCsv = maybeParent;
-            maybeParent = PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
+        if (parent && parent.kind === Ast.NodeKind.Csv) {
+            csv = parent;
+            parent = PQP.Parser.NodeIdMapUtils.parentAst(nodeIdMapCollection, parent.id);
         }
 
-        if (maybeParent && maybeParent.kind === Ast.NodeKind.ArrayWrapper) {
-            maybeArrayWrapper = maybeParent;
-            maybeParent = PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
+        if (parent && parent.kind === Ast.NodeKind.ArrayWrapper) {
+            arrayWrapper = parent;
+            parent = PQP.Parser.NodeIdMapUtils.parentAst(nodeIdMapCollection, parent.id);
         }
 
-        if (maybeParent) {
-            const parent: Ast.TNode = maybeParent;
-
+        if (parent) {
             switch (parent.kind) {
                 case Ast.NodeKind.ItemAccessExpression:
                 case Ast.NodeKind.InvokeExpression:
@@ -133,12 +126,12 @@ function visitListOrRecord(
                     const isMultilineMap: IsMultilineMap = state.result;
                     setIsMultiline(isMultilineMap, parent, true);
 
-                    if (maybeCsv) {
-                        setIsMultiline(isMultilineMap, maybeCsv, true);
+                    if (csv) {
+                        setIsMultiline(isMultilineMap, csv, true);
                     }
 
-                    if (maybeArrayWrapper) {
-                        setIsMultiline(isMultilineMap, maybeArrayWrapper, true);
+                    if (arrayWrapper) {
+                        setIsMultiline(isMultilineMap, arrayWrapper, true);
                     }
 
                     setIsMultiline(isMultilineMap, node, true);

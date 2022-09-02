@@ -16,14 +16,14 @@ export async function tryTraverseComment(
     comments: ReadonlyArray<PQP.Language.Comment.TComment>,
     locale: string,
     traceManager: TraceManager,
-    maybeCorrelationId: number | undefined,
-    maybeCancellationToken: PQP.ICancellationToken | undefined,
+    correlationId: number | undefined,
+    cancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<PQP.Traverse.TriedTraverse<CommentResult>> {
     const state: CommentState = {
         locale,
         traceManager,
-        maybeCancellationToken,
-        maybeInitialCorrelationId: maybeCorrelationId,
+        cancellationToken,
+        initialCorrelationId: correlationId,
         result: {
             commentCollectionMap: new Map(),
             containerIdHavingCommentsChildCount: new Map(),
@@ -37,7 +37,7 @@ export async function tryTraverseComment(
         comments,
         leafIdsOfItsContainerFound: new Set(),
         commentsIndex: 0,
-        maybeCurrentComment: comments[0],
+        currentComment: comments[0],
     };
 
     const triedCommentPass: PQP.Traverse.TriedTraverse<CommentResult> = await PQP.Traverse.tryTraverseAst<
@@ -74,11 +74,11 @@ export async function tryTraverseComment(
 
 // eslint-disable-next-line require-await
 async function earlyExit(state: CommentState, node: Ast.TNode): Promise<boolean> {
-    const maybeCurrentComment: PQP.Language.Comment.TComment | undefined = state.maybeCurrentComment;
+    const currentComment: PQP.Language.Comment.TComment | undefined = state.currentComment;
 
-    if (maybeCurrentComment === undefined) {
+    if (currentComment === undefined) {
         return true;
-    } else if (node.tokenRange.positionEnd.codeUnit < maybeCurrentComment.positionStart.codeUnit) {
+    } else if (node.tokenRange.positionEnd.codeUnit < currentComment.positionStart.codeUnit) {
         return true;
     } else {
         return false;
@@ -92,19 +92,18 @@ async function visitNode(state: CommentState, node: Ast.TNode): Promise<void> {
     }
 
     const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = state.nodeIdMapCollection;
-    let maybeCurrentComment: PQP.Language.Comment.TComment | undefined = state.maybeCurrentComment;
+    let currentComment: PQP.Language.Comment.TComment | undefined = state.currentComment;
     const leafIdsOfItsContainerFound: Set<number> = state.leafIdsOfItsContainerFound;
     const commentMap: CommentCollectionMap = state.result.commentCollectionMap;
     const containerIdHavingCommentsChildCount: Map<number, number> = state.result.containerIdHavingCommentsChildCount;
     const parentContainerIdOfNodeId: Map<number, number> = state.result.parentContainerIdOfNodeId;
     const nodeId: number = node.id;
 
-    while (maybeCurrentComment && maybeCurrentComment.positionStart.codeUnit < node.tokenRange.positionStart.codeUnit) {
-        const currentComment: PQP.Language.Comment.TComment = maybeCurrentComment;
-        const maybeCommentCollection: CommentCollection | undefined = commentMap.get(nodeId);
+    while (currentComment && currentComment.positionStart.codeUnit < node.tokenRange.positionStart.codeUnit) {
+        const commentCollection: CommentCollection | undefined = commentMap.get(nodeId);
 
         // It's the first comment for the TNode
-        if (maybeCommentCollection === undefined) {
+        if (commentCollection === undefined) {
             const commentCollection: CommentCollection = {
                 prefixedComments: [currentComment],
                 prefixedCommentsContainsNewline: currentComment.containsNewline,
@@ -114,7 +113,6 @@ async function visitNode(state: CommentState, node: Ast.TNode): Promise<void> {
         }
         // At least one comment already attached to the TNode
         else {
-            const commentCollection: CommentCollection = maybeCommentCollection;
             commentCollection.prefixedComments.push(currentComment);
 
             if (currentComment.containsNewline) {
@@ -125,10 +123,9 @@ async function visitNode(state: CommentState, node: Ast.TNode): Promise<void> {
         // alright we got a leaf node having comments
         if (!leafIdsOfItsContainerFound.has(nodeId)) {
             // trace up to find it the closest ancestry and mark it at containIdsHavingComments
-            let maybeParentId: number | undefined = nodeIdMapCollection.parentIdById.get(nodeId);
+            let parentId: number | undefined = nodeIdMapCollection.parentIdById.get(nodeId);
 
-            while (maybeParentId) {
-                const parentId: number = maybeParentId;
+            while (parentId) {
                 const parent: PQP.Language.Ast.TNode | undefined = nodeIdMapCollection.astNodeById.get(parentId);
 
                 if (parent?.kind && containerNodeKindSet.has(parent?.kind)) {
@@ -140,13 +137,13 @@ async function visitNode(state: CommentState, node: Ast.TNode): Promise<void> {
                     break;
                 }
 
-                maybeParentId = nodeIdMapCollection.parentIdById.get(parentId);
+                parentId = nodeIdMapCollection.parentIdById.get(parentId);
             }
         }
 
         state.commentsIndex += 1;
-        maybeCurrentComment = state.comments[state.commentsIndex];
+        currentComment = state.comments[state.commentsIndex];
     }
 
-    state.maybeCurrentComment = maybeCurrentComment;
+    state.currentComment = currentComment;
 }

@@ -23,7 +23,7 @@ export interface CommentResult {
 export interface CommentState extends PQP.Traverse.ITraversalState<CommentResult> {
     readonly comments: ReadonlyArray<PQP.Language.Comment.TComment>;
     commentsIndex: number;
-    maybeCurrentComment: PQP.Language.Comment.TComment | undefined;
+    currentComment: PQP.Language.Comment.TComment | undefined;
 }
 
 export interface IsMultilineFirstPassState extends PQP.Traverse.ITraversalState<IsMultilineMap> {
@@ -69,7 +69,7 @@ export interface CommentState extends PQP.Traverse.ITraversalState<CommentResult
      */
     readonly leafIdsOfItsContainerFound: Set<number>;
     commentsIndex: number;
-    maybeCurrentComment: PQP.Language.Comment.TComment | undefined;
+    currentComment: PQP.Language.Comment.TComment | undefined;
 }
 
 export type Offset = "L" | "R";

@@ -70,11 +70,11 @@ interface SerializeState {
     readonly passthroughMaps: SerializePassthroughMaps;
     readonly locale: string;
     readonly traceManager: PQP.Trace.TraceManager;
-    readonly maybeInitialCorrelationId: number | undefined;
+    readonly initialCorrelationId: number | undefined;
     readonly linearLengthMap: LinearLengthMap;
     readonly newlineLiteral: NewlineLiteral;
     readonly indentationLiteral: IndentationLiteral;
-    readonly maybeCancellationToken: PQP.ICancellationToken | undefined;
+    readonly cancellationToken: PQP.ICancellationToken | undefined;
     readonly indentationCache: string[];
     readonly maxWidth: number;
     readonly supportInlineBlock: boolean;
@@ -104,8 +104,8 @@ async function serialize(settings: SerializeSettings): Promise<string> {
             state.node,
             state.locale,
             state.traceManager,
-            state.maybeInitialCorrelationId,
-            state.maybeCancellationToken,
+            state.initialCorrelationId,
+            state.cancellationToken,
         );
 
         if (isFinite(currentEstLen)) {
@@ -137,8 +137,8 @@ function stateFromSettings(settings: SerializeSettings): SerializeState {
         passthroughMaps: settings.passthroughMaps,
         locale: settings.locale,
         traceManager: settings.traceManager,
-        maybeInitialCorrelationId: settings.maybeInitialCorrelationId,
-        maybeCancellationToken: settings.maybeCancellationToken,
+        initialCorrelationId: settings.initialCorrelationId,
+        cancellationToken: settings.cancellationToken,
         linearLengthMap: new Map(),
         newlineLiteral: settings.newlineLiteral,
         indentationLiteral: settings.indentationLiteral,
@@ -208,7 +208,7 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
 
     // maybe dedent before saving current indent level
     if (isContainer) {
-        maybeDedentContainer(state, parameter);
+        dedentContainer(state, parameter);
     }
 
     const currentIndentLevel: number = state.indentationLevel;
@@ -229,8 +229,8 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
             node,
             state.locale,
             state.traceManager,
-            state.maybeInitialCorrelationId,
-            state.maybeCancellationToken,
+            state.initialCorrelationId,
+            state.cancellationToken,
         );
 
         if (isFinite(currentEstLen)) {
@@ -253,10 +253,10 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
     }
 
     if (node.isLeaf) {
-        const maybeComments: CommentCollection | undefined = state.passthroughMaps.commentCollectionMap.get(nodeId);
+        const comments: CommentCollection | undefined = state.passthroughMaps.commentCollectionMap.get(nodeId);
 
-        if (maybeComments) {
-            visitComments(state, maybeComments);
+        if (comments) {
+            visitComments(state, comments);
         }
     }
 
@@ -356,14 +356,16 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
         }
 
         default: {
-            const maybeChildren: ReadonlyArray<Ast.TNode> | undefined =
-                PQP.Parser.NodeIdMapIterator.maybeIterChildrenAst(state.nodeIdMapCollection, node.id);
+            const children: ReadonlyArray<Ast.TNode> | undefined = PQP.Parser.NodeIdMapIterator.iterChildrenAst(
+                state.nodeIdMapCollection,
+                node.id,
+            );
 
-            if (maybeChildren === undefined) {
+            if (children === undefined) {
                 break;
             }
 
-            for (const child of maybeChildren) {
+            for (const child of children) {
                 // we need to await in this loop and ensure all ast were visited in sequences other than parallel
                 // eslint-disable-next-line no-await-in-loop
                 await serializeNode(state, child, { isParentInline: currentlySupportInlineBlock });
@@ -497,7 +499,7 @@ function serializeLiteral(state: SerializeState, str: string, parameter: Seriali
         appendToFormatted(state, state.newlineLiteral);
     }
 
-    maybePopulateIndented(state);
+    populateIndented(state);
     appendToFormatted(state, str);
 
     if (parameter.lineBreak || parameter.doubleLineBreak) {
@@ -514,7 +516,7 @@ function serializeLiteral(state: SerializeState, str: string, parameter: Seriali
     }
 }
 
-function maybePopulateIndented(state: SerializeState): void {
+function populateIndented(state: SerializeState): void {
     if (state.currentLine === "" && !state.isPseudoLine) {
         appendToFormatted(state, currentIndentation(state));
     }
@@ -606,7 +608,7 @@ function shouldActivateAnchorByText(text: string, matcher: RegExp): boolean {
     return Boolean(text.match(matcher));
 }
 
-function maybeDedentContainer(state: SerializeState, parameter: SerializeParameter): void {
+function dedentContainer(state: SerializeState, parameter: SerializeParameter): void {
     if (parameter.dedentContainerConditionReg) {
         const currentFormatted: string = state.formatted + state.formatted;
 
@@ -619,13 +621,11 @@ function maybeDedentContainer(state: SerializeState, parameter: SerializeParamet
 }
 
 function currentIndentation(state: SerializeState): string {
-    const maybeIndentationLiteral: string | undefined = state.indentationCache[state.indentationLevel];
+    const indentationLiteral: string | undefined = state.indentationCache[state.indentationLevel];
 
-    if (maybeIndentationLiteral === undefined) {
-        return expandIndentationCache(state, state.indentationLevel);
-    } else {
-        return maybeIndentationLiteral;
-    }
+    return indentationLiteral !== undefined
+        ? indentationLiteral
+        : expandIndentationCache(state, state.indentationLevel);
 }
 
 function endingWithNewline(state: SerializeState): boolean {

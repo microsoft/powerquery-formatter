@@ -47,13 +47,13 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
     const trace: Trace = formatSettings.traceManager.entry(
         FormatTraceConstant.Format,
         tryFormat.name,
-        formatSettings.maybeInitialCorrelationId,
+        formatSettings.initialCorrelationId,
     );
 
     const triedLexParse: PQP.Task.TriedLexParseTask = await PQP.TaskUtils.tryLexParse(
         {
             ...formatSettings,
-            maybeInitialCorrelationId: trace.id,
+            initialCorrelationId: trace.id,
         },
         text,
     );
@@ -68,7 +68,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
 
     const locale: string = formatSettings.locale;
     const traceManager: TraceManager = formatSettings.traceManager;
-    const maybeCancellationToken: PQP.ICancellationToken | undefined = formatSettings.maybeCancellationToken;
+    const cancellationToken: PQP.ICancellationToken | undefined = formatSettings.cancellationToken;
 
     let commentCollectionMap: CommentCollectionMap = new Map();
 
@@ -87,7 +87,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
             locale,
             traceManager,
             trace.id,
-            maybeCancellationToken,
+            cancellationToken,
         );
 
         if (PQP.ResultUtils.isError(triedCommentPass)) {
@@ -150,7 +150,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
             locale,
             formatSettings.traceManager,
             trace.id,
-            maybeCancellationToken,
+            cancellationToken,
         );
 
     if (PQP.ResultUtils.isError(triedSerializeParameter)) {
@@ -175,8 +175,8 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
         indentationLiteral: formatSettings.indentationLiteral,
         traceManager: formatSettings.traceManager,
         newlineLiteral: formatSettings.newlineLiteral,
-        maybeCancellationToken: undefined,
-        maybeInitialCorrelationId: trace.id,
+        cancellationToken: undefined,
+        initialCorrelationId: trace.id,
         maxWidth: formatSettings.maxWidth,
     };
 

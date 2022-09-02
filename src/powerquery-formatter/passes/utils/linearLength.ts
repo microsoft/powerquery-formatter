@@ -20,28 +20,28 @@ export async function getLinearLength(
     node: Ast.TNode,
     locale: string,
     traceManager: TraceManager,
-    maybeCorrelationId: number | undefined,
-    maybeCancellationToken: PQP.ICancellationToken | undefined,
+    correlationId: number | undefined,
+    cancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<number> {
     const nodeId: number = node.id;
-    const maybeLinearLength: number | undefined = linearLengthMap.get(nodeId);
+    const linearLength: number | undefined = linearLengthMap.get(nodeId);
 
-    if (maybeLinearLength === undefined) {
+    if (linearLength === undefined) {
         const linearLength: number = await calculateLinearLength(
             nodeIdMapCollection,
             linearLengthMap,
             node,
             locale,
             traceManager,
-            maybeCorrelationId,
-            maybeCancellationToken,
+            correlationId,
+            cancellationToken,
         );
 
         linearLengthMap.set(nodeId, linearLength);
 
         return linearLength;
     } else {
-        return maybeLinearLength;
+        return linearLength;
     }
 }
 
@@ -51,14 +51,14 @@ async function calculateLinearLength(
     node: Ast.TNode,
     locale: string,
     traceManager: TraceManager,
-    maybeCorrelationId: number | undefined,
-    maybeCancellationToken: PQP.ICancellationToken | undefined,
+    correlationId: number | undefined,
+    cancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<number> {
     const state: LinearLengthState = {
         locale,
         traceManager,
-        maybeCancellationToken,
-        maybeInitialCorrelationId: maybeCorrelationId,
+        cancellationToken,
+        initialCorrelationId: correlationId,
         linearLengthMap,
         nodeIdMapCollection,
         result: 0,
@@ -81,20 +81,11 @@ async function calculateLinearLength(
     }
 }
 
-async function visitNode(
-    state: LinearLengthState,
-    node: Ast.TNode,
-    maybeCorrelationId: number | undefined,
-): Promise<void> {
-    const trace: Trace = state.traceManager.entry(
-        FormatTraceConstant.LinearLength,
-        visitNode.name,
-        maybeCorrelationId,
-        {
-            nodeId: node.id,
-            nodeKind: node.kind,
-        },
-    );
+async function visitNode(state: LinearLengthState, node: Ast.TNode, correlationId: number | undefined): Promise<void> {
+    const trace: Trace = state.traceManager.entry(FormatTraceConstant.LinearLength, visitNode.name, correlationId, {
+        nodeId: node.id,
+        nodeKind: node.kind,
+    });
 
     let linearLength: number;
 
@@ -150,13 +141,13 @@ async function visitNode(
             break;
 
         case Ast.NodeKind.Csv:
-            linearLength = await sumLinearLengths(state, trace.id, 0, node.node, node.maybeCommaConstant);
+            linearLength = await sumLinearLengths(state, trace.id, 0, node.node, node.commaConstant);
             break;
 
         case Ast.NodeKind.ErrorHandlingExpression: {
             let initialLength: number = 1;
 
-            if (node.maybeHandler) {
+            if (node.handler) {
                 initialLength += 2;
             }
 
@@ -166,7 +157,7 @@ async function visitNode(
                 initialLength,
                 node.tryConstant,
                 node.protectedExpression,
-                node.maybeHandler,
+                node.handler,
             );
 
             break;
@@ -179,7 +170,7 @@ async function visitNode(
                 0,
                 node.openWrapperConstant,
                 node.closeWrapperConstant,
-                node.maybeOptionalConstant,
+                node.optionalConstant,
                 ...node.content.elements,
             );
 
@@ -193,7 +184,7 @@ async function visitNode(
                 node.openWrapperConstant,
                 node.content,
                 node.closeWrapperConstant,
-                node.maybeOptionalConstant,
+                node.optionalConstant,
             );
 
             break;
@@ -203,9 +194,9 @@ async function visitNode(
                 state,
                 trace.id,
                 0,
-                node.maybeOptionalConstant,
+                node.optionalConstant,
                 node.name,
-                node.maybeFieldTypeSpecification,
+                node.fieldTypeSpecification,
             );
 
             break;
@@ -215,7 +206,7 @@ async function visitNode(
 
             let initialLength: number = 0;
 
-            if (node.maybeOpenRecordMarkerConstant && elements.length) {
+            if (node.openRecordMarkerConstant && elements.length) {
                 initialLength += 2;
             }
 
@@ -225,7 +216,7 @@ async function visitNode(
                 initialLength,
                 node.openWrapperConstant,
                 node.closeWrapperConstant,
-                node.maybeOpenRecordMarkerConstant,
+                node.openRecordMarkerConstant,
                 ...elements,
             );
 
@@ -239,7 +230,7 @@ async function visitNode(
         case Ast.NodeKind.FunctionExpression: {
             let initialLength: number = 2;
 
-            if (node.maybeFunctionReturnType) {
+            if (node.functionReturnType) {
                 initialLength += 2;
             }
 
@@ -248,7 +239,7 @@ async function visitNode(
                 trace.id,
                 initialLength,
                 node.parameters,
-                node.maybeFunctionReturnType,
+                node.functionReturnType,
                 node.fatArrowConstant,
                 node.expression,
             );
@@ -274,7 +265,7 @@ async function visitNode(
             break;
 
         case Ast.NodeKind.IdentifierExpression:
-            linearLength = await sumLinearLengths(state, trace.id, 0, node.maybeInclusiveConstant, node.identifier);
+            linearLength = await sumLinearLengths(state, trace.id, 0, node.inclusiveConstant, node.identifier);
             break;
 
         case Ast.NodeKind.ItemAccessExpression:
@@ -285,7 +276,7 @@ async function visitNode(
                 node.openWrapperConstant,
                 node.content,
                 node.closeWrapperConstant,
-                node.maybeOptionalConstant,
+                node.optionalConstant,
             );
 
             break;
@@ -318,11 +309,11 @@ async function visitNode(
         case Ast.NodeKind.Parameter: {
             let initialLength: number = 0;
 
-            if (node.maybeOptionalConstant) {
+            if (node.optionalConstant) {
                 initialLength += 1;
             }
 
-            if (node.maybeParameterType) {
+            if (node.parameterType) {
                 initialLength += 1;
             }
 
@@ -330,9 +321,9 @@ async function visitNode(
                 state,
                 trace.id,
                 initialLength,
-                node.maybeOptionalConstant,
+                node.optionalConstant,
                 node.name,
-                node.maybeParameterType,
+                node.parameterType,
             );
 
             break;
@@ -369,11 +360,11 @@ async function visitNode(
         case Ast.NodeKind.SectionMember: {
             let initialLength: number = 0;
 
-            if (node.maybeLiteralAttributes) {
+            if (node.literalAttributes) {
                 initialLength += 1;
             }
 
-            if (node.maybeSharedConstant) {
+            if (node.sharedConstant) {
                 initialLength += 1;
             }
 
@@ -381,8 +372,8 @@ async function visitNode(
                 state,
                 trace.id,
                 initialLength,
-                node.maybeLiteralAttributes,
-                node.maybeSharedConstant,
+                node.literalAttributes,
+                node.sharedConstant,
                 node.namePairedExpression,
                 node.semicolonConstant,
             );
@@ -395,11 +386,11 @@ async function visitNode(
 
             let initialLength: number = 0;
 
-            if (node.maybeLiteralAttributes) {
+            if (node.literalAttributes) {
                 initialLength += 1;
             }
 
-            if (node.maybeName) {
+            if (node.name) {
                 initialLength += 1;
             }
 
@@ -407,9 +398,9 @@ async function visitNode(
                 state,
                 trace.id,
                 initialLength,
-                node.maybeLiteralAttributes,
+                node.literalAttributes,
                 node.sectionConstant,
-                node.maybeName,
+                node.name,
                 node.semicolonConstant,
                 ...sectionMembers,
             );
@@ -467,11 +458,11 @@ async function visitNode(
 async function visitBinOpExpressionNode(
     state: LinearLengthState,
     node: Ast.TBinOpExpression,
-    maybeCorrelationId: number | undefined,
+    correlationId: number | undefined,
 ): Promise<number> {
     return sumLinearLengths(
         state,
-        maybeCorrelationId,
+        correlationId,
         node.operatorConstant.constantKind.length,
         node.left,
         node.operatorConstant,
@@ -488,14 +479,14 @@ function visitWrappedCsvArray(
         | Ast.TParameterList
         | Ast.RecordExpression
         | Ast.RecordLiteral,
-    maybeCorrelationId: number | undefined,
+    correlationId: number | undefined,
 ): Promise<number> {
     const elements: ReadonlyArray<Ast.TCsv> = node.content.elements;
     const numElements: number = elements.length;
 
     return sumLinearLengths(
         state,
-        maybeCorrelationId,
+        correlationId,
         numElements ? numElements - 1 : 0,
         node.openWrapperConstant,
         node.closeWrapperConstant,
@@ -505,21 +496,21 @@ function visitWrappedCsvArray(
 
 async function sumLinearLengths(
     state: LinearLengthState,
-    maybeCorrelationId: number | undefined,
+    correlationId: number | undefined,
     initialLength: number,
-    ...maybeNodes: (Ast.TNode | undefined)[]
+    ...nodes: (Ast.TNode | undefined)[]
 ): Promise<number> {
     const trace: Trace = state.traceManager.entry(
         FormatTraceConstant.LinearLength,
         sumLinearLengths.name,
-        maybeCorrelationId,
+        correlationId,
     );
 
-    const nodes: Ast.TNode[] = maybeNodes.filter(
+    const filteredNodes: Ast.TNode[] = nodes.filter(
         (value: Ast.TNode | undefined): value is Ast.TNode => value !== undefined,
     );
 
-    const linearLengths: ReadonlyArray<number> = await PQP.ArrayUtils.mapAsync(nodes, (node: Ast.TNode) =>
+    const linearLengths: ReadonlyArray<number> = await PQP.ArrayUtils.mapAsync(filteredNodes, (node: Ast.TNode) =>
         getLinearLength(
             state.nodeIdMapCollection,
             state.linearLengthMap,
@@ -527,7 +518,7 @@ async function sumLinearLengths(
             state.locale,
             state.traceManager,
             trace.id,
-            state.maybeCancellationToken,
+            state.cancellationToken,
         ),
     );
 
