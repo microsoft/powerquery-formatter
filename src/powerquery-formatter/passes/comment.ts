@@ -17,13 +17,13 @@ export async function tryTraverseComment(
     locale: string,
     traceManager: TraceManager,
     maybeCorrelationId: number | undefined,
-    maybeCancellationToken: PQP.ICancellationToken | undefined,
+    cancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<PQP.Traverse.TriedTraverse<CommentResult>> {
     const state: CommentState = {
         locale,
         traceManager,
-        maybeCancellationToken,
-        maybeInitialCorrelationId: maybeCorrelationId,
+        cancellationToken,
+        initialCorrelationId: maybeCorrelationId,
         result: {
             commentCollectionMap: new Map(),
             containerIdHavingCommentsChildCount: new Map(),
@@ -92,19 +92,18 @@ async function visitNode(state: CommentState, node: Ast.TNode): Promise<void> {
     }
 
     const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = state.nodeIdMapCollection;
-    let maybeCurrentComment: PQP.Language.Comment.TComment | undefined = state.maybeCurrentComment;
+    let currentComment: PQP.Language.Comment.TComment | undefined = state.maybeCurrentComment;
     const leafIdsOfItsContainerFound: Set<number> = state.leafIdsOfItsContainerFound;
     const commentMap: CommentCollectionMap = state.result.commentCollectionMap;
     const containerIdHavingCommentsChildCount: Map<number, number> = state.result.containerIdHavingCommentsChildCount;
     const parentContainerIdOfNodeId: Map<number, number> = state.result.parentContainerIdOfNodeId;
     const nodeId: number = node.id;
 
-    while (maybeCurrentComment && maybeCurrentComment.positionStart.codeUnit < node.tokenRange.positionStart.codeUnit) {
-        const currentComment: PQP.Language.Comment.TComment = maybeCurrentComment;
-        const maybeCommentCollection: CommentCollection | undefined = commentMap.get(nodeId);
+    while (currentComment && currentComment.positionStart.codeUnit < node.tokenRange.positionStart.codeUnit) {
+        const commentCollection: CommentCollection | undefined = commentMap.get(nodeId);
 
         // It's the first comment for the TNode
-        if (maybeCommentCollection === undefined) {
+        if (commentCollection === undefined) {
             const commentCollection: CommentCollection = {
                 prefixedComments: [currentComment],
                 prefixedCommentsContainsNewline: currentComment.containsNewline,
@@ -114,7 +113,6 @@ async function visitNode(state: CommentState, node: Ast.TNode): Promise<void> {
         }
         // At least one comment already attached to the TNode
         else {
-            const commentCollection: CommentCollection = maybeCommentCollection;
             commentCollection.prefixedComments.push(currentComment);
 
             if (currentComment.containsNewline) {
@@ -125,10 +123,9 @@ async function visitNode(state: CommentState, node: Ast.TNode): Promise<void> {
         // alright we got a leaf node having comments
         if (!leafIdsOfItsContainerFound.has(nodeId)) {
             // trace up to find it the closest ancestry and mark it at containIdsHavingComments
-            let maybeParentId: number | undefined = nodeIdMapCollection.parentIdById.get(nodeId);
+            let parentId: number | undefined = nodeIdMapCollection.parentIdById.get(nodeId);
 
-            while (maybeParentId) {
-                const parentId: number = maybeParentId;
+            while (parentId) {
                 const parent: PQP.Language.Ast.TNode | undefined = nodeIdMapCollection.astNodeById.get(parentId);
 
                 if (parent?.kind && containerNodeKindSet.has(parent?.kind)) {
@@ -140,13 +137,13 @@ async function visitNode(state: CommentState, node: Ast.TNode): Promise<void> {
                     break;
                 }
 
-                maybeParentId = nodeIdMapCollection.parentIdById.get(parentId);
+                parentId = nodeIdMapCollection.parentIdById.get(parentId);
             }
         }
 
         state.commentsIndex += 1;
-        maybeCurrentComment = state.comments[state.commentsIndex];
+        currentComment = state.comments[state.commentsIndex];
     }
 
-    state.maybeCurrentComment = maybeCurrentComment;
+    state.maybeCurrentComment = currentComment;
 }

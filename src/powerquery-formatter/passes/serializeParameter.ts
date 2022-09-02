@@ -28,7 +28,7 @@ export function tryTraverseSerializeParameter(
     locale: string,
     traceManager: TraceManager,
     maybeCorrelationId: number | undefined,
-    maybeCancellationToken: PQP.ICancellationToken | undefined,
+    cancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<PQP.Traverse.TriedTraverse<SerializeParameterMap>> {
     const trace: Trace = traceManager.entry(
         FormatTraceConstant.SerializeParameter,
@@ -61,8 +61,8 @@ export function tryTraverseSerializeParameter(
     const state: RealSerializeParameterState = {
         locale,
         traceManager,
-        maybeCancellationToken,
-        maybeInitialCorrelationId: trace.id,
+        cancellationToken,
+        initialCorrelationId: trace.id,
         commentCollectionMap,
         nodeIdMapCollection,
         currentScopeStack: rootState,
@@ -91,7 +91,7 @@ async function doTraverseRecursion(
     nodeIdMapCollection: NodeIdMap.Collection,
     node: Ast.TNode,
 ): Promise<void> {
-    state.maybeCancellationToken?.throwIfCancelled();
+    state.cancellationToken?.throwIfCancelled();
     const currentScopeStack: StackElement<SerializeParameter> = state.currentScopeStack;
     state.result.parametersMap.set(node.id, currentScopeStack.scopeList.parameters);
 

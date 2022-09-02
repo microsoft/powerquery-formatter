@@ -23,13 +23,13 @@ export function tryTraverseIsMultilineFirstPass(
     locale: string,
     traceManager: TraceManager,
     maybeCorrelationId: number | undefined,
-    maybeCancellationToken: PQP.ICancellationToken | undefined,
+    cancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<PQP.Traverse.TriedTraverse<IsMultilineMap>> {
     const state: IsMultilineFirstPassState = {
         locale,
         traceManager,
-        maybeCancellationToken,
-        maybeInitialCorrelationId: maybeCorrelationId,
+        cancellationToken,
+        initialCorrelationId: maybeCorrelationId,
         commentCollectionMap,
         linearLengthMap: new Map(),
         nodeIdMapCollection,
@@ -122,11 +122,11 @@ async function visitNode(
             break;
 
         case Ast.NodeKind.Csv:
-            isMultiline = isAnyMultiline(isMultilineMap, node.node, node.maybeCommaConstant);
+            isMultiline = isAnyMultiline(isMultilineMap, node.node, node.commaConstant);
             break;
 
         case Ast.NodeKind.ErrorHandlingExpression:
-            isMultiline = isAnyMultiline(isMultilineMap, node.tryConstant, node.protectedExpression, node.maybeHandler);
+            isMultiline = isAnyMultiline(isMultilineMap, node.tryConstant, node.protectedExpression, node.handler);
 
             break;
 
@@ -135,7 +135,7 @@ async function visitNode(
                 isMultilineMap,
                 node.openWrapperConstant,
                 node.closeWrapperConstant,
-                node.maybeOptionalConstant,
+                node.optionalConstant,
                 ...node.content.elements,
             );
 
@@ -147,18 +147,13 @@ async function visitNode(
                 node.openWrapperConstant,
                 node.content,
                 node.closeWrapperConstant,
-                node.maybeOptionalConstant,
+                node.optionalConstant,
             );
 
             break;
 
         case Ast.NodeKind.FieldSpecification:
-            isMultiline = isAnyMultiline(
-                isMultilineMap,
-                node.maybeOptionalConstant,
-                node.name,
-                node.maybeFieldTypeSpecification,
-            );
+            isMultiline = isAnyMultiline(isMultilineMap, node.optionalConstant, node.name, node.fieldTypeSpecification);
 
             break;
 
@@ -169,7 +164,7 @@ async function visitNode(
 
             if (fields.length > 1) {
                 isMultiline = true;
-            } else if (fields.length === 1 && node.maybeOpenRecordMarkerConstant) {
+            } else if (fields.length === 1 && node.openRecordMarkerConstant) {
                 isMultiline = true;
             }
 
@@ -186,7 +181,7 @@ async function visitNode(
             break;
 
         case Ast.NodeKind.IdentifierExpression: {
-            isMultiline = isAnyMultiline(isMultilineMap, node.maybeInclusiveConstant, node.identifier);
+            isMultiline = isAnyMultiline(isMultilineMap, node.inclusiveConstant, node.identifier);
             break;
         }
 
@@ -208,10 +203,10 @@ async function visitNode(
                     state.locale,
                     state.traceManager,
                     trace.id,
-                    state.maybeCancellationToken,
+                    state.cancellationToken,
                 );
 
-                const maybeArrayWrapper: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(
+                const maybeArrayWrapper: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.parentAst(
                     nodeIdMapCollection,
                     node.id,
                 );
@@ -222,7 +217,7 @@ async function visitNode(
 
                 const arrayWrapper: Ast.IArrayWrapper<Ast.TNode> = maybeArrayWrapper;
 
-                const maybeRecursivePrimaryExpression: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(
+                const maybeRecursivePrimaryExpression: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.parentAst(
                     nodeIdMapCollection,
                     arrayWrapper.id,
                 );
@@ -245,7 +240,7 @@ async function visitNode(
                     state.locale,
                     state.traceManager,
                     trace.id,
-                    state.maybeCancellationToken,
+                    state.cancellationToken,
                 );
 
                 const compositeLinearLength: number = headLinearLength + linearLength;
@@ -254,7 +249,7 @@ async function visitNode(
                 // ex. `#datetimezone(2013,02,26, 09,15,00, 09,00)`
                 if (compositeLinearLength > InvokeExpressionLinearLengthThreshold) {
                     const maybeIdentifierLiteral: string | undefined =
-                        PQP.Parser.NodeIdMapUtils.maybeInvokeExpressionIdentifierLiteral(nodeIdMapCollection, node.id);
+                        PQP.Parser.NodeIdMapUtils.invokeExpressionIdentifierLiteral(nodeIdMapCollection, node.id);
 
                     if (maybeIdentifierLiteral) {
                         const name: string = maybeIdentifierLiteral;
@@ -287,10 +282,10 @@ async function visitNode(
         case Ast.NodeKind.ItemAccessExpression:
             isMultiline = isAnyMultiline(
                 isMultilineMap,
-                node.maybeOptionalConstant,
+                node.optionalConstant,
                 node.content,
                 node.closeWrapperConstant,
-                node.maybeOptionalConstant,
+                node.optionalConstant,
             );
 
             break;
@@ -349,9 +344,9 @@ async function visitNode(
             } else {
                 isMultiline = isAnyMultiline(
                     isMultilineMap,
-                    node.maybeLiteralAttributes,
+                    node.literalAttributes,
                     node.sectionConstant,
-                    node.maybeName,
+                    node.name,
                     node.semicolonConstant,
                     ...node.sectionMembers.elements,
                 );
@@ -362,8 +357,8 @@ async function visitNode(
         case Ast.NodeKind.SectionMember:
             isMultiline = isAnyMultiline(
                 isMultilineMap,
-                node.maybeLiteralAttributes,
-                node.maybeSharedConstant,
+                node.literalAttributes,
+                node.sharedConstant,
                 node.namePairedExpression,
                 node.semicolonConstant,
             );
@@ -429,7 +424,7 @@ async function visitBinOpExpression(
         state.locale,
         state.traceManager,
         trace.id,
-        state.maybeCancellationToken,
+        state.cancellationToken,
     );
 
     if (linearLength > TBinOpExpressionLinearLengthThreshold) {
@@ -516,7 +511,7 @@ function containsNewline(text: string): boolean {
     const textLength: number = text.length;
 
     for (let index: number = 0; index < textLength; index += 1) {
-        if (PQP.StringUtils.maybeNewlineKindAt(text, index)) {
+        if (PQP.StringUtils.newlineKindAt(text, index)) {
             return true;
         }
     }

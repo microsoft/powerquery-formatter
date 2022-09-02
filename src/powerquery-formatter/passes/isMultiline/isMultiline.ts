@@ -18,7 +18,7 @@ export async function tryTraverseIsMultiline(
     locale: string,
     traceManager: TraceManager,
     maybeCorrelationId: number | undefined,
-    maybeCancellationToken: PQP.ICancellationToken | undefined,
+    cancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<PQP.Traverse.TriedTraverse<IsMultilineMap>> {
     const trace: Trace = traceManager.entry(
         FormatTraceConstant.IsMultiline,
@@ -33,7 +33,7 @@ export async function tryTraverseIsMultiline(
         locale,
         traceManager,
         trace.id,
-        maybeCancellationToken,
+        cancellationToken,
     );
 
     if (PQP.ResultUtils.isError(triedFirstPass)) {
@@ -49,7 +49,7 @@ export async function tryTraverseIsMultiline(
         locale,
         traceManager,
         trace.id,
-        maybeCancellationToken,
+        cancellationToken,
     );
 
     trace.exit();

@@ -16,13 +16,13 @@ export function tryTraverseIsMultilineSecondPass(
     locale: string,
     traceManager: TraceManager,
     maybeCorrelationId: number | undefined,
-    maybeCancellationToken: PQP.ICancellationToken | undefined,
+    cancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<PQP.Traverse.TriedTraverse<IsMultilineMap>> {
     const state: IsMultilineSecondPassState = {
         locale,
         traceManager,
-        maybeCancellationToken,
-        maybeInitialCorrelationId: maybeCorrelationId,
+        cancellationToken,
+        initialCorrelationId: maybeCorrelationId,
         nodeIdMapCollection,
         result: isMultilineMap,
     };
@@ -81,10 +81,7 @@ async function visitNode(
 function visitBinOpExpression(state: IsMultilineSecondPassState, node: Ast.TNode, trace: Trace): void {
     const isMultilineMap: IsMultilineMap = state.result;
 
-    const maybeParent: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(
-        state.nodeIdMapCollection,
-        node.id,
-    );
+    const maybeParent: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.parentAst(state.nodeIdMapCollection, node.id);
 
     if (maybeParent && AstUtils.isTBinOpExpression(maybeParent) && expectGetIsMultiline(isMultilineMap, maybeParent)) {
         trace.trace("Updating isMultiline for nested BinOp", { nodeId: node.id, nodeKind: node.kind });
@@ -103,19 +100,19 @@ function visitListOrRecord(
 
         const nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection = state.nodeIdMapCollection;
 
-        let maybeParent: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, node.id);
+        let maybeParent: Ast.TNode | undefined = PQP.Parser.NodeIdMapUtils.parentAst(nodeIdMapCollection, node.id);
 
         let maybeCsv: Ast.TCsv | undefined;
         let maybeArrayWrapper: Ast.TArrayWrapper | undefined;
 
         if (maybeParent && maybeParent.kind === Ast.NodeKind.Csv) {
             maybeCsv = maybeParent;
-            maybeParent = PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
+            maybeParent = PQP.Parser.NodeIdMapUtils.parentAst(nodeIdMapCollection, maybeParent.id);
         }
 
         if (maybeParent && maybeParent.kind === Ast.NodeKind.ArrayWrapper) {
             maybeArrayWrapper = maybeParent;
-            maybeParent = PQP.Parser.NodeIdMapUtils.maybeParentAst(nodeIdMapCollection, maybeParent.id);
+            maybeParent = PQP.Parser.NodeIdMapUtils.parentAst(nodeIdMapCollection, maybeParent.id);
         }
 
         if (maybeParent) {
