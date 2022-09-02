@@ -8,14 +8,14 @@ import { NodeIdMap } from "@microsoft/powerquery-parser/lib/powerquery-parser/pa
 
 import {
     CommentCollectionMap,
-    SerializeParameterMapV2,
-    SerializeParameterStateV2,
+    SerializeParameterMap,
+    SerializeParameterState,
     SerializeParameterV2,
 } from "./commonTypes";
 import { getNodeScopeName, ScopeListElement, ScopeMetadata, ScopeMetadataProvider, StackElement } from "../themes";
 import { FormatTraceConstant } from "../trace";
 
-type RealSerializeParameterStateV2 = SerializeParameterStateV2 & {
+type RealSerializeParameterStateV2 = SerializeParameterState & {
     currentScopeStack: StackElement<SerializeParameterV2>;
     scopeMetadataProvider: ScopeMetadataProvider<SerializeParameterV2>;
 };
@@ -29,7 +29,7 @@ export function tryTraverseSerializeParameter(
     traceManager: TraceManager,
     maybeCorrelationId: number | undefined,
     maybeCancellationToken: PQP.ICancellationToken | undefined,
-): Promise<PQP.Traverse.TriedTraverse<SerializeParameterMapV2>> {
+): Promise<PQP.Traverse.TriedTraverse<SerializeParameterMap>> {
     const trace: Trace = traceManager.entry(
         FormatTraceConstant.SerializeParameter,
         tryTraverseSerializeParameter.name,
@@ -73,7 +73,7 @@ export function tryTraverseSerializeParameter(
         workspaceMap: new Map(),
     };
 
-    const result: Promise<PQP.Traverse.TriedTraverse<SerializeParameterMapV2>> = PQP.ResultUtils.ensureResultAsync(
+    const result: Promise<PQP.Traverse.TriedTraverse<SerializeParameterMap>> = PQP.ResultUtils.ensureResultAsync(
         async () => {
             await doTraverseRecursion(state, nodeIdMapCollection, ast);
 

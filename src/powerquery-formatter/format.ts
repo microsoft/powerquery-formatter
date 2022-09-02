@@ -9,7 +9,7 @@ import {
     CommentCollection,
     CommentCollectionMap,
     CommentResult,
-    SerializeParameterMapV2,
+    SerializeParameterMap,
     tryTraverseComment,
     tryTraverseSerializeParameter,
 } from "./passes";
@@ -141,7 +141,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
     // move its static as a singleton instant for now
     const newRegistry: SyncThemeRegistry = SyncThemeRegistry.defaultInstance;
 
-    const triedSerializeParameter: PQP.Traverse.TriedTraverse<SerializeParameterMapV2> =
+    const triedSerializeParameter: PQP.Traverse.TriedTraverse<SerializeParameterMap> =
         await tryTraverseSerializeParameter(
             ast,
             nodeIdMapCollection,
@@ -157,7 +157,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
         return triedSerializeParameter;
     }
 
-    const serializeParameterMap: SerializeParameterMapV2 = triedSerializeParameter.value;
+    const serializeParameterMap: SerializeParameterMap = triedSerializeParameter.value;
 
     const passthroughMaps: SerializePassthroughMaps = {
         commentCollectionMap,

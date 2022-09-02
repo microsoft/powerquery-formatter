@@ -9,7 +9,7 @@ import {
     CommentCollection,
     CommentCollectionMap,
     LinearLengthMap,
-    SerializeParameterMapV2,
+    SerializeParameterMap,
     SerializeParameterV2,
 } from "./passes";
 import { getLinearLength } from "./passes/utils/linearLength";
@@ -30,7 +30,7 @@ export interface SerializePassthroughMaps {
     readonly commentCollectionMap: CommentCollectionMap;
     readonly eofCommentCollection: CommentCollection;
     readonly containerIdHavingComments: Set<number>;
-    readonly serializeParameterMap: SerializeParameterMapV2;
+    readonly serializeParameterMap: SerializeParameterMap;
 }
 
 export const enum IndentationLiteral {

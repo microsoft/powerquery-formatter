@@ -59,19 +59,6 @@ export interface SerializeParameter {
     readonly maybeWriteKind?: SerializeWriteKind;
 }
 
-export interface SerializeParameterMap {
-    readonly indentationChange: Map<number, IndentationChange>;
-    readonly writeKind: Map<number, SerializeWriteKind>;
-    readonly comments: Map<number, ReadonlyArray<SerializeCommentParameter>>;
-}
-
-export interface SerializeParameterState extends PQP.Traverse.ITraversalState<SerializeParameterMap> {
-    readonly commentCollectionMap: CommentCollectionMap;
-    readonly isMultilineMap: IsMultilineMap;
-    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
-    readonly workspaceMap: Map<number, SerializeParameter>;
-}
-
 export interface CommentResult {
     readonly commentCollectionMap: CommentCollectionMap;
     readonly containerIdHavingCommentsChildCount: Map<number, number>;
@@ -191,11 +178,11 @@ export type SerializeParameterV2 = Partial<{
     clearTailingWhitespaceCarriageReturnBeforeAppending: boolean;
 }>;
 
-export interface SerializeParameterMapV2 {
+export interface SerializeParameterMap {
     readonly parametersMap: Map<number, SerializeParameterV2>;
 }
 
-export interface SerializeParameterStateV2 extends PQP.Traverse.ITraversalState<SerializeParameterMapV2> {
+export interface SerializeParameterState extends PQP.Traverse.ITraversalState<SerializeParameterMap> {
     readonly commentCollectionMap: CommentCollectionMap;
     readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
     readonly workspaceMap: Map<number, SerializeParameter>;
