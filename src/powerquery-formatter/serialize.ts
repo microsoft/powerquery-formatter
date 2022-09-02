@@ -16,17 +16,17 @@ import { getLinearLength } from "./passes/utils/linearLength";
 
 const ALL_WHITESPACES: RegExp = /^(\s)*$/g;
 
-export interface SerializeSettingsV2 extends PQP.CommonSettings {
+export interface SerializeSettings extends PQP.CommonSettings {
     readonly ast: Ast.TNode;
     readonly text: string;
     readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
-    readonly passthroughMaps: SerializePassthroughMapsV2;
+    readonly passthroughMaps: SerializePassthroughMaps;
     readonly indentationLiteral: IndentationLiteral;
     readonly newlineLiteral: NewlineLiteral;
     readonly maxWidth?: number;
 }
 
-export interface SerializePassthroughMapsV2 {
+export interface SerializePassthroughMaps {
     readonly commentCollectionMap: CommentCollectionMap;
     readonly eofCommentCollection: CommentCollection;
     readonly containerIdHavingComments: Set<number>;
@@ -45,8 +45,8 @@ export const enum NewlineLiteral {
 
 export type TriedSerialize = PQP.Result<string, PQP.CommonError.CommonError>;
 
-export function trySerializeV2(settings: SerializeSettingsV2): Promise<TriedSerialize> {
-    return PQP.ResultUtils.ensureResultAsync(() => serializeV2(settings), settings.locale);
+export function trySerialize(settings: SerializeSettings): Promise<TriedSerialize> {
+    return PQP.ResultUtils.ensureResultAsync(() => serialize(settings), settings.locale);
 }
 
 const enum LastTokenType {
@@ -67,7 +67,7 @@ interface SerializeState {
     readonly node: Ast.TNode;
     readonly text: string;
     readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
-    readonly passthroughMaps: SerializePassthroughMapsV2;
+    readonly passthroughMaps: SerializePassthroughMaps;
     readonly locale: string;
     readonly traceManager: PQP.Trace.TraceManager;
     readonly maybeInitialCorrelationId: number | undefined;
@@ -91,7 +91,7 @@ interface SerializeState {
     currentSectionMember: Ast.SectionMember | undefined;
 }
 
-async function serializeV2(settings: SerializeSettingsV2): Promise<string> {
+async function serialize(settings: SerializeSettings): Promise<string> {
     const state: SerializeState = stateFromSettings(settings);
 
     let isRootInline: boolean = false;
@@ -125,7 +125,7 @@ async function serializeV2(settings: SerializeSettingsV2): Promise<string> {
     return state.formatted;
 }
 
-function stateFromSettings(settings: SerializeSettingsV2): SerializeState {
+function stateFromSettings(settings: SerializeSettings): SerializeState {
     const maxWidth: number = settings.maxWidth ?? -1;
     const supportInlineBlock: boolean = maxWidth > 40;
 

@@ -31,7 +31,7 @@ export function tryTraverseSerializeParameter(
     maybeCancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<PQP.Traverse.TriedTraverse<SerializeParameterMapV2>> {
     const trace: Trace = traceManager.entry(
-        FormatTraceConstant.SerializeParameterV2,
+        FormatTraceConstant.SerializeParameter,
         tryTraverseSerializeParameter.name,
         maybeCorrelationId,
     );

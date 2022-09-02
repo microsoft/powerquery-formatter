@@ -16,10 +16,10 @@ import {
 import {
     IndentationLiteral,
     NewlineLiteral,
-    SerializePassthroughMapsV2,
-    SerializeSettingsV2,
+    SerializePassthroughMaps,
+    SerializeSettings,
     TriedSerialize,
-    trySerializeV2,
+    trySerialize,
 } from "./serialize";
 import { FormatTraceConstant } from "./trace";
 import { SyncThemeRegistry } from "./themes";
@@ -45,7 +45,7 @@ export const DefaultSettings: FormatSettings = {
 
 export async function tryFormat(formatSettings: FormatSettings, text: string): Promise<TriedFormat> {
     const trace: Trace = formatSettings.traceManager.entry(
-        FormatTraceConstant.FormatV2,
+        FormatTraceConstant.Format,
         tryFormat.name,
         formatSettings.maybeInitialCorrelationId,
     );
@@ -159,14 +159,14 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
 
     const serializeParameterMap: SerializeParameterMapV2 = triedSerializeParameter.value;
 
-    const passthroughMaps: SerializePassthroughMapsV2 = {
+    const passthroughMaps: SerializePassthroughMaps = {
         commentCollectionMap,
         eofCommentCollection,
         containerIdHavingComments,
         serializeParameterMap,
     };
 
-    const serializeRequest: SerializeSettingsV2 = {
+    const serializeRequest: SerializeSettings = {
         locale,
         ast,
         text,
@@ -180,7 +180,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
         maxWidth: formatSettings.maxWidth,
     };
 
-    const triedSerialize: TriedSerialize = await trySerializeV2(serializeRequest);
+    const triedSerialize: TriedSerialize = await trySerialize(serializeRequest);
     trace.exit();
 
     return triedSerialize;
