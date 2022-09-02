@@ -9,8 +9,8 @@ import {
     CommentCollection,
     CommentCollectionMap,
     LinearLengthMap,
+    SerializeParameter,
     SerializeParameterMap,
-    SerializeParameterV2,
 } from "./passes";
 import { getLinearLength } from "./passes/utils/linearLength";
 
@@ -201,7 +201,7 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
         state.currentSectionMember = node;
     }
 
-    let parameter: SerializeParameterV2 = state.passthroughMaps.serializeParameterMap.parametersMap.get(nodeId) ?? {};
+    let parameter: SerializeParameter = state.passthroughMaps.serializeParameterMap.parametersMap.get(nodeId) ?? {};
     const directlyHavingComments: boolean = state.passthroughMaps.containerIdHavingComments.has(nodeId);
 
     const isContainer: boolean = Boolean(parameter.container);
@@ -451,12 +451,12 @@ function shouldBreakAwayFromLastSectionMember(lastSectionLiteral: string, curren
 function visitIdentifierOrLiteral(
     state: SerializeState,
     node: Ast.GeneralizedIdentifier | Ast.Identifier | Ast.LiteralExpression,
-    parameter: SerializeParameterV2,
+    parameter: SerializeParameter,
 ): void {
     serializeLiteral(state, node.literal, parameter);
 }
 
-function serializeLiteral(state: SerializeState, str: string, parameter: SerializeParameterV2): void {
+function serializeLiteral(state: SerializeState, str: string, parameter: SerializeParameter): void {
     if (parameter.clearTailingWhitespaceCarriageReturnBeforeAppending) {
         if (state.currentLine) {
             // new literal was appended to the formatted and currentLine together, thus we have to modify them together
@@ -606,7 +606,7 @@ function shouldActivateAnchorByText(text: string, matcher: RegExp): boolean {
     return Boolean(text.match(matcher));
 }
 
-function maybeDedentContainer(state: SerializeState, parameter: SerializeParameterV2): void {
+function maybeDedentContainer(state: SerializeState, parameter: SerializeParameter): void {
     if (parameter.dedentContainerConditionReg) {
         const currentFormatted: string = state.formatted + state.formatted;
 

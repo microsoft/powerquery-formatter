@@ -4,7 +4,7 @@
 import "mocha";
 import { compare, DefaultFormatSettingsWithMaxWidth, expectFormat } from "./common";
 
-describe(`basic serialize V2`, () => {
+describe(`basic serialize`, () => {
     // ------------------------------------------
     // ---------- ArithmeticExpression ----------
     // ------------------------------------------

@@ -4,7 +4,7 @@
 import "mocha";
 import { compare, DefaultFormatSettingsWithMaxWidth, expectFormat } from "./common";
 
-describe(`small programs V2`, () => {
+describe(`small programs`, () => {
     it(`fastPow`, async () => {
         const expected: string = `
 // taken from: https://en.wikipedia.org/wiki/Exponentiation_by_squaring

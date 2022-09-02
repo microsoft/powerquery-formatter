@@ -54,11 +54,6 @@ export interface SerializeCommentParameter {
     readonly writeKind: SerializeWriteKind;
 }
 
-export interface SerializeParameter {
-    readonly maybeIndentationChange?: IndentationChange;
-    readonly maybeWriteKind?: SerializeWriteKind;
-}
-
 export interface CommentResult {
     readonly commentCollectionMap: CommentCollectionMap;
     readonly containerIdHavingCommentsChildCount: Map<number, number>;
@@ -79,7 +74,7 @@ export interface CommentState extends PQP.Traverse.ITraversalState<CommentResult
 
 export type Offset = "L" | "R";
 
-export type SerializeParameterV2 = Partial<{
+export type SerializeParameter = Partial<{
     /**
      * container, a boolean field defines whether the current ast node is a container of blocks
      * - a container will persis the indent level unchanged before entering and after leaving it
@@ -179,16 +174,10 @@ export type SerializeParameterV2 = Partial<{
 }>;
 
 export interface SerializeParameterMap {
-    readonly parametersMap: Map<number, SerializeParameterV2>;
+    readonly parametersMap: Map<number, SerializeParameter>;
 }
 
 export interface SerializeParameterState extends PQP.Traverse.ITraversalState<SerializeParameterMap> {
     readonly commentCollectionMap: CommentCollectionMap;
     readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
-    readonly workspaceMap: Map<number, SerializeParameter>;
 }
-
-export const DefaultSerializeParameter: SerializeParameter = {
-    maybeWriteKind: SerializeWriteKind.Any,
-    maybeIndentationChange: undefined,
-};

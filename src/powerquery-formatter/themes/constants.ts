@@ -12,7 +12,7 @@ import { NodeKind as NK } from "@microsoft/powerquery-parser/lib/powerquery-pars
 
 import { IRawTheme } from "./types";
 import { scopeNameFromConstKd } from "./scopeNameHelpers";
-import { SerializeParameterV2 } from "../passes";
+import { SerializeParameter } from "../passes";
 
 const StatementContainers: ReadonlyArray<NK> = [
     NK.IfExpression,
@@ -47,7 +47,7 @@ const ExpressionContainers: ReadonlyArray<NK> = [
 
 export const ContainerSet: ReadonlySet<NK> = new Set<NK>([...StatementContainers, ...ExpressionContainers]);
 
-export const defaultTheme: IRawTheme<SerializeParameterV2> = {
+export const defaultTheme: IRawTheme<SerializeParameter> = {
     name: "default",
     settings: [
         // common
