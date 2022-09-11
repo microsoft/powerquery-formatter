@@ -213,42 +213,59 @@ async function serializeNode(state: SerializeState, node: Ast.TNode, inheritOpti
 
     const currentIndentLevel: number = state.indentationLevel;
     const currentBlockStatusArrLen: number = state.blockStatusArray.length;
-    let currentlySupportInlineBlock: boolean = inheritOptions.isParentInline && !directlyHavingComments;
 
-    if (
+    // calculate current estimate length
+    let currentEstLen: number = await getLinearLength(
+        state.nodeIdMapCollection,
+        state.linearLengthMap,
+        node,
+        state.locale,
+        state.traceManager,
+        state.initialCorrelationId,
+        state.cancellationToken,
+    );
+
+    if (isFinite(currentEstLen)) {
+        if (state.currentLine === "") {
+            currentEstLen += currentIndentation(state).length;
+        } else {
+            currentEstLen += state.currentLine.length;
+        }
+    }
+
+    // if its parent were in in-line mode and also currently there were no comments ahead of it,
+    // the current node would definitely be also in-line mode unless it were forced to be in block-mode
+    let currentlySupportInlineBlock: boolean =
+        inheritOptions.isParentInline && !directlyHavingComments && parameter.forceBlockMode !== true;
+
+    if (parameter.inheritParentMode && parameter.forceBlockMode !== true) {
+        // force set current mode to its parent mode if inheritParentMode was set
+        currentlySupportInlineBlock = inheritOptions.isParentInline;
+    } else if (currentlySupportInlineBlock && isFinite(currentEstLen) && currentEstLen >= state.maxWidth) {
+        // force set current mode to block mode if cannot fit with the maxWidth
+        currentlySupportInlineBlock = currentEstLen < state.maxWidth;
+    } else if (
         state.supportInlineBlock &&
         isContainer &&
         !directlyHavingComments &&
+        // if ignoreInline were set, it won't turn current non-in-line back to in-line
         parameter.ignoreInline !== true &&
-        !currentlySupportInlineBlock
+        parameter.forceBlockMode !== true &&
+        !currentlySupportInlineBlock &&
+        isFinite(currentEstLen)
     ) {
+        // for non-forced block-mode, we would try to set current mode to inline-mode
+        // if its length were less than maxWidth
+
         // we are a block opener and also could support inline-block, thus calc the line to check it fits or not
-        let currentEstLen: number = await getLinearLength(
-            state.nodeIdMapCollection,
-            state.linearLengthMap,
-            node,
-            state.locale,
-            state.traceManager,
-            state.initialCorrelationId,
-            state.cancellationToken,
-        );
+        currentlySupportInlineBlock = currentEstLen < state.maxWidth;
 
-        if (isFinite(currentEstLen)) {
-            if (state.currentLine === "") {
-                currentEstLen += currentIndentation(state).length;
-            } else {
-                currentEstLen += state.currentLine.length;
-            }
-
-            currentlySupportInlineBlock = currentEstLen < state.maxWidth;
-
-            if (currentlySupportInlineBlock) {
-                parameter = {
-                    ...parameter,
-                    leftPadding: parameter.blockOpener === "L",
-                    rightPadding: parameter.blockOpener === "R",
-                };
-            }
+        if (currentlySupportInlineBlock) {
+            parameter = {
+                ...parameter,
+                leftPadding: parameter.blockOpener === "L",
+                rightPadding: parameter.blockOpener === "R",
+            };
         }
     }
 
@@ -610,7 +627,7 @@ function shouldActivateAnchorByText(text: string, matcher: RegExp): boolean {
 
 function dedentContainer(state: SerializeState, parameter: SerializeParameter): void {
     if (parameter.dedentContainerConditionReg) {
-        const currentFormatted: string = state.formatted + state.formatted;
+        const currentFormatted: string = state.formatted + state.currentLine;
 
         if (currentFormatted.match(parameter.dedentContainerConditionReg) && state.currentLine === "") {
             markCurrentEmptyLinePseudo(state);

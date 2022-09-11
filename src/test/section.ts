@@ -211,5 +211,57 @@ Other = 3;
 
             compare(expected, actual);
         });
+
+        it("Lengthy record in section", async () => {
+            const expected: string = `
+[Version = "1.1.0"]
+section UserVoice;
+
+SuggestionsTable =
+    let
+        descriptor = #table(
+            {
+                {
+                    false,
+                    "category",
+                    "category_id",
+                    type nullable Int64.Type,
+                    {
+                        [
+                            operator = "Equals",
+                            value = (value) => if value is null then "uncategorized" else Text.From(value)
+                        ]
+                    }
+                }
+            }
+        )
+    in
+        descriptor;
+`;
+
+            const actual: string = await expectFormat(
+                `[Version="1.1.0"]
+section UserVoice;
+
+SuggestionsTable = let
+    descriptor = #table(
+        {
+            {
+                false,
+                "category",
+                "category_id",
+                type nullable Int64.Type,
+                {[operator = "Equals", value = (value) => if value is null then "uncategorized" else Text.From(value)]}
+            }
+        }
+    )
+in
+    descriptor;
+`,
+                DefaultFormatSettingsWithMaxWidth,
+            );
+
+            compare(expected, actual);
+        });
     });
 });
