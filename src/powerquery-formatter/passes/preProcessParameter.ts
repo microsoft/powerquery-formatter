@@ -12,13 +12,13 @@ import { getNodeScopeName } from "../themes";
 import { NodeKind } from "@microsoft/powerquery-parser/lib/powerquery-parser/language/ast/ast";
 
 interface PreProcessState extends PQP.Traverse.ITraversalState<SerializeParameterMap> {
-    nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
-    commentCollectionMap: CommentCollectionMap;
-    cancellationToken: PQP.ICancellationToken | undefined;
+    readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
+    readonly commentCollectionMap: CommentCollectionMap;
+    readonly cancellationToken: PQP.ICancellationToken | undefined;
     currentNode: Ast.TNode;
-    visitedNodes: Ast.TNode[];
-    visitedNodeScopeNames: string[];
-    result: SerializeParameterMap;
+    readonly visitedNodes: Ast.TNode[];
+    readonly visitedNodeScopeNames: string[];
+    readonly result: SerializeParameterMap;
 }
 
 type ParameterPreProcessor = (state: PreProcessState) => void;
@@ -27,16 +27,18 @@ function parameterizeOneNodeInForceBlockMode(
     currentNode: Ast.TNode,
     serializeParameterMap: Map<number, SerializeParameter>,
 ): void {
-    let maybeCurrentNodeSerializeParameter: SerializeParameter | undefined = serializeParameterMap.get(currentNode.id);
+    let nullableCurrentNodeSerializeParameter: SerializeParameter | undefined = serializeParameterMap.get(
+        currentNode.id,
+    );
 
     // we need to do immutable modification over here and also need to wrap it in the following preprocessor api
-    maybeCurrentNodeSerializeParameter = maybeCurrentNodeSerializeParameter
-        ? { ...maybeCurrentNodeSerializeParameter }
+    nullableCurrentNodeSerializeParameter = nullableCurrentNodeSerializeParameter
+        ? { ...nullableCurrentNodeSerializeParameter }
         : {};
 
-    maybeCurrentNodeSerializeParameter.forceBlockMode = true;
+    nullableCurrentNodeSerializeParameter.forceBlockMode = true;
 
-    serializeParameterMap.set(currentNode.id, maybeCurrentNodeSerializeParameter);
+    serializeParameterMap.set(currentNode.id, nullableCurrentNodeSerializeParameter);
 }
 
 // I was thinking, one day, we could expose another preProcessor api to allow other to register other preProcessor, and
@@ -137,18 +139,18 @@ export async function doInvokePreProcessor(state: PreProcessState): Promise<void
         state.visitedNodeScopeNames.push(childScopeName);
 
         // invoke child preProcessor if any
-        const maybePreProcessorArray: ReadonlyArray<ParameterPreProcessor> | undefined = preProcessorDictionary.get(
+        const nullablePreProcessorArray: ReadonlyArray<ParameterPreProcessor> | undefined = preProcessorDictionary.get(
             child.kind,
         );
 
-        if (Array.isArray(maybePreProcessorArray)) {
+        if (Array.isArray(nullablePreProcessorArray)) {
             const preProcessorState: PreProcessState = {
                 ...state,
                 visitedNodes: state.visitedNodes.slice(),
                 visitedNodeScopeNames: state.visitedNodeScopeNames.slice(),
             };
 
-            maybePreProcessorArray.forEach((preProcessor: ParameterPreProcessor) => {
+            nullablePreProcessorArray.forEach((preProcessor: ParameterPreProcessor) => {
                 preProcessor(preProcessorState);
             });
         }
