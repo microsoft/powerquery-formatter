@@ -1612,7 +1612,7 @@ in
             compare(expected2, actual2);
         });
 
-        it(`Record item should honor prepending Line Feed `, async () => {
+        it(`Record item should honor prepending Line Feed v1`, async () => {
             const target: string = `[Version = "1.0.0"]
 section MultipleAuthKindConnector;
 
@@ -1674,6 +1674,75 @@ MultipleAuthKindConnector = [
             compare(expected, actual);
             compare(expected2, actual2);
         });
+    });
+
+    it(`Record item should honor prepending Line Feed v2`, async () => {
+        // for v2, we only break the first record literal ahead of the section
+        const target: string = `[
+    Version = "1.0.0"
+    ]
+section MultipleAuthKindConnector;
+
+[DataSource.Kind = "MultipleAuthKindConnector"]
+shared MultipleAuthKindConnector.Connects = ()=> Extension.CurrentCredential()[AuthenticationKind];
+
+MultipleAuthKindConnector = [
+    Authentication = [
+        Key = [],
+        UsernamePassword = [],
+        Windows = [],
+        Anonymous = []        
+    ]
+];`;
+
+        const expected: string = `
+[
+    Version = "1.0.0"
+]
+section MultipleAuthKindConnector;
+
+[
+    DataSource.Kind = "MultipleAuthKindConnector"
+]
+shared MultipleAuthKindConnector.Connects = () =>
+    Extension.CurrentCredential()[
+        AuthenticationKind
+    ];
+
+MultipleAuthKindConnector = [
+    Authentication = [
+        Key = [],
+        UsernamePassword = [],
+        Windows = [],
+        Anonymous = []
+    ]
+];
+`;
+
+        const expected2: string = `
+[
+    Version = "1.0.0"
+]
+section MultipleAuthKindConnector;
+
+[DataSource.Kind = "MultipleAuthKindConnector"]
+shared MultipleAuthKindConnector.Connects = () => Extension.CurrentCredential()[AuthenticationKind];
+
+MultipleAuthKindConnector = [
+    Authentication = [
+        Key = [],
+        UsernamePassword = [],
+        Windows = [],
+        Anonymous = []
+    ]
+];
+`;
+
+        const actual: string = await expectFormat(target);
+        const actual2: string = await expectFormat(target, DefaultFormatSettingsWithMaxWidth);
+
+        compare(expected, actual);
+        compare(expected2, actual2);
     });
 
     it(`Record should honor its content length v1`, async () => {

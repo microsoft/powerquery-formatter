@@ -44,7 +44,10 @@ function parameterizeOneNodeInForceBlockMode(
 // thus for now, I supposed let's put this, currently only, one preProcessor over here, and
 // latter find it a better place when we got those preProcessor registration apis in the following prs
 const recordExpressionParameterPreProcessor: ParameterPreProcessor = (state: PreProcessState) => {
-    const currentNode: Ast.RecordExpression = state.currentNode as Ast.RecordExpression;
+    const currentNode: Ast.RecordExpression | Ast.RecordLiteral = state.currentNode as
+        | Ast.RecordExpression
+        | Ast.RecordLiteral;
+
     const serializeParameterMap: Map<number, SerializeParameter> = state.result.parametersMap;
 
     // is current record already in different lines
@@ -56,8 +59,11 @@ const recordExpressionParameterPreProcessor: ParameterPreProcessor = (state: Pre
     shouldSerializeInMultipleLines =
         shouldSerializeInMultipleLines ||
         currentNode.content.elements.some(
-            (generalizedIdentifierPairedExpressionICsv: Ast.ICsv<Ast.GeneralizedIdentifierPairedExpression>): boolean =>
-                generalizedIdentifierPairedExpressionICsv.node.value.kind === NodeKind.RecordExpression,
+            (
+                generalizedIdentifierPairedExpressionICsv:
+                    | Ast.ICsv<Ast.GeneralizedIdentifierPairedExpression>
+                    | Ast.ICsv<Ast.GeneralizedIdentifierPairedAnyLiteral>,
+            ): boolean => generalizedIdentifierPairedExpressionICsv.node.value.kind === NodeKind.RecordExpression,
         );
 
     if (shouldSerializeInMultipleLines) {
@@ -68,6 +74,7 @@ const recordExpressionParameterPreProcessor: ParameterPreProcessor = (state: Pre
 };
 
 const preProcessorDictionary: Map<Ast.NodeKind, ReadonlyArray<ParameterPreProcessor>> = new Map([
+    [Ast.NodeKind.RecordLiteral, [recordExpressionParameterPreProcessor]],
     [Ast.NodeKind.RecordExpression, [recordExpressionParameterPreProcessor]],
 ]);
 

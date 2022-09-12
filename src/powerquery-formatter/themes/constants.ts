@@ -67,8 +67,10 @@ export const defaultTheme: IRawTheme<SerializeParameter> = {
         {
             scope: [
                 `${NK.RecordExpression}> ${NK.ArrayWrapper}`,
+                `${NK.RecordLiteral}> ${NK.ArrayWrapper}`,
                 `${NK.ListExpression}> ${NK.ArrayWrapper}`,
                 `${NK.Csv}> ${NK.RecordExpression}`,
+                `${NK.Csv}> ${NK.RecordLiteral}`,
             ],
             parameters: {
                 container: true,
