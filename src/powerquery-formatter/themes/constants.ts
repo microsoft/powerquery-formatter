@@ -65,6 +65,26 @@ export const defaultTheme: IRawTheme<SerializeParameter> = {
             },
         },
         {
+            scope: [
+                `${NK.RecordExpression}> ${NK.ArrayWrapper}`,
+                `${NK.RecordLiteral}> ${NK.ArrayWrapper}`,
+                `${NK.ListExpression}> ${NK.ArrayWrapper}`,
+                `${NK.Csv}> ${NK.RecordExpression}`,
+                `${NK.Csv}> ${NK.RecordLiteral}`,
+            ],
+            parameters: {
+                container: true,
+                skipPostContainerNewLine: true,
+                inheritParentMode: true,
+            },
+        },
+        {
+            scope: [`${NK.ArrayWrapper}> ${NK.Csv}`],
+            parameters: {
+                inheritParentMode: true,
+            },
+        },
+        {
             scope: ["constant", NK.LiteralExpression, NK.PrimitiveType, NK.GeneralizedIdentifier, NK.Identifier],
             parameters: {
                 leftPadding: true,

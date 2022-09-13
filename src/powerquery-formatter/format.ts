@@ -10,6 +10,7 @@ import {
     CommentCollectionMap,
     CommentResult,
     SerializeParameterMap,
+    tryPreProcessParameter,
     tryTraverseComment,
     tryTraverseSerializeParameter,
 } from "./passes";
@@ -159,6 +160,22 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
 
     const serializeParameterMap: SerializeParameterMap = triedSerializeParameter.value;
 
+    const triedPreProcessedSerializeParameter: PQP.Traverse.TriedTraverse<SerializeParameterMap> =
+        await tryPreProcessParameter(
+            ast,
+            nodeIdMapCollection,
+            commentCollectionMap,
+            formatSettings.traceManager,
+            locale,
+            trace.id,
+            cancellationToken,
+            serializeParameterMap,
+        );
+
+    if (PQP.ResultUtils.isError(triedPreProcessedSerializeParameter)) {
+        return triedPreProcessedSerializeParameter;
+    }
+
     const passthroughMaps: SerializePassthroughMaps = {
         commentCollectionMap,
         eofCommentCollection,
@@ -177,7 +194,9 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
         newlineLiteral: formatSettings.newlineLiteral,
         cancellationToken: undefined,
         initialCorrelationId: trace.id,
-        maxWidth: formatSettings.maxWidth,
+        // everytime `trySerialize` using this maxWidth,
+        // it would assume there would be two extra spaces where it could append whitespaces
+        maxWidth: formatSettings.maxWidth ? formatSettings.maxWidth - 2 : undefined,
     };
 
     const triedSerialize: TriedSerialize = await trySerialize(serializeRequest);

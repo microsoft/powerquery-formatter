@@ -103,6 +103,17 @@ export type SerializeParameter = Partial<{
      */
     ignoreInline: boolean;
     /**
+     * forceBlockMode, a container field:
+     * once set truthy, it will force the present container being formatted in the block mode when entering it,
+     * even the container could be fit with the max-width
+     */
+    forceBlockMode: boolean;
+    /**
+     * inheritParentMode, a container field:
+     * once set truthy, it will force the present container inheriting formatting mode from its closest parent container
+     */
+    inheritParentMode: boolean;
+    /**
      * blockOpener, a block or container field:
      * define an opener anchor relative to the current token, which could be either 'L' or 'R', which starts a block
      * 'L' means the opener is on the left-hand side of the token, and 'R' for the right-hand side

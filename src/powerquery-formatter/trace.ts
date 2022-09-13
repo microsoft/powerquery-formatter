@@ -8,4 +8,5 @@ export const enum FormatTraceConstant {
     Format = "Format",
     LinearLength = "Format.LinearLength",
     SerializeParameter = "Format.SerializeParameter",
+    PreProcessParameter = "Format.PreProcessParameter",
 }
