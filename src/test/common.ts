@@ -11,10 +11,6 @@ const DefaultFormatSettings: FormatSettings = {
     ...PQP.DefaultSettings,
     indentationLiteral: IndentationLiteral.SpaceX4,
     newlineLiteral: NewlineLiteral.Unix,
-};
-
-export const DefaultFormatSettingsWithMaxWidth: FormatSettings = {
-    ...DefaultFormatSettings,
     maxWidth: 120,
 };
 

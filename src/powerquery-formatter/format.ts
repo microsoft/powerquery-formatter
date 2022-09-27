@@ -35,13 +35,14 @@ export type TFormatError =
 export interface FormatSettings extends PQP.Settings {
     readonly indentationLiteral: IndentationLiteral;
     readonly newlineLiteral: NewlineLiteral;
-    readonly maxWidth?: number;
+    readonly maxWidth: number;
 }
 
 export const DefaultSettings: FormatSettings = {
     ...PQP.DefaultSettings,
     indentationLiteral: IndentationLiteral.SpaceX4,
     newlineLiteral: NewlineLiteral.Windows,
+    maxWidth: 120,
 };
 
 export async function tryFormat(formatSettings: FormatSettings, text: string): Promise<TriedFormat> {
@@ -196,7 +197,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
         initialCorrelationId: trace.id,
         // everytime `trySerialize` using this maxWidth,
         // it would assume there would be two extra spaces where it could append whitespaces
-        maxWidth: formatSettings.maxWidth ? formatSettings.maxWidth - 2 : undefined,
+        maxWidth: formatSettings.maxWidth - 2,
     };
 
     const triedSerialize: TriedSerialize = await trySerialize(serializeRequest);

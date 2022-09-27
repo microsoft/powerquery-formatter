@@ -2,19 +2,19 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import { compare, DefaultFormatSettingsWithMaxWidth, expectFormat } from "./common";
+import { compare, expectFormat } from "./common";
 
 describe("section", () => {
     describe("Section", () => {
         it("section;", async () => {
             const expected: string = `section;`;
-            const actual: string = await expectFormat(`section;`, DefaultFormatSettingsWithMaxWidth);
+            const actual: string = await expectFormat(`section;`);
             compare(expected, actual);
         });
 
         it("section name;", async () => {
             const expected: string = `section name;`;
-            const actual: string = await expectFormat(`section name;`, DefaultFormatSettingsWithMaxWidth);
+            const actual: string = await expectFormat(`section name;`);
             compare(expected, actual);
         });
 
@@ -24,7 +24,7 @@ describe("section", () => {
 section name;
 `;
 
-            const actual: string = await expectFormat(`[] section name;`, DefaultFormatSettingsWithMaxWidth);
+            const actual: string = await expectFormat(`[] section name;`);
             compare(expected, actual);
         });
 
@@ -34,7 +34,7 @@ section name;
 section;
 `;
 
-            const actual: string = await expectFormat(`[] section;`, DefaultFormatSettingsWithMaxWidth);
+            const actual: string = await expectFormat(`[] section;`);
             compare(expected, actual);
         });
 
@@ -44,7 +44,7 @@ section;
 section;
 `;
 
-            const actual: string = await expectFormat(`[a = 1] section;`, DefaultFormatSettingsWithMaxWidth);
+            const actual: string = await expectFormat(`[a = 1] section;`);
             compare(expected, actual);
         });
 
@@ -54,7 +54,7 @@ section;
 section;
 `;
 
-            const actual: string = await expectFormat(`[a = {}] section;`, DefaultFormatSettingsWithMaxWidth);
+            const actual: string = await expectFormat(`[a = {}] section;`);
             compare(expected, actual);
         });
 
@@ -64,7 +64,7 @@ section;
 section;
 `;
 
-            const actual: string = await expectFormat(`[a=1, b=2] section;`, DefaultFormatSettingsWithMaxWidth);
+            const actual: string = await expectFormat(`[a=1, b=2] section;`);
             compare(expected, actual);
         });
 
@@ -74,7 +74,7 @@ section;
 section;
 `;
 
-            const actual: string = await expectFormat(`[a = {}, b = {}] section;`, DefaultFormatSettingsWithMaxWidth);
+            const actual: string = await expectFormat(`[a = {}, b = {}] section;`);
             compare(expected, actual);
         });
 
@@ -84,7 +84,7 @@ section;
 section;
 `;
 
-            const actual: string = await expectFormat(`[a = {1}, b = {2}] section;`, DefaultFormatSettingsWithMaxWidth);
+            const actual: string = await expectFormat(`[a = {1}, b = {2}] section;`);
             compare(expected, actual);
         });
 
@@ -94,10 +94,7 @@ section;
 section;
 `;
 
-            const actual: string = await expectFormat(
-                `[a = 1, b = [c = {2, 3, 4}], e = 5] section;`,
-                DefaultFormatSettingsWithMaxWidth,
-            );
+            const actual: string = await expectFormat(`[a = 1, b = [c = {2, 3, 4}], e = 5] section;`);
 
             compare(expected, actual);
         });
@@ -111,7 +108,7 @@ section;
 x = 1;
 `;
 
-            const actual: string = await expectFormat(`section; x = 1;`, DefaultFormatSettingsWithMaxWidth);
+            const actual: string = await expectFormat(`section; x = 1;`);
             compare(expected, actual);
         });
 
@@ -122,7 +119,7 @@ section;
 [] x = 1;
 `;
 
-            const actual: string = await expectFormat(`section; [] x = 1;`, DefaultFormatSettingsWithMaxWidth);
+            const actual: string = await expectFormat(`section; [] x = 1;`);
             compare(expected, actual);
         });
 
@@ -133,7 +130,7 @@ section;
 [a = 1, b = 2] x = 1;
 `;
 
-            const actual: string = await expectFormat(`section; [a=1, b=2] x = 1;`, DefaultFormatSettingsWithMaxWidth);
+            const actual: string = await expectFormat(`section; [a=1, b=2] x = 1;`);
             compare(expected, actual);
         });
 
@@ -145,10 +142,7 @@ section;
 shared x = 1;
 `;
 
-            const actual: string = await expectFormat(
-                `section; [a=1, b=2] shared x = 1;`,
-                DefaultFormatSettingsWithMaxWidth,
-            );
+            const actual: string = await expectFormat(`section; [a=1, b=2] shared x = 1;`);
 
             compare(expected, actual);
         });
@@ -160,7 +154,7 @@ section;
 [a = 1] x = 1;
 `;
 
-            const actual: string = await expectFormat(`section; [a = 1] x = 1;`, DefaultFormatSettingsWithMaxWidth);
+            const actual: string = await expectFormat(`section; [a = 1] x = 1;`);
             compare(expected, actual);
         });
 
@@ -172,10 +166,7 @@ section;
 shared x = 1;
 `;
 
-            const actual: string = await expectFormat(
-                `section; [a = 1] shared x = 1;`,
-                DefaultFormatSettingsWithMaxWidth,
-            );
+            const actual: string = await expectFormat(`section; [a = 1] shared x = 1;`);
 
             compare(expected, actual);
         });
@@ -188,7 +179,7 @@ x = 1;
 y = 2;
 `;
 
-            const actual: string = await expectFormat(`section; x = 1; y = 2;`, DefaultFormatSettingsWithMaxWidth);
+            const actual: string = await expectFormat(`section; x = 1; y = 2;`);
             compare(expected, actual);
         });
 
@@ -206,7 +197,6 @@ Other = 3;
 
             const actual: string = await expectFormat(
                 `section; Other = 3; Constant.Alpha = 1; Constant.Beta = 2; Other = 3;`,
-                DefaultFormatSettingsWithMaxWidth,
             );
 
             compare(expected, actual);
@@ -258,7 +248,6 @@ SuggestionsTable = let
 in
     descriptor;
 `,
-                DefaultFormatSettingsWithMaxWidth,
             );
 
             compare(expected, actual);
