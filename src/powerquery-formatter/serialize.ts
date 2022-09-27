@@ -23,7 +23,7 @@ export interface SerializeSettings extends PQP.CommonSettings {
     readonly passthroughMaps: SerializePassthroughMaps;
     readonly indentationLiteral: IndentationLiteral;
     readonly newlineLiteral: NewlineLiteral;
-    readonly maxWidth?: number;
+    readonly maxWidth: number;
 }
 
 export interface SerializePassthroughMaps {
@@ -126,7 +126,7 @@ async function serialize(settings: SerializeSettings): Promise<string> {
 }
 
 function stateFromSettings(settings: SerializeSettings): SerializeState {
-    const maxWidth: number = settings.maxWidth ?? -1;
+    const maxWidth: number = settings.maxWidth;
     const supportInlineBlock: boolean = maxWidth > 40;
 
     // i super wanna turn this file into a class wrapping this state with its utils

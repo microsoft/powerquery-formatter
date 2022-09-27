@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import { compare, DefaultFormatSettingsWithMaxWidth, expectFormat } from "./common";
+import { compare, expectFormat } from "./common";
 
 describe(`small programs`, () => {
     it(`fastPow`, async () => {
@@ -70,10 +70,6 @@ let
 in
     fastPow(2, 8)
 `,
-            {
-                ...DefaultFormatSettingsWithMaxWidth,
-                maxWidth: 120,
-            },
         );
 
         compare(expected, actual);

@@ -6,7 +6,6 @@
 import * as PQP from "@microsoft/powerquery-parser";
 
 export type CommentCollectionMap = Map<number, CommentCollection>;
-export type IndentationChange = -1 | 1;
 export type IsMultilineMap = Map<number, boolean>;
 export type LinearLengthMap = Map<number, number>;
 

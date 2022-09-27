@@ -10,12 +10,8 @@ import { FormatSettings, IndentationLiteral, NewlineLiteral, TriedFormat, tryFor
 const DefaultFormatSettings: FormatSettings = {
     ...PQP.DefaultSettings,
     indentationLiteral: IndentationLiteral.SpaceX4,
-    newlineLiteral: NewlineLiteral.Unix,
-};
-
-export const DefaultFormatSettingsWithMaxWidth: FormatSettings = {
-    ...DefaultFormatSettings,
     maxWidth: 120,
+    newlineLiteral: NewlineLiteral.Unix,
 };
 
 export function compare(expected: string, actual: string, newlineLiteral: NewlineLiteral = NewlineLiteral.Unix): void {
