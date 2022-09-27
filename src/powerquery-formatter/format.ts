@@ -41,8 +41,8 @@ export interface FormatSettings extends PQP.Settings {
 export const DefaultSettings: FormatSettings = {
     ...PQP.DefaultSettings,
     indentationLiteral: IndentationLiteral.SpaceX4,
-    newlineLiteral: NewlineLiteral.Windows,
     maxWidth: 120,
+    newlineLiteral: NewlineLiteral.Windows,
 };
 
 export async function tryFormat(formatSettings: FormatSettings, text: string): Promise<TriedFormat> {
