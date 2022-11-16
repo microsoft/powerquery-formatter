@@ -1,6 +1,6 @@
 {
     "name": "@microsoft/powerquery-formatter",
-    "version": "0.3.3",
+    "version": "0.3.4",
     "author": "Microsoft",
     "license": "MIT",
     "scripts": {
@@ -22,7 +22,7 @@
     "main": "lib/powerquery-formatter/index.js",
     "types": "lib/powerquery-formatter/index.d.ts",
     "engines": {
-        "node": ">=16.13.2"
+        "node": ">=16.13.1"
     },
     "keywords": [
         "power query",
@@ -50,7 +50,7 @@
         "typescript": "^4.5.4"
     },
     "dependencies": {
-        "@microsoft/powerquery-parser": "0.11.0"
+        "@microsoft/powerquery-parser": "0.11.1"
     },
     "files": [
         "lib/powerquery-formatter/**/*"
