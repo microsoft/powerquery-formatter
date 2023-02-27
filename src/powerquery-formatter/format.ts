@@ -61,7 +61,7 @@ export async function tryFormat(formatSettings: FormatSettings, text: string): P
     );
 
     if (PQP.TaskUtils.isError(triedLexParse)) {
-        return PQP.ResultUtils.boxError(triedLexParse.error);
+        return PQP.ResultUtils.error(triedLexParse.error);
     }
 
     const ast: Ast.TNode = triedLexParse.ast;
