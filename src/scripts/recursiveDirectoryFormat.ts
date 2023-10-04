@@ -6,12 +6,12 @@ import * as path from "path";
 import { DefaultSettings, TriedFormat, tryFormat } from "../powerquery-formatter";
 import { ResultUtils } from "@microsoft/powerquery-parser";
 
-interface GetArgs {
+interface CliArgs {
     readonly allowedExtensions: ReadonlySet<string>;
     readonly rootDirectoryPath: string;
 }
 
-const DefaultGetArgs: Pick<GetArgs, "allowedExtensions"> = {
+const DefaultCliArgs: Pick<CliArgs, "allowedExtensions"> = {
     allowedExtensions: new Set<string>([".mout"]),
 };
 
@@ -53,7 +53,11 @@ function writeContents(filePath: string, contents: string): void {
 
 function isDirectory(path: string): boolean {
     // tslint:disable-next-line: non-literal-fs-path
-    return fs.statSync(path).isDirectory();
+    try {
+        return fs.statSync(path).isDirectory();
+    } catch {
+        return false;
+    }
 }
 
 function isFile(filePath: string): boolean {
@@ -100,19 +104,23 @@ function printText(text: string): void {
     }
 }
 
-function getArgs(): GetArgs {
+function getCliArgs(): CliArgs {
     const args: ReadonlyArray<string> = process.argv;
 
-    if (args.length === 1) {
-        const errorMessage: string = "No arguments provided. Aborting.\n";
+    if (args.length <= 2) {
+        const errorMessage: string =
+            "No arguments provided. Expecting a directory path and optionally a CSV of extensions to format. Aborting.\n";
+
         printText(errorMessage);
         throw new Error(errorMessage);
     }
 
-    if (args.length === 2) {
-        const allowedExtensions: ReadonlySet<string> = DefaultGetArgs.allowedExtensions;
+    if (args.length === 3) {
+        const allowedExtensions: ReadonlySet<string> = DefaultCliArgs.allowedExtensions;
 
-        printText(`No argument given for allowed extensions. Defaulting to ${Array.from(allowedExtensions)}.\n`);
+        printText(
+            `No argument given for allowed extensions. Defaulting to [${Array.from(allowedExtensions).join(", ")}].\n`,
+        );
 
         return {
             allowedExtensions,
@@ -120,7 +128,7 @@ function getArgs(): GetArgs {
         };
     }
 
-    if (args.length === 3) {
+    if (args.length === 4) {
         return {
             allowedExtensions: validateExtensionsGetArg(args[3]),
             rootDirectoryPath: validateDirectoryGetArg(args[2]),
@@ -132,9 +140,9 @@ function getArgs(): GetArgs {
     throw new Error(errorMessage);
 }
 
-function validateDirectoryGetArg(potentialDirectoryPath: string): string {
-    if (!isDirectory(potentialDirectoryPath)) {
-        const errorMessage: string = `Provided argument is not a directory: "${potentialDirectoryPath}". Aborting.\n`;
+function validateDirectoryGetArg(potentialDirectoryPath: string | undefined): string {
+    if (!potentialDirectoryPath || !isDirectory(potentialDirectoryPath)) {
+        const errorMessage: string = `Provided argument is not a directory path: "${potentialDirectoryPath}". Aborting.\n`;
         printText(errorMessage);
         throw new Error(errorMessage);
     }
@@ -142,27 +150,35 @@ function validateDirectoryGetArg(potentialDirectoryPath: string): string {
     return potentialDirectoryPath;
 }
 
-function validateExtensionsGetArg(potentialExtensions: string): ReadonlySet<string> {
-    const extensions: ReadonlyArray<string> = potentialExtensions.split(",");
+function validateExtensionsGetArg(potentialExtensions: string | undefined): ReadonlySet<string> {
+    const result: Set<string> = new Set<string>();
 
-    for (const extension of extensions) {
-        if (!extension.startsWith(".")) {
-            const errorMessage: string = `Provided extension is not valid: "${extension}". Aborting.\n`;
+    for (const potentialExtension of potentialExtensions?.split(",") ?? []) {
+        if (!potentialExtension.startsWith(".")) {
+            const errorMessage: string = `Provided extension is not valid: "${potentialExtension}", expecting a CSV such as ".pq,.mout" Aborting.\n`;
             printText(errorMessage);
             throw new Error(errorMessage);
         }
+
+        result.add(potentialExtension);
     }
 
-    return new Set<string>(extensions);
+    return result;
 }
 
 async function main(): Promise<void> {
-    const { allowedExtensions, rootDirectoryPath }: GetArgs = getArgs();
+    const { allowedExtensions, rootDirectoryPath }: CliArgs = getCliArgs();
 
     const powerQueryFilePaths: ReadonlyArray<string> = getPowerQueryFilePathsRecursively(
         rootDirectoryPath,
         allowedExtensions,
     );
+
+    if (powerQueryFilePaths.length === 0) {
+        printText(`No files found with extensions [${Array.from(allowedExtensions).join(", ")}].\n`);
+
+        return;
+    }
 
     for (const filePath of powerQueryFilePaths) {
         // eslint-disable-next-line no-await-in-loop
