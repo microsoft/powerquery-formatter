@@ -40,7 +40,7 @@ export interface LinearLengthState extends PQP.Traverse.ITraversalState<number> 
     readonly nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection;
 }
 
-export const enum SerializeWriteKind {
+export enum SerializeWriteKind {
     Any = "Any",
     DoubleNewline = "DoubleNewline",
     Indented = "Indented",
