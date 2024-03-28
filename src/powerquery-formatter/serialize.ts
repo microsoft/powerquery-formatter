@@ -33,12 +33,12 @@ export interface SerializePassthroughMaps {
     readonly serializeParameterMap: SerializeParameterMap;
 }
 
-export const enum IndentationLiteral {
+export enum IndentationLiteral {
     SpaceX4 = "    ",
     Tab = "\t",
 }
 
-export const enum NewlineLiteral {
+export enum NewlineLiteral {
     Unix = "\n",
     Windows = "\r\n",
 }
@@ -49,7 +49,7 @@ export function trySerialize(settings: SerializeSettings): Promise<TriedSerializ
     return PQP.ResultUtils.ensureResultAsync(() => serialize(settings), settings.locale);
 }
 
-const enum LastTokenType {
+enum LastTokenType {
     Opener = "Opener",
     Closer = "Closer",
     Divider = "Divider",
@@ -58,7 +58,7 @@ const enum LastTokenType {
     CommentsLine = "CommentsLine",
 }
 
-const enum BlockStatus {
+enum BlockStatus {
     Block = "Block",
     InlineBlock = "InlineBlock",
 }
