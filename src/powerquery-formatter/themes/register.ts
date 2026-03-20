@@ -16,7 +16,10 @@ export class SyncThemeRegistry implements IThemeProvider<SerializeParameter> {
 
     private _theme: Theme;
     public readonly scopeMetaProvider: ScopeMetadataProvider;
-    constructor(private readonly _option: RegistryOptions = DEFAULT_OPTIONS) {
+    private readonly _option: RegistryOptions;
+
+    constructor(option: RegistryOptions = DEFAULT_OPTIONS) {
+        this._option = option;
         this._theme = Theme.createFromRawTheme(this._option.theme);
         this.scopeMetaProvider = new ScopeMetadataProvider(this);
     }

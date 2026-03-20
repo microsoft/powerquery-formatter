@@ -1,9 +1,12 @@
 {
     "compilerOptions": {
+        "allowSyntheticDefaultImports": true,
         "declaration": true,
         "downlevelIteration": true,
+        "esModuleInterop": true,
         "incremental": true,
         "module": "commonjs",
+        "moduleResolution": "node",
         "noEmitOnError": true,
         "noFallthroughCasesInSwitch": true,
         "noImplicitOverride": true,
@@ -15,9 +18,15 @@
         "rootDir": "src",
         "sourceMap": true,
         "strict": true,
-        "target": "es6",
+        "target": "es2022",
         "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
     },
+    "ts-node": {
+        "compilerOptions": {
+            "module": "commonjs",
+            "target": "es2022"
+        }
+    },
     "exclude": ["node_modules"],
-    "include": ["src/**/*.ts"],
+    "include": ["src/**/*.ts"]
 }

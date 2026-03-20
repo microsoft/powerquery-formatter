@@ -10,7 +10,13 @@ import { ThemeTrieElementRule } from "./themes";
  * The metadata containing the scopeName and matched theme rules of a scope name
  */
 export class ScopeMetadata<T extends IParameters = IParameters> {
-    constructor(public readonly scopeName: string, public readonly themeData: ThemeTrieElementRule<T>[]) {}
+    public readonly scopeName: string;
+    public readonly themeData: ThemeTrieElementRule<T>[];
+
+    constructor(scopeName: string, themeData: ThemeTrieElementRule<T>[]) {
+        this.scopeName = scopeName;
+        this.themeData = themeData;
+    }
 }
 
 export class ScopeMetadataProvider<T extends IParameters = IParameters> {
@@ -42,7 +48,10 @@ export class ScopeMetadataProvider<T extends IParameters = IParameters> {
         return value;
     }
 
-    constructor(private readonly _themeProvider: IThemeProvider<T>) {
+    private readonly _themeProvider: IThemeProvider<T>;
+
+    constructor(themeProvider: IThemeProvider<T>) {
+        this._themeProvider = themeProvider;
         this.onDidChangeTheme();
     }
     public onDidChangeTheme(): void {
@@ -61,11 +70,15 @@ export const EmptyScopeListElementParameters: IParameters = {};
  * Immutable scope list element
  */
 export class ScopeListElement<T extends IParameters = IParameters> {
-    constructor(
-        public readonly parent: ScopeListElement<T> | undefined,
-        public readonly scope: string,
-        public readonly parameters: T,
-    ) {}
+    public readonly parent: ScopeListElement<T> | undefined;
+    public readonly scope: string;
+    public readonly parameters: T;
+
+    constructor(parent: ScopeListElement<T> | undefined, scope: string, parameters: T) {
+        this.parent = parent;
+        this.scope = scope;
+        this.parameters = parameters;
+    }
 
     private static _equals<T extends IParameters = IParameters>(
         l: ScopeListElement<T>,
