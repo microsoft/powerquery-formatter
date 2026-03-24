@@ -18,7 +18,7 @@ jobs:
             - name: npm audit
               shell: pwsh
               run: |
-                  npm audit --json > audit.json
+                  npm audit --json | Out-File -FilePath audit.json -Encoding utf8
                   $auditExitCode = $LASTEXITCODE
 
                   $audit = Get-Content audit.json -Raw | ConvertFrom-Json
