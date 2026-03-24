@@ -12,21 +12,26 @@ import { strArrCmp, strcmp } from "./utils";
  *    "scope1 scope2 scope3 scope4"
  */
 export class ParsedThemeRule<T extends IParameters = IParameters> {
-    constructor(
-        /**
-         *  scope4 of a scope list: "scope1 scope2 scope3 scope4"
-         */
-        public readonly scope: string,
-        /**
-         *  ["scope3", "scope2", "scope1"] of a scope list: "scope1 scope2 scope3 scope4"
-         */
-        public readonly parentScopes: string[] | undefined,
-        public readonly index: number,
-        /**
-         * parameters of the current parsed theme rule
-         */
-        public readonly parameters?: T,
-    ) {}
+    /**
+     *  scope4 of a scope list: "scope1 scope2 scope3 scope4"
+     */
+    public readonly scope: string;
+    /**
+     *  ["scope3", "scope2", "scope1"] of a scope list: "scope1 scope2 scope3 scope4"
+     */
+    public readonly parentScopes: string[] | undefined;
+    public readonly index: number;
+    /**
+     * parameters of the current parsed theme rule
+     */
+    public readonly parameters?: T;
+
+    constructor(scope: string, parentScopes: string[] | undefined, index: number, parameters?: T) {
+        this.scope = scope;
+        this.parentScopes = parentScopes;
+        this.index = index;
+        this.parameters = parameters;
+    }
 }
 
 /**
@@ -158,7 +163,15 @@ function resolveParsedThemeRules<T extends IParameters = IParameters>(
  *    customized parameters record
  */
 export class ThemeTrieElementRule<T extends IParameters = IParameters> {
-    constructor(public scopeDepth: number, public readonly parentScopes: string[] | undefined, public parameters?: T) {}
+    public scopeDepth: number;
+    public readonly parentScopes: string[] | undefined;
+    public parameters?: T;
+
+    constructor(scopeDepth: number, parentScopes: string[] | undefined, parameters?: T) {
+        this.scopeDepth = scopeDepth;
+        this.parentScopes = parentScopes;
+        this.parameters = parameters;
+    }
 
     public static cloneArr<T extends IParameters = IParameters>(
         arr: ThemeTrieElementRule<T>[],
@@ -189,20 +202,28 @@ export class ThemeTrieElementRule<T extends IParameters = IParameters> {
  * Theme tree element contains
  */
 export class ThemeTrieElement<T extends IParameters = IParameters> {
+    /**
+     * Current rule of the element
+     */
+    private readonly _mainRule: ThemeTrieElementRule<T>;
+    /**
+     * Other rules of sharing the same scope name of the element but bear with parent scopes
+     */
+    private readonly _rulesWithParentScopes: ThemeTrieElementRule<T>[];
+    /**
+     * Children rules beneath current element
+     */
+    private readonly _children: Map<string, ThemeTrieElement<T>>;
+
     constructor(
-        /**
-         * Current rule of the element
-         */
-        private readonly _mainRule: ThemeTrieElementRule<T>,
-        /**
-         * Other rules of sharing the same scope name of the element but bear with parent scopes
-         */
-        private readonly _rulesWithParentScopes: ThemeTrieElementRule<T>[] = [],
-        /**
-         * Children rules beneath current element
-         */
-        private readonly _children: Map<string, ThemeTrieElement<T>> = new Map(),
-    ) {}
+        mainRule: ThemeTrieElementRule<T>,
+        rulesWithParentScopes: ThemeTrieElementRule<T>[] = [],
+        children: Map<string, ThemeTrieElement<T>> = new Map(),
+    ) {
+        this._mainRule = mainRule;
+        this._rulesWithParentScopes = rulesWithParentScopes;
+        this._children = children;
+    }
 
     private static _sortBySpecificity<T extends IParameters = IParameters>(
         arr: ThemeTrieElementRule<T>[],
@@ -343,8 +364,12 @@ export class Theme<T extends IParameters = IParameters> {
     }
 
     private readonly _cache: Map<string, ThemeTrieElementRule<T>[]>;
+    private readonly _defaults: ThemeTrieElementRule<T>;
+    private readonly _root: ThemeTrieElement<T>;
 
-    constructor(private readonly _defaults: ThemeTrieElementRule<T>, private readonly _root: ThemeTrieElement<T>) {
+    constructor(defaults: ThemeTrieElementRule<T>, root: ThemeTrieElement<T>) {
+        this._defaults = defaults;
+        this._root = root;
         this._cache = new Map();
     }
 
