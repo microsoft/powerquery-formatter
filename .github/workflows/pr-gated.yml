@@ -22,6 +22,7 @@ jobs:
                   $auditExitCode = $process.ExitCode
 
                   $audit = Get-Content audit.json -Raw | ConvertFrom-Json
+                  Remove-Item audit.json -ErrorAction SilentlyContinue
 
                   if ($audit.error) {
                       Write-Error "npm audit failed: $($audit.error.summary)"
