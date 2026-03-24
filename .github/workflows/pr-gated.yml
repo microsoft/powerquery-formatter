@@ -19,16 +19,25 @@ jobs:
               shell: pwsh
               run: |
                   npm audit --json > audit.json
-
-                  if ($LASTEXITCODE -gt 1) {
-                      exit $LASTEXITCODE
-                  }
+                  $auditExitCode = $LASTEXITCODE
 
                   $audit = Get-Content audit.json -Raw | ConvertFrom-Json
+
+                  if ($audit.error) {
+                      Write-Error "npm audit failed: $($audit.error.summary)"
+                      exit $auditExitCode
+                  }
+
                   $vulnerabilities = $audit.metadata.vulnerabilities
 
-                  if (-not $vulnerabilities) {
-                      exit 0
+                  if ($null -eq $vulnerabilities) {
+                      $vulnerabilities = [pscustomobject]@{
+                          critical = 0
+                          high = 0
+                          moderate = 0
+                          low = 0
+                          info = 0
+                      }
                   }
 
                   $severityCounts = [ordered]@{
