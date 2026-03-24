@@ -18,8 +18,8 @@ jobs:
             - name: npm audit
               shell: pwsh
               run: |
-                  npm audit --json > audit.json 2>&1
-                  $auditExitCode = $LASTEXITCODE
+                  $process = Start-Process npm -ArgumentList 'audit', '--json' -NoNewWindow -Wait -RedirectStandardOutput audit.json -PassThru
+                  $auditExitCode = $process.ExitCode
 
                   $audit = Get-Content audit.json -Raw | ConvertFrom-Json
 
@@ -31,7 +31,7 @@ jobs:
                   $vulnerabilities = $audit.metadata.vulnerabilities
 
                   if ($null -eq $vulnerabilities) {
-                      Write-Error "npm audit returned an unexpected response."
+                      Write-Error "Expected npm audit vulnerabilities metadata but found none."
                       exit 1
                   }
 
