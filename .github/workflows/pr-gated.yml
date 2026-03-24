@@ -18,7 +18,7 @@ jobs:
             - name: npm audit
               shell: pwsh
               run: |
-                  npm audit --json | Out-File -FilePath audit.json -Encoding utf8
+                  npm audit --json > audit.json 2>&1
                   $auditExitCode = $LASTEXITCODE
 
                   $audit = Get-Content audit.json -Raw | ConvertFrom-Json
@@ -31,13 +31,8 @@ jobs:
                   $vulnerabilities = $audit.metadata.vulnerabilities
 
                   if ($null -eq $vulnerabilities) {
-                      $vulnerabilities = [pscustomobject]@{
-                          critical = 0
-                          high = 0
-                          moderate = 0
-                          low = 0
-                          info = 0
-                      }
+                      Write-Error "npm audit returned an unexpected response."
+                      exit 1
                   }
 
                   $severityCounts = [ordered]@{
@@ -53,7 +48,7 @@ jobs:
 
                       if ($count -gt 0) {
                           $label = if ($count -eq 1) { "vulnerability" } else { "vulnerabilities" }
-                          Write-Host "::warning::npm audit reported $count $severity $label."
+                          Write-Host "::warning::npm audit reported $count $severity $label. Run npm audit for details."
                       }
                   }
             - run: npm run build
