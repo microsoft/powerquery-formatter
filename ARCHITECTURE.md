@@ -228,7 +228,7 @@ The serializer emits directly into mutable state rather than a token-edit list o
 
 | State | Role |
 | --- | --- |
-| `formatted` | Entire output accumulated so far. |
+| `formattedChunks` | Output fragments; trailing cleanup edits only the final fragments rather than materializing the growing output. |
 | `currentLine` | Overlapping accumulator since the last explicitly appended newline; used for layout and padding. It is not a separate buffer awaiting a flush. |
 | `indentationLevel`, `indentationCache` | Current depth and lazily extended indentation strings. |
 | `blockStatusArray` | Nested `Block`/`InlineBlock` modes. |
@@ -244,13 +244,17 @@ stack to its saved boundary.
 Whitespace helpers must keep the overlapping output/line state consistent. Pseudo-lines let punctuation
 and empty wrappers join text after a generated newline has been removed. They also participate in
 `else if` layout. `dedentContainer` tests its regex only when `currentLine` is empty.
+Newline checks inspect only the required suffix, including when it spans chunks. Trailing cleanup
+can remove multiple whole chunks before shortening the final retained chunk. Full-output regex
+matching still sees all preceding text, preserving custom matcher behavior; materialized output
+is retained as one prefix chunk so subsequent matches do not rejoin all earlier fragments.
 
 Section formatting additionally inspects original text between members and groups member names by
 the prefix before their first dot. It preserves some intentional blank-line separation, not all
 source whitespace verbatim.
 
 After the root, the serializer emits end-of-file comments, trims trailing CR/LF characters and then
-spaces/tabs, and appends the configured newline.
+spaces/tabs, appends the configured newline, and joins the remaining chunks into the returned string.
 
 ### State ownership and performance
 
@@ -258,8 +262,9 @@ ASTs and node-id collections come from the parser and are treated as read-only i
 parameter maps, length caches, and output state are created per formatting call. Theme rules and their
 scope caches are shared. No document-level incremental formatting cache is maintained across calls.
 
-Performance-sensitive mechanisms include repeated access to the growing output string during
-cleanup, regex matching against output/source slices, async boundaries around CPU-only tree walks,
+Output chunking avoids repeated materialization of the growing string during ordinary whitespace
+cleanup. Performance-sensitive mechanisms still include full-output dedent regex matching,
+regex matching against source slices, async boundaries around CPU-only tree walks,
 temporary arrays in length aggregation, and repeated traversals. These are investigation targets,
 not a universal complexity or speedup guarantee. Workload shape, output size, nesting, and runtime
 string/GC behavior matter; use the benchmark and CPU profiles on representative connectors.
