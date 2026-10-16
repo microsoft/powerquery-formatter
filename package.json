@@ -5,6 +5,7 @@
     "license": "MIT",
     "scripts": {
         "build": ".\\node_modules\\.bin\\tsc",
+        "benchmark": "node --expose-gc node_modules\\ts-node\\dist\\bin.js src\\benchmark\\cli.ts",
         "watch": ".\\node_modules\\.bin\\tsc -b -watch",
         "test": "mocha --no-package --reporter mocha-multi-reporters --reporter-options configFile=mochaReporterConfig.json --spec src/test/**/*.ts",
         "script:recursiveDirectoryFormat": "npx ts-node src/scripts/recursiveDirectoryFormat.ts",

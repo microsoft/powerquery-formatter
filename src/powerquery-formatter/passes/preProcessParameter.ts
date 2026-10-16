@@ -8,7 +8,6 @@ import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language
 
 import { CommentCollectionMap, SerializeParameter, SerializeParameterMap } from "./commonTypes";
 import { FormatTraceConstant } from "../trace";
-import { getNodeScopeName } from "../themes";
 import { NodeKind } from "@microsoft/powerquery-parser/lib/powerquery-parser/language/ast/ast";
 
 interface PreProcessState extends PQP.Traverse.ITraversalState<SerializeParameterMap> {
@@ -16,8 +15,6 @@ interface PreProcessState extends PQP.Traverse.ITraversalState<SerializeParamete
     readonly commentCollectionMap: CommentCollectionMap;
     readonly cancellationToken: PQP.ICancellationToken | undefined;
     currentNode: Ast.TNode;
-    readonly visitedNodes: Ast.TNode[];
-    readonly visitedNodeScopeNames: string[];
     readonly result: SerializeParameterMap;
 }
 
@@ -80,7 +77,7 @@ const preProcessorDictionary: Map<Ast.NodeKind, ReadonlyArray<ParameterPreProces
     [Ast.NodeKind.RecordExpression, [recordExpressionParameterPreProcessor]],
 ]);
 
-export function tryPreProcessParameter(
+export async function tryPreProcessParameter(
     ast: Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     commentCollectionMap: CommentCollectionMap,
@@ -96,33 +93,28 @@ export function tryPreProcessParameter(
         correlationId,
     );
 
-    const state: PreProcessState = {
-        locale,
-        traceManager,
-        cancellationToken,
-        initialCorrelationId: trace.id,
-        nodeIdMapCollection,
-        commentCollectionMap,
-        currentNode: ast,
-        visitedNodes: [ast],
-        visitedNodeScopeNames: [ast.kind],
-        result: serializeParameterMap,
-    };
+    try {
+        const state: PreProcessState = {
+            locale,
+            traceManager,
+            cancellationToken,
+            initialCorrelationId: trace.id,
+            nodeIdMapCollection,
+            commentCollectionMap,
+            currentNode: ast,
+            result: serializeParameterMap,
+        };
 
-    const result: Promise<PQP.Traverse.TriedTraverse<SerializeParameterMap>> = PQP.ResultUtils.ensureResultAsync(
-        async () => {
+        return await PQP.ResultUtils.ensureResultAsync(async () => {
             if (preProcessorDictionary.size) {
                 await doInvokePreProcessor(state);
             }
 
             return state.result;
-        },
-        locale,
-    );
-
-    trace.exit();
-
-    return result;
+        }, locale);
+    } finally {
+        trace.exit();
+    }
 }
 
 export async function doInvokePreProcessor(state: PreProcessState): Promise<void> {
@@ -133,10 +125,7 @@ export async function doInvokePreProcessor(state: PreProcessState): Promise<void
         state.currentNode,
         state.nodeIdMapCollection,
     )) {
-        const childScopeName: string = getNodeScopeName(child);
         state.currentNode = child;
-        state.visitedNodes.push(child);
-        state.visitedNodeScopeNames.push(childScopeName);
 
         // invoke child preProcessor if any
         const nullablePreProcessorArray: ReadonlyArray<ParameterPreProcessor> | undefined = preProcessorDictionary.get(
@@ -144,20 +133,12 @@ export async function doInvokePreProcessor(state: PreProcessState): Promise<void
         );
 
         if (Array.isArray(nullablePreProcessorArray)) {
-            const preProcessorState: PreProcessState = {
-                ...state,
-                visitedNodes: state.visitedNodes.slice(),
-                visitedNodeScopeNames: state.visitedNodeScopeNames.slice(),
-            };
-
             nullablePreProcessorArray.forEach((preProcessor: ParameterPreProcessor) => {
-                preProcessor(preProcessorState);
+                preProcessor(state);
             });
         }
 
         // eslint-disable-next-line no-await-in-loop
         await doInvokePreProcessor(state);
-        state.visitedNodeScopeNames.pop();
-        state.visitedNodes.pop();
     }
 }
