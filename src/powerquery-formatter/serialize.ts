@@ -12,6 +12,7 @@ import {
     SerializeParameter,
     SerializeParameterMap,
 } from "./passes";
+import { FormatTraceConstant } from "./trace";
 import { getLinearLength } from "./passes/utils/linearLength";
 
 const ALL_WHITESPACES: RegExp = /^(\s)*$/g;
@@ -45,8 +46,24 @@ export enum NewlineLiteral {
 
 export type TriedSerialize = PQP.Result<string, PQP.CommonError.CommonError>;
 
-export function trySerialize(settings: SerializeSettings): Promise<TriedSerialize> {
-    return PQP.ResultUtils.ensureResultAsync(() => serialize(settings), settings.locale);
+export async function trySerialize(settings: SerializeSettings): Promise<TriedSerialize> {
+    const trace: PQP.Trace.Trace = settings.traceManager.entry(
+        FormatTraceConstant.Serialize,
+        trySerialize.name,
+        settings.initialCorrelationId,
+        { maxWidth: settings.maxWidth },
+    );
+
+    try {
+        const result: TriedSerialize = await PQP.ResultUtils.ensureResultAsync(
+            () => serialize({ ...settings, initialCorrelationId: trace.id }),
+            settings.locale,
+        );
+
+        return result;
+    } finally {
+        trace.exit();
+    }
 }
 
 enum LastTokenType {
@@ -626,14 +643,14 @@ function shouldActivateAnchorByText(text: string, matcher: RegExp): boolean {
 }
 
 function dedentContainer(state: SerializeState, parameter: SerializeParameter): void {
-    if (parameter.dedentContainerConditionReg) {
-        const currentFormatted: string = state.formatted + state.currentLine;
-
-        if (currentFormatted.match(parameter.dedentContainerConditionReg) && state.currentLine === "") {
-            markCurrentEmptyLinePseudo(state);
-            state.indentationLevel -= 1;
-            appendToFormatted(state, " ");
-        }
+    if (
+        state.currentLine === "" &&
+        parameter.dedentContainerConditionReg &&
+        state.formatted.match(parameter.dedentContainerConditionReg)
+    ) {
+        markCurrentEmptyLinePseudo(state);
+        state.indentationLevel -= 1;
+        appendToFormatted(state, " ");
     }
 }
 

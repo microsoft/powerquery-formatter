@@ -2,11 +2,12 @@
 // Licensed under the MIT license.
 
 import * as PQP from "@microsoft/powerquery-parser";
+import { Trace, TraceManager } from "@microsoft/powerquery-parser/lib/powerquery-parser/common/trace";
 import { Ast } from "@microsoft/powerquery-parser/lib/powerquery-parser/language";
-import { TraceManager } from "@microsoft/powerquery-parser/lib/powerquery-parser/common/trace";
 
 import { CommentCollection, CommentCollectionMap, CommentResult, CommentState } from "./commonTypes";
 import { ContainerSet } from "../themes";
+import { FormatTraceConstant } from "../trace";
 
 const containerNodeKindSet: ReadonlySet<PQP.Language.Ast.NodeKind> = ContainerSet;
 
@@ -19,57 +20,65 @@ export async function tryTraverseComment(
     correlationId: number | undefined,
     cancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<PQP.Traverse.TriedTraverse<CommentResult>> {
-    const state: CommentState = {
-        locale,
-        traceManager,
-        cancellationToken,
-        initialCorrelationId: correlationId,
-        result: {
-            commentCollectionMap: new Map(),
-            containerIdHavingCommentsChildCount: new Map(),
-            parentContainerIdOfNodeId: new Map(),
-            eofCommentCollection: {
-                prefixedComments: [],
-                prefixedCommentsContainsNewline: false,
+    const trace: Trace = traceManager.entry(FormatTraceConstant.Comment, tryTraverseComment.name, correlationId, {
+        commentCount: comments.length,
+    });
+
+    try {
+        const state: CommentState = {
+            locale,
+            traceManager,
+            cancellationToken,
+            initialCorrelationId: trace.id,
+            result: {
+                commentCollectionMap: new Map(),
+                containerIdHavingCommentsChildCount: new Map(),
+                parentContainerIdOfNodeId: new Map(),
+                eofCommentCollection: {
+                    prefixedComments: [],
+                    prefixedCommentsContainsNewline: false,
+                },
             },
-        },
-        nodeIdMapCollection,
-        comments,
-        leafIdsOfItsContainerFound: new Set(),
-        commentsIndex: 0,
-        currentComment: comments[0],
-    };
+            nodeIdMapCollection,
+            comments,
+            leafIdsOfItsContainerFound: new Set(),
+            commentsIndex: 0,
+            currentComment: comments[0],
+        };
 
-    const triedCommentPass: PQP.Traverse.TriedTraverse<CommentResult> = await PQP.Traverse.tryTraverseAst<
-        CommentState,
-        CommentResult
-    >(
-        state,
-        nodeIdMapCollection,
-        root,
-        PQP.Traverse.VisitNodeStrategy.DepthFirst,
-        visitNode,
-        PQP.Traverse.assertGetAllAstChildren,
-        earlyExit,
-    );
+        const triedCommentPass: PQP.Traverse.TriedTraverse<CommentResult> = await PQP.Traverse.tryTraverseAst<
+            CommentState,
+            CommentResult
+        >(
+            state,
+            nodeIdMapCollection,
+            root,
+            PQP.Traverse.VisitNodeStrategy.DepthFirst,
+            visitNode,
+            PQP.Traverse.assertGetAllAstChildren,
+            earlyExit,
+        );
 
-    // check whether we got any comment prefixed to the EOF
-    if (!PQP.ResultUtils.isError(triedCommentPass) && state.commentsIndex < state.comments.length) {
-        const result: CommentResult = triedCommentPass.value;
-        let prefixedCommentsContainsNewline: boolean = false;
-        result.eofCommentCollection.prefixedComments.length = 0;
+        // check whether we got any comment prefixed to the EOF
+        if (!PQP.ResultUtils.isError(triedCommentPass) && state.commentsIndex < state.comments.length) {
+            const result: CommentResult = triedCommentPass.value;
+            let prefixedCommentsContainsNewline: boolean = false;
+            result.eofCommentCollection.prefixedComments.length = 0;
 
-        state.comments
-            .slice(state.commentsIndex, state.comments.length)
-            .forEach((comment: PQP.Language.Comment.TComment) => {
-                result.eofCommentCollection.prefixedComments.push(comment);
-                prefixedCommentsContainsNewline = prefixedCommentsContainsNewline || comment.containsNewline;
-            });
+            state.comments
+                .slice(state.commentsIndex, state.comments.length)
+                .forEach((comment: PQP.Language.Comment.TComment) => {
+                    result.eofCommentCollection.prefixedComments.push(comment);
+                    prefixedCommentsContainsNewline = prefixedCommentsContainsNewline || comment.containsNewline;
+                });
 
-        result.eofCommentCollection.prefixedCommentsContainsNewline = prefixedCommentsContainsNewline;
+            result.eofCommentCollection.prefixedCommentsContainsNewline = prefixedCommentsContainsNewline;
+        }
+
+        return triedCommentPass;
+    } finally {
+        trace.exit();
     }
-
-    return triedCommentPass;
 }
 
 // eslint-disable-next-line require-await

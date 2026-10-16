@@ -54,30 +54,41 @@ async function calculateLinearLength(
     correlationId: number | undefined,
     cancellationToken: PQP.ICancellationToken | undefined,
 ): Promise<number> {
-    const state: LinearLengthState = {
-        locale,
-        traceManager,
-        cancellationToken,
-        initialCorrelationId: correlationId,
-        linearLengthMap,
-        nodeIdMapCollection,
-        result: 0,
-    };
-
-    const triedTraverse: PQP.Traverse.TriedTraverse<number> = await PQP.Traverse.tryTraverseAst(
-        state,
-        nodeIdMapCollection,
-        node,
-        PQP.Traverse.VisitNodeStrategy.DepthFirst,
-        visitNode,
-        PQP.Traverse.assertGetAllAstChildren,
-        undefined,
+    const trace: Trace = traceManager.entry(
+        FormatTraceConstant.LinearLengthCalculation,
+        calculateLinearLength.name,
+        correlationId,
+        { nodeId: node.id },
     );
 
-    if (PQP.ResultUtils.isError(triedTraverse)) {
-        throw triedTraverse.error;
-    } else {
-        return triedTraverse.value;
+    try {
+        const state: LinearLengthState = {
+            locale,
+            traceManager,
+            cancellationToken,
+            initialCorrelationId: trace.id,
+            linearLengthMap,
+            nodeIdMapCollection,
+            result: 0,
+        };
+
+        const triedTraverse: PQP.Traverse.TriedTraverse<number> = await PQP.Traverse.tryTraverseAst(
+            state,
+            nodeIdMapCollection,
+            node,
+            PQP.Traverse.VisitNodeStrategy.DepthFirst,
+            visitNode,
+            PQP.Traverse.assertGetAllAstChildren,
+            undefined,
+        );
+
+        if (PQP.ResultUtils.isError(triedTraverse)) {
+            throw triedTraverse.error;
+        } else {
+            return triedTraverse.value;
+        }
+    } finally {
+        trace.exit();
     }
 }
 
