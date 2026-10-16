@@ -10,15 +10,25 @@ import {
     SerializeParameterMap,
     tryTraverseSerializeParameter,
 } from "../powerquery-formatter/passes";
-import { DefaultSettings, NewlineLiteral, SerializeSettings, TriedSerialize, trySerialize } from "..";
+import {
+    DefaultSettings,
+    IndentationLiteral,
+    NewlineLiteral,
+    SerializeSettings,
+    TriedSerialize,
+    tryFormat,
+    trySerialize,
+} from "..";
 import { expectFormat } from "./common";
 import { SyncThemeRegistry } from "../powerquery-formatter/themes";
 
 class CountingRegExp extends RegExp {
     public matchCount: number = 0;
+    public readonly inputs: string[] = [];
 
     public override [Symbol.match](text: string): RegExpMatchArray | null {
         this.matchCount += 1;
+        this.inputs.push(text);
 
         return super[Symbol.match](text);
     }
@@ -56,7 +66,7 @@ describe("serialize dedent matching", () => {
                 throw parameters.error;
             }
 
-            const matcher: CountingRegExp = new CountingRegExp("(else)[\\s]*$", "g");
+            const matcher: CountingRegExp = new CountingRegExp("^if x then[\\s\\S]*else[\\s]*$", "g");
 
             for (const [id, parameter] of parameters.value.parametersMap) {
                 if (parameter.dedentContainerConditionReg) {
@@ -87,6 +97,87 @@ describe("serialize dedent matching", () => {
 
             expect(actual.value).to.equal(expected);
             expect(matcher.matchCount).to.equal(maxWidth === 120 ? 1 : 2);
+            expect(matcher.inputs[0]).to.equal("");
+
+            if (maxWidth === 40) {
+                expect(matcher.inputs[1]).to.equal("if x then\n    x\nelse\n");
+            }
         });
+    }
+});
+
+describe("chunked serialization", () => {
+    const fixtures: ReadonlyArray<{ name: string; text: string; lines: ReadonlyArray<string> }> = [
+        {
+            name: "empty wrappers and punctuation on pseudo-lines",
+            text: "let f=()=>{},r=[],x=f() in [f=f,r=r,x=x]",
+            lines: [
+                "let",
+                "    f = () =>",
+                "        {},",
+                "    r = [],",
+                "    x = f()",
+                "in",
+                "    [",
+                "        f = f,",
+                "        r = r,",
+                "        x = x",
+                "    ]",
+            ],
+        },
+        {
+            name: "else-if joins across generated newlines",
+            text: "if x then x else if x then x else x",
+            lines: ["if x then", "    x", "else if x then", "    x", "else", "    x"],
+        },
+        {
+            name: "EOF line-comment whitespace",
+            text: "let x=1 in x // tail \t",
+            lines: ["let", "    x = 1", "in", "    x", "// tail"],
+        },
+        {
+            name: "embedded comment newlines and trailing source whitespace",
+            text: "let x=1 in x /* tail \t\n comment */ \r\n\r\n",
+            lines: ["let", "    x = 1", "in", "    x", "/* tail \t\n comment */"],
+        },
+        {
+            name: "embedded literal newlines",
+            text: 'let x="first\r\nsecond" in x',
+            lines: ["let", '    x = "first\r\nsecond"', "in", "    x"],
+        },
+        {
+            name: "blank lines between section members",
+            text: "section S;\nshared A.x=1;\n\nshared A.y={};\n\n\nshared B.x=[];",
+            lines: ["section S;", "", "shared A.x = 1;", "", "shared A.y = {};", "", "shared B.x = [];"],
+        },
+        {
+            name: "literal whitespace is not output padding",
+            text: '"a \t"',
+            lines: ['"a \t"'],
+        },
+    ];
+
+    for (const newlineLiteral of [NewlineLiteral.Unix, NewlineLiteral.Windows]) {
+        for (const indentationLiteral of [IndentationLiteral.SpaceX4, IndentationLiteral.Tab]) {
+            for (const fixture of fixtures) {
+                it(`${fixture.name} (${JSON.stringify({ newlineLiteral, indentationLiteral })})`, async () => {
+                    const actual: string = PQP.ResultUtils.assertOk(
+                        await tryFormat(
+                            { ...DefaultSettings, maxWidth: 40, newlineLiteral, indentationLiteral },
+                            fixture.text,
+                        ),
+                    );
+
+                    const expected: string =
+                        fixture.lines
+                            .map((line: string) =>
+                                line.replace(/^ +/, (spaces: string) => indentationLiteral.repeat(spaces.length / 4)),
+                            )
+                            .join(newlineLiteral) + newlineLiteral;
+
+                    expect(actual).to.equal(expected);
+                });
+            }
+        }
     }
 });
