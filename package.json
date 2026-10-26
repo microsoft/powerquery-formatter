@@ -1,10 +1,11 @@
 {
     "name": "@microsoft/powerquery-formatter",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "author": "Microsoft",
     "license": "MIT",
     "scripts": {
         "build": ".\\node_modules\\.bin\\tsc",
+        "benchmark": "node --expose-gc node_modules\\ts-node\\dist\\bin.js src\\benchmark\\cli.ts",
         "watch": ".\\node_modules\\.bin\\tsc -b -watch",
         "test": "mocha --no-package --reporter mocha-multi-reporters --reporter-options configFile=mochaReporterConfig.json --spec src/test/**/*.ts",
         "script:recursiveDirectoryFormat": "npx ts-node src/scripts/recursiveDirectoryFormat.ts",
@@ -57,6 +58,6 @@
         "webpack": "^5.105.1"
     },
     "dependencies": {
-        "@microsoft/powerquery-parser": "0.19.0"
+        "@microsoft/powerquery-parser": "4.0.0"
     }
 }

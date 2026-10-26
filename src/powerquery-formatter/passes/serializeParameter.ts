@@ -20,7 +20,7 @@ type RealSerializeParameterState = SerializeParameterState & {
     scopeMetadataProvider: ScopeMetadataProvider<SerializeParameter>;
 };
 
-export function tryTraverseSerializeParameter(
+export async function tryTraverseSerializeParameter(
     ast: Ast.TNode,
     nodeIdMapCollection: PQP.Parser.NodeIdMap.Collection,
     commentCollectionMap: CommentCollectionMap,
@@ -36,54 +36,51 @@ export function tryTraverseSerializeParameter(
         correlationId,
     );
 
-    const defaultMeta: ScopeMetadata<SerializeParameter> = scopeMetadataProvider.getDefaultMetadata();
-    const rootScopeName: string = getNodeScopeName(ast);
-    const rawRootMeta: ScopeMetadata<SerializeParameter> = scopeMetadataProvider.getMetadataForScope(rootScopeName);
+    try {
+        const defaultMeta: ScopeMetadata<SerializeParameter> = scopeMetadataProvider.getDefaultMetadata();
+        const rootScopeName: string = getNodeScopeName(ast);
+        const rawRootMeta: ScopeMetadata<SerializeParameter> = scopeMetadataProvider.getMetadataForScope(rootScopeName);
 
-    const rawRootParameter: SerializeParameter = ScopeListElement.mergeParameters(
-        defaultMeta.themeData?.[0].parameters ?? {},
-        undefined,
-        rawRootMeta,
-    );
+        const rawRootParameter: SerializeParameter = ScopeListElement.mergeParameters(
+            defaultMeta.themeData?.[0].parameters ?? {},
+            undefined,
+            rawRootMeta,
+        );
 
-    const rootScopeList: ScopeListElement<SerializeParameter> = new ScopeListElement<SerializeParameter>(
-        undefined,
-        rootScopeName,
-        rawRootParameter,
-    );
+        const rootScopeList: ScopeListElement<SerializeParameter> = new ScopeListElement<SerializeParameter>(
+            undefined,
+            rootScopeName,
+            rawRootParameter,
+        );
 
-    const rootState: StackElement<SerializeParameter> = new StackElement<SerializeParameter>(
-        undefined,
-        ast,
-        rootScopeList,
-    );
+        const rootState: StackElement<SerializeParameter> = new StackElement<SerializeParameter>(
+            undefined,
+            ast,
+            rootScopeList,
+        );
 
-    const state: RealSerializeParameterState = {
-        locale,
-        traceManager,
-        cancellationToken,
-        initialCorrelationId: trace.id,
-        commentCollectionMap,
-        nodeIdMapCollection,
-        currentScopeStack: rootState,
-        scopeMetadataProvider,
-        result: {
-            parametersMap: new Map(),
-        },
-    };
+        const state: RealSerializeParameterState = {
+            locale,
+            traceManager,
+            cancellationToken,
+            initialCorrelationId: trace.id,
+            commentCollectionMap,
+            nodeIdMapCollection,
+            currentScopeStack: rootState,
+            scopeMetadataProvider,
+            result: {
+                parametersMap: new Map(),
+            },
+        };
 
-    const result: Promise<PQP.Traverse.TriedTraverse<SerializeParameterMap>> = PQP.ResultUtils.ensureResultAsync(
-        async () => {
+        return await PQP.ResultUtils.ensureResultAsync(async () => {
             await doTraverseRecursion(state, nodeIdMapCollection, ast);
 
             return state.result;
-        },
-        state.locale,
-    );
-
-    trace.exit();
-
-    return result;
+        }, state.locale);
+    } finally {
+        trace.exit();
+    }
 }
 
 async function doTraverseRecursion(

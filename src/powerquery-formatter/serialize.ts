@@ -12,6 +12,7 @@ import {
     SerializeParameter,
     SerializeParameterMap,
 } from "./passes";
+import { FormatTraceConstant } from "./trace";
 import { getLinearLength } from "./passes/utils/linearLength";
 
 const ALL_WHITESPACES: RegExp = /^(\s)*$/g;
@@ -45,8 +46,24 @@ export enum NewlineLiteral {
 
 export type TriedSerialize = PQP.Result<string, PQP.CommonError.CommonError>;
 
-export function trySerialize(settings: SerializeSettings): Promise<TriedSerialize> {
-    return PQP.ResultUtils.ensureResultAsync(() => serialize(settings), settings.locale);
+export async function trySerialize(settings: SerializeSettings): Promise<TriedSerialize> {
+    const trace: PQP.Trace.Trace = settings.traceManager.entry(
+        FormatTraceConstant.Serialize,
+        trySerialize.name,
+        settings.initialCorrelationId,
+        { maxWidth: settings.maxWidth },
+    );
+
+    try {
+        const result: TriedSerialize = await PQP.ResultUtils.ensureResultAsync(
+            () => serialize({ ...settings, initialCorrelationId: trace.id }),
+            settings.locale,
+        );
+
+        return result;
+    } finally {
+        trace.exit();
+    }
 }
 
 enum LastTokenType {
@@ -81,7 +98,7 @@ interface SerializeState {
     lastTokenType: LastTokenType;
     blockStatusArray: BlockStatus[];
     indentationLevel: number;
-    formatted: string;
+    readonly formattedChunks: string[];
     currentLine: string;
     // lexical fields
     isPseudoRightPadding: boolean;
@@ -118,11 +135,11 @@ async function serialize(settings: SerializeSettings): Promise<string> {
     visitComments(state, settings.passthroughMaps.eofCommentCollection);
 
     // force cleaning whitespaces and appending crlf to the eof
-    state.formatted = cleanUpTailingCrLfOfString(state.formatted);
-    state.formatted = cleanUpTailingWhitespacesOrTabsOfString(state.formatted);
+    trimFormatted(state, cleanUpTailingCrLfOfString);
+    trimFormatted(state, cleanUpTailingWhitespacesOrTabsOfString);
     appendToFormatted(state, state.newlineLiteral);
 
-    return state.formatted;
+    return getFormatted(state);
 }
 
 function stateFromSettings(settings: SerializeSettings): SerializeState {
@@ -148,7 +165,7 @@ function stateFromSettings(settings: SerializeSettings): SerializeState {
         lastTokenType: LastTokenType.Null,
         blockStatusArray: [],
         indentationLevel: 0,
-        formatted: "",
+        formattedChunks: [],
         currentLine: "",
         // lexical fields
         isPseudoRightPadding: false,
@@ -549,10 +566,12 @@ function appendToFormatted(state: SerializeState, str: string): void {
     // do not pollute any tailing characters of the line before a just created pseudo-line
     if (str === state.newlineLiteral && !state.isPseudoLineJustCreated) {
         // remove any tailing whitespace or \t from the formatted
-        state.formatted = cleanUpTailingWhitespacesOrTabsOfString(state.formatted);
+        trimFormatted(state, cleanUpTailingWhitespacesOrTabsOfString);
     }
 
-    state.formatted += str;
+    if (str.length) {
+        state.formattedChunks.push(str);
+    }
 
     if (str === state.newlineLiteral) {
         state.currentLine = "";
@@ -599,8 +618,35 @@ function currentBlockStatus(state: SerializeState): BlockStatus | undefined {
 }
 
 function wipeOutTailingWhiteSpaces(state: SerializeState): void {
-    state.formatted = cleanUpTailingWhitespacesOrTabsOfString(state.formatted);
+    trimFormatted(state, cleanUpTailingWhitespacesOrTabsOfString);
     state.currentLine = cleanUpTailingWhitespacesOrTabsOfString(state.currentLine);
+}
+
+function trimFormatted(state: SerializeState, trim: (text: string) => string): void {
+    while (state.formattedChunks.length) {
+        const index: number = state.formattedChunks.length - 1;
+        const trimmed: string = trim(state.formattedChunks[index]);
+
+        if (trimmed.length) {
+            state.formattedChunks[index] = trimmed;
+
+            return;
+        }
+
+        state.formattedChunks.pop();
+    }
+}
+
+function getFormatted(state: SerializeState): string {
+    const formatted: string = state.formattedChunks.join("");
+
+    // Keep materialized prefixes so full-output matchers do not rejoin every earlier token.
+    if (state.formattedChunks.length > 1) {
+        state.formattedChunks.length = 0;
+        state.formattedChunks.push(formatted);
+    }
+
+    return formatted;
 }
 
 /**
@@ -612,8 +658,8 @@ function markCurrentEmptyLinePseudo(state: SerializeState): void {
     if (state.currentLine === "" && state.lastTokenType !== LastTokenType.CommentsLine) {
         // current line is empty and there were no literal appended yet
         // thus just directly remove CRLF and ending /s from the formatted if needed
-        state.formatted = cleanUpTailingCrLfOfString(state.formatted);
-        state.formatted = cleanUpTailingWhitespacesOrTabsOfString(state.formatted);
+        trimFormatted(state, cleanUpTailingCrLfOfString);
+        trimFormatted(state, cleanUpTailingWhitespacesOrTabsOfString);
         // since the current line has already been empty, no need to remove /s from it
 
         state.isPseudoLine = true;
@@ -626,14 +672,14 @@ function shouldActivateAnchorByText(text: string, matcher: RegExp): boolean {
 }
 
 function dedentContainer(state: SerializeState, parameter: SerializeParameter): void {
-    if (parameter.dedentContainerConditionReg) {
-        const currentFormatted: string = state.formatted + state.currentLine;
-
-        if (currentFormatted.match(parameter.dedentContainerConditionReg) && state.currentLine === "") {
-            markCurrentEmptyLinePseudo(state);
-            state.indentationLevel -= 1;
-            appendToFormatted(state, " ");
-        }
+    if (
+        state.currentLine === "" &&
+        parameter.dedentContainerConditionReg &&
+        getFormatted(state).match(parameter.dedentContainerConditionReg)
+    ) {
+        markCurrentEmptyLinePseudo(state);
+        state.indentationLevel -= 1;
+        appendToFormatted(state, " ");
     }
 }
 
@@ -646,12 +692,22 @@ function currentIndentation(state: SerializeState): string {
 }
 
 function endingWithNewline(state: SerializeState): boolean {
-    const currentEnding: string = state.formatted.substring(
-        state.formatted.length - state.newlineLiteral.length,
-        state.formatted.length,
-    );
+    if (state.currentLine !== "") {
+        return false;
+    }
 
-    return currentEnding === state.newlineLiteral && state.currentLine === "";
+    let currentEnding: string = "";
+
+    for (
+        let index: number = state.formattedChunks.length - 1;
+        index >= 0 && currentEnding.length < state.newlineLiteral.length;
+        index -= 1
+    ) {
+        const chunk: string = state.formattedChunks[index];
+        currentEnding = chunk.slice(-(state.newlineLiteral.length - currentEnding.length)) + currentEnding;
+    }
+
+    return currentEnding === state.newlineLiteral;
 }
 
 function expandIndentationCache(state: SerializeState, level: number): string {

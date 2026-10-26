@@ -86,7 +86,8 @@ export type SerializeParameter = Partial<{
     indentContainerOnEnter: boolean;
     /**
      * dedentContainerConditionReg, a container field:
-     * a regex that will decrease the current indent level by one if the present formatted line matches it
+     * a regex checked against the formatted output only when the current line is empty;
+     * a match decreases the current indent level by one
      */
     dedentContainerConditionReg: RegExp;
     /**
