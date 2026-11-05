@@ -81,6 +81,9 @@ The repository's build scripts and CI are Windows-oriented. `npm run watch` reco
 Build output goes to `lib`; published library entry points and source organization are described in
 the [architecture guide](ARCHITECTURE.md#source-layout-and-packaging).
 
+Tests use Mocha's built-in Spec and XUnit reporters through `mochaReporter.js` to produce readable
+console output and `test-results.xml` for CI.
+
 ### Format files in place
 
 The checkout includes a recursive formatting script:
